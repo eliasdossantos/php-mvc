@@ -1,0 +1,99 @@
+<?php
+
+namespace App\Requests{{ SubNamespace }};
+
+use App\Requests\FormRequest;
+use Core\Auth;
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Centraliza validação, sanitização e autorização do formulário.
+ *
+ * Fluxo automático ao instanciar:
+ *   new {{ ClassName }}()
+ *     → authorize()   — verifica permissão
+ *     → sanitize()    — limpa os dados
+ *     → validate()    — aplica rules() com messages()
+ *
+ * Uso no Controller:
+ *   $request = new {{ ClassName }}();
+ *   if ($request->fails()) {
+ *       Session::flash('error', $request->firstError());
+ *       Session::flashInput($request->all());
+ *       $this->back();
+ *   }
+ *   $data = $request->validated();
+ */
+class {{ ClassName }} extends FormRequest
+{
+    /**
+     * Define quem pode realizar esta ação.
+     *
+     * Exemplos:
+     *   return true;               // sempre permitido
+     *   return Auth::check();      // apenas logados
+     *   return Auth::is('admin');  // apenas admins
+     */
+    public function authorize(): bool
+    {
+        return true;
+    }
+
+    /**
+     * Regras de validação.
+     * Sintaxe: 'campo' => 'regra1|regra2|regra3:param'
+     *
+     * Regras disponíveis:
+     *   required, email, min:N, max:N, numeric, integer,
+     *   confirmed, same:outro, different:outro,
+     *   in:a,b,c, not_in:a,b,c, regex:/pattern/,
+     *   unique:tabela,coluna, exists:tabela,coluna, nullable
+     */
+    public function rules(): array
+    {
+        return [
+            'name'     => 'required|min:2|max:100',
+            'email'    => 'required|email|unique:users,email',
+            'password' => 'required|min:6|confirmed',
+        ];
+    }
+
+    /**
+     * Mensagens de erro customizadas.
+     * Formato: 'campo.regra' => 'mensagem'
+     * Retorne [] para usar as mensagens padrão do Validator.
+     */
+    public function messages(): array
+    {
+        return [
+            'name.required'     => 'O nome é obrigatório.',
+            'name.min'          => 'O nome deve ter pelo menos 2 caracteres.',
+            'email.required'    => 'O e-mail é obrigatório.',
+            'email.email'       => 'Informe um e-mail válido.',
+            'email.unique'      => 'Este e-mail já está em uso.',
+            'password.required' => 'A senha é obrigatória.',
+            'password.min'      => 'A senha deve ter pelo menos 6 caracteres.',
+            'password.confirmed'=> 'A confirmação de senha não confere.',
+        ];
+    }
+
+    /**
+     * Sanitiza os dados antes da validação.
+     * Executado automaticamente pelo FormRequest base.
+     *
+     * Dicas:
+     *   - Senhas: use trim() APENAS (strip_tags corrompe caracteres especiais)
+     *   - Emails: strtolower() + trim()
+     *   - Nomes:  ucwords() + trim()
+     */
+    public function sanitize(): array
+    {
+        return [
+            'name'                  => ucwords(mb_strtolower(trim($this->input['name']     ?? ''), 'UTF-8')),
+            'email'                 => strtolower(trim($this->input['email']    ?? '')),
+            'password'              => trim($this->input['password']              ?? ''),
+            'password_confirmation' => trim($this->input['password_confirmation'] ?? ''),
+        ];
+    }
+}

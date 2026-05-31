@@ -1,0 +1,3348 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PHP MVC Base — Documentação</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b0d14;
+      --bg2: #0f1118;
+      --surface: #13161f;
+      --surface2: #1a1d2a;
+      --surface3: #1f2333;
+      --border: rgba(255, 255, 255, .07);
+      --border2: rgba(255, 255, 255, .12);
+      --accent: #7c6af7;
+      --accent2: #5b51e8;
+      --accent-glow: rgba(124, 106, 247, .25);
+      --accent-light: rgba(124, 106, 247, .12);
+      --green: #34d399;
+      --green-bg: rgba(52, 211, 153, .1);
+      --yellow: #fbbf24;
+      --yellow-bg: rgba(251, 191, 36, .1);
+      --red: #f87171;
+      --red-bg: rgba(248, 113, 113, .1);
+      --blue: #60a5fa;
+      --blue-bg: rgba(96, 165, 250, .1);
+      --text: #e8eaf2;
+      --text2: #9ca3c0;
+      --text3: #636880;
+      --sidebar-w: 272px;
+      --header-h: 56px;
+      --radius: 10px;
+      --radius-lg: 16px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, .4);
+      --shadow-lg: 0 8px 48px rgba(0, 0, 0, .6);
+      --font: 'Sora', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+
+    [data-theme="light"] {
+      --bg: #f5f6fa;
+      --bg2: #ffffff;
+      --surface: #ffffff;
+      --surface2: #f0f2f8;
+      --surface3: #e8eaf2;
+      --border: rgba(0, 0, 0, .08);
+      --border2: rgba(0, 0, 0, .13);
+      --text: #1a1d2e;
+      --text2: #4b5068;
+      --text3: #8b90a8;
+      --shadow: 0 2px 12px rgba(0, 0, 0, .08);
+      --shadow-lg: 0 8px 32px rgba(0, 0, 0, .12);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    html {
+      scroll-behavior: smooth
+    }
+
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none
+    }
+
+    a:hover {
+      color: var(--accent2)
+    }
+
+    code {
+      font-family: var(--font-mono);
+      font-size: .85em;
+      background: var(--surface2);
+      padding: 2px 7px;
+      border-radius: 5px;
+      color: var(--accent)
+    }
+
+    /* ── Header ── */
+    .site-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: var(--header-h);
+      background: rgba(11, 13, 20, .92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 28px;
+      z-index: 200
+    }
+
+    .site-header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .logo {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text)
+    }
+
+    .logo span {
+      color: var(--accent)
+    }
+
+    .version-badge {
+      background: var(--accent-light);
+      color: var(--accent);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      border: 1px solid var(--accent-glow)
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .theme-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      padding: 6px 14px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      font-family: var(--font);
+      transition: .15s
+    }
+
+    .theme-btn:hover {
+      background: var(--surface3);
+      color: var(--text)
+    }
+
+    /* ── Layout ── */
+    .layout {
+      display: flex;
+      min-height: 100vh;
+      padding-top: var(--header-h)
+    }
+
+    .sidebar {
+      position: fixed;
+      top: var(--header-h);
+      left: 0;
+      width: var(--sidebar-w);
+      height: calc(100vh - var(--header-h));
+      overflow-y: auto;
+      border-right: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 20px 0;
+      scrollbar-width: thin;
+      scrollbar-color: var(--surface3) transparent;
+      z-index: 100
+    }
+
+    .sidebar::-webkit-scrollbar {
+      width: 4px
+    }
+
+    .sidebar::-webkit-scrollbar-thumb {
+      background: var(--surface3);
+      border-radius: 4px
+    }
+
+    .main {
+      margin-left: var(--sidebar-w);
+      flex: 1;
+      padding: 48px 56px;
+      max-width: 960px
+    }
+
+    /* ── Sidebar Nav ── */
+    .nav-section {
+      padding: 6px 16px;
+      margin-top: 8px
+    }
+
+    .nav-section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text3);
+      padding: 6px 8px;
+      margin-bottom: 2px
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      padding: 7px 12px;
+      border-radius: 8px;
+      color: var(--text2);
+      font-size: 13px;
+      transition: .12s;
+      cursor: pointer
+    }
+
+    .nav-link:hover {
+      background: var(--surface2);
+      color: var(--text)
+    }
+
+    .nav-link.active {
+      background: var(--accent-light);
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .nav-link .nav-icon {
+      font-size: 14px;
+      width: 18px;
+      text-align: center;
+      flex-shrink: 0
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: var(--green-bg);
+      color: var(--green);
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-weight: 600
+    }
+
+    /* ── Content ── */
+    .doc-section {
+      margin-bottom: 72px;
+      scroll-margin-top: calc(var(--header-h) + 24px)
+    }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 12px
+    }
+
+    .section-title {
+      font-size: 30px;
+      font-weight: 800;
+      line-height: 1.25;
+      margin-bottom: 10px
+    }
+
+    .section-subtitle {
+      color: var(--text2);
+      font-size: 15px;
+      line-height: 1.7;
+      margin-bottom: 32px
+    }
+
+    h3.subsection {
+      font-size: 18px;
+      font-weight: 700;
+      margin: 36px 0 14px;
+      color: var(--text);
+      padding-top: 8px;
+      border-top: 1px solid var(--border)
+    }
+
+    h4.mini-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin: 24px 0 10px;
+      color: var(--text2)
+    }
+
+    p {
+      margin-bottom: 14px;
+      color: var(--text2);
+      line-height: 1.75
+    }
+
+    ul,
+    ol {
+      padding-left: 22px;
+      margin-bottom: 14px;
+      color: var(--text2)
+    }
+
+    li {
+      margin-bottom: 6px
+    }
+
+    /* ── Cards ── */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-bottom: 28px
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      transition: .2s
+    }
+
+    .card:hover {
+      border-color: var(--border2);
+      transform: translateY(-2px);
+      box-shadow: var(--shadow)
+    }
+
+    .card-icon {
+      font-size: 24px;
+      margin-bottom: 12px
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px
+    }
+
+    .card-desc {
+      font-size: 12px;
+      color: var(--text3);
+      line-height: 1.6
+    }
+
+    /* ── Code blocks ── */
+    .code-block {
+      background: #0d1117;
+      border: 1px solid var(--border2);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      margin: 18px 0 24px
+    }
+
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 18px;
+      background: rgba(255, 255, 255, .03);
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text3)
+    }
+
+    .code-file {
+      color: var(--accent);
+      font-family: var(--font-mono);
+      font-weight: 500
+    }
+
+    .copy-btn {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+      padding: 4px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 11px;
+      font-family: var(--font);
+      transition: .15s
+    }
+
+    .copy-btn:hover {
+      background: var(--surface3);
+      color: var(--text)
+    }
+
+    .copy-btn.copied {
+      color: var(--green);
+      border-color: var(--green)
+    }
+
+    .code-block pre {
+      margin: 0 !important;
+      border-radius: 0 !important;
+      background: #0d1117 !important;
+      padding: 20px !important
+    }
+
+    .code-block pre code {
+      font-size: 13px !important;
+      line-height: 1.65 !important
+    }
+
+    /* ── Tables ── */
+    .doc-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 16px 0 28px;
+      font-size: 13px
+    }
+
+    .doc-table th {
+      padding: 10px 14px;
+      text-align: left;
+      background: var(--surface2);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: var(--text3);
+      font-weight: 600
+    }
+
+    .doc-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      color: var(--text2);
+      vertical-align: top
+    }
+
+    .doc-table tr:last-child td {
+      border-bottom: none
+    }
+
+    .doc-table tr:hover td {
+      background: var(--surface)
+    }
+
+    .doc-table code {
+      font-size: 12px
+    }
+
+    /* ── Badges ── */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .03em
+    }
+
+    .badge-green {
+      background: var(--green-bg);
+      color: var(--green)
+    }
+
+    .badge-blue {
+      background: var(--blue-bg);
+      color: var(--blue)
+    }
+
+    .badge-yellow {
+      background: var(--yellow-bg);
+      color: var(--yellow)
+    }
+
+    .badge-red {
+      background: var(--red-bg);
+      color: var(--red)
+    }
+
+    .badge-accent {
+      background: var(--accent-light);
+      color: var(--accent)
+    }
+
+    /* ── Callouts ── */
+    .callout {
+      display: flex;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: var(--radius);
+      margin: 18px 0 24px;
+      font-size: 13.5px;
+      line-height: 1.6
+    }
+
+    .callout-icon {
+      font-size: 18px;
+      flex-shrink: 0;
+      margin-top: 1px
+    }
+
+    .callout-info {
+      background: var(--blue-bg);
+      border-left: 3px solid var(--blue)
+    }
+
+    .callout-tip {
+      background: var(--green-bg);
+      border-left: 3px solid var(--green)
+    }
+
+    .callout-warn {
+      background: var(--yellow-bg);
+      border-left: 3px solid var(--yellow)
+    }
+
+    .callout-body strong {
+      color: var(--text);
+      display: block;
+      margin-bottom: 4px
+    }
+
+    .callout-body p {
+      margin: 0;
+      color: var(--text2)
+    }
+
+    /* ── Folder tree ── */
+    .folder-tree {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px 24px;
+      font-family: var(--font-mono);
+      font-size: 12.5px;
+      line-height: 1.9;
+      margin: 18px 0 24px;
+      overflow-x: auto
+    }
+
+    .tree-dir {
+      color: var(--accent);
+      font-weight: 600
+    }
+
+    .tree-file {
+      color: var(--text2)
+    }
+
+    .tree-comment {
+      color: var(--text3)
+    }
+
+    /* ── Steps ── */
+    .steps {
+      counter-reset: step;
+      margin: 18px 0 28px
+    }
+
+    .step {
+      display: flex;
+      gap: 18px;
+      margin-bottom: 22px;
+      position: relative
+    }
+
+    .step::before {
+      counter-increment: step;
+      content: counter(step);
+      width: 32px;
+      height: 32px;
+      background: var(--accent-light);
+      color: var(--accent);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 13px;
+      flex-shrink: 0;
+      border: 1px solid var(--accent-glow)
+    }
+
+    .step-content h4 {
+      font-size: 14px;
+      font-weight: 700;
+      margin-bottom: 6px
+    }
+
+    .step-content p {
+      font-size: 13px;
+      color: var(--text2);
+      margin: 0
+    }
+
+    /* ── Layer diagram ── */
+    .layer-stack {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      margin: 18px 0 24px
+    }
+
+    .layer {
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px
+    }
+
+    .layer-name {
+      min-width: 130px
+    }
+
+    .layer-desc {
+      font-weight: 400;
+      color: var(--text3);
+      font-size: 12px
+    }
+
+    .l1 {
+      background: var(--accent-light);
+      border-left: 3px solid var(--accent)
+    }
+
+    .l2 {
+      background: var(--blue-bg);
+      border-left: 3px solid var(--blue)
+    }
+
+    .l3 {
+      background: var(--green-bg);
+      border-left: 3px solid var(--green)
+    }
+
+    .l4 {
+      background: var(--yellow-bg);
+      border-left: 3px solid var(--yellow)
+    }
+
+    .l5 {
+      background: var(--red-bg);
+      border-left: 3px solid var(--red)
+    }
+
+    .l6 {
+      background: var(--surface2);
+      border-left: 3px solid var(--text3)
+    }
+
+    /* ── Mobile ── */
+    .mobile-menu-btn {
+      display: none;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 20px;
+      cursor: pointer
+    }
+
+    @media(max-width:900px) {
+      .sidebar {
+        transform: translateX(-100%);
+        transition: .25s
+      }
+
+      .sidebar.open {
+        transform: translateX(0);
+        box-shadow: var(--shadow-lg)
+      }
+
+      .main {
+        margin-left: 0;
+        padding: 32px 20px
+      }
+
+      .mobile-menu-btn {
+        display: block
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media(max-width:560px) {
+      .cards-grid {
+        grid-template-columns: 1fr
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- ── Header ──────────────────────────────────────────────────────────────── -->
+  <header class="site-header">
+    <div class="site-header-left">
+      <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+      <span class="logo">PHP <span>MVC</span> Base</span>
+      <span class="version-badge">v1.0</span>
+    </div>
+    <div class="header-actions">
+      <button class="theme-btn" id="themeBtn">☀ Tema Claro</button>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ── Sidebar ─────────────────────────────────────────────────────────────── -->
+    <nav class="sidebar" id="sidebar">
+
+      <div class="nav-section">
+        <div class="nav-section-title">Início</div>
+        <a class="nav-link active" href="#visao-geral"><span class="nav-icon">🏠</span>Visão Geral</a>
+        <a class="nav-link" href="#instalacao"><span class="nav-icon">⚡</span>Instalação</a>
+        <a class="nav-link" href="#estrutura"><span class="nav-icon">📁</span>Estrutura de Pastas</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Arquitetura</div>
+        <a class="nav-link" href="#arquitetura"><span class="nav-icon">🏗</span>Camadas</a>
+        <a class="nav-link" href="#rotas"><span class="nav-icon">🛣</span>Router</a>
+        <a class="nav-link" href="#middlewares"><span class="nav-icon">🔒</span>Middlewares</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Core</div>
+        <a class="nav-link" href="#controller"><span class="nav-icon">🎮</span>Controller</a>
+        <a class="nav-link" href="#model"><span class="nav-icon">🗄</span>Model & Query Builder</a>
+        <a class="nav-link" href="#database"><span class="nav-icon">🔌</span>Database</a>
+        <a class="nav-link" href="#request"><span class="nav-icon">📥</span>Request</a>
+        <a class="nav-link" href="#session"><span class="nav-icon">🍪</span>Session</a>
+        <a class="nav-link" href="#auth"><span class="nav-icon">🔑</span>Auth</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Recursos</div>
+        <a class="nav-link" href="#validacao"><span class="nav-icon">✅</span>Validação</a>
+        <a class="nav-link" href="#views"><span class="nav-icon">🎨</span>Views & Layouts</a>
+        <a class="nav-link" href="#upload"><span class="nav-icon">📤</span>Upload</a>
+        <a class="nav-link" href="#logger"><span class="nav-icon">📝</span>Logger</a>
+        <a class="nav-link" href="#helpers"><span class="nav-icon">🛠</span>Helpers</a>
+        <a class="nav-link" href="#mailer"><span class="nav-icon">📧</span>Mailer</a>
+        <a class="nav-link" href="#requests"><span class="nav-icon">📋</span>FormRequests</a>
+      </div>
+
+      <div class="nav-section">
+        <div class="nav-section-title">Guias</div>
+        <a class="nav-link" href="#novo-modulo"><span class="nav-icon">🆕</span>Criar Módulo</a>
+        <a class="nav-link" href="#api-rest"><span class="nav-icon">🌐</span>API REST</a>
+        <a class="nav-link" href="#seguranca"><span class="nav-icon">🛡</span>Segurança</a>
+        <a class="nav-link" href="#boas-praticas"><span class="nav-icon">⭐</span>Boas Práticas</a>
+      </div>
+
+    </nav>
+
+    <!-- ── Main Content ─────────────────────────────────────────────────────────── -->
+    <main class="main">
+
+      <!-- ─────────────────── VISÃO GERAL ─────────────────── -->
+      <section class="doc-section" id="visao-geral">
+        <div class="section-label">Introdução</div>
+        <h1 class="section-title">PHP MVC Base</h1>
+        <p class="section-subtitle">Boilerplate PHP puro com arquitetura MVC profissional. Tudo que você precisa para
+          começar um novo projeto rapidamente — sem frameworks, sem magia, sem surpresas.</p>
+
+        <div class="cards-grid">
+          <div class="card">
+            <div class="card-icon">⚡</div>
+            <div class="card-title">Rápido para começar</div>
+            <div class="card-desc">Instalação em 5 comandos. Autenticação completa incluída.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🔧</div>
+            <div class="card-title">Core reutilizável</div>
+            <div class="card-desc">14 classes genéricas prontas para qualquer projeto.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🛡</div>
+            <div class="card-title">Seguro por padrão</div>
+            <div class="card-desc">CSRF, XSS, SQL Injection — protegidos sem configuração.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📐</div>
+            <div class="card-title">Arquitetura limpa</div>
+            <div class="card-desc">Controller → Service → Repository → Model. Cada camada no lugar certo.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">🧩</div>
+            <div class="card-title">Modular</div>
+            <div class="card-desc">Adicione módulos sem tocar no Core. Isolamento total.</div>
+          </div>
+          <div class="card">
+            <div class="card-icon">📦</div>
+            <div class="card-title">PSR-4 + Composer</div>
+            <div class="card-desc">Autoload profissional, namespaces organizados.</div>
+          </div>
+        </div>
+
+        <h3 class="subsection">O que está incluído</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Responsabilidade</th>
+              <th>Tipo</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>Core\Application</code></td>
+              <td>Kernel: boot, dispatch, error handling centralizado</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Router</code></td>
+              <td>Roteamento com grupos, parâmetros dinâmicos, middlewares</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Controller</code></td>
+              <td>Base com helpers: view, json, redirect, validate, abort</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Model</code></td>
+              <td>Active Record + query builder fluente + paginação</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Database</code></td>
+              <td>Singleton PDO com prepared statements e transações</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Session</code></td>
+              <td>Sessões seguras, flash messages, CSRF, old input</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Auth</code></td>
+              <td>Autenticação genérica e plugável</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Validator</code></td>
+              <td>20+ regras de validação com mensagens em português</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Upload</code></td>
+              <td>Upload seguro com validação de MIME real</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Logger</code></td>
+              <td>Logs diários em arquivo, compatível com PSR-3</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Request</code></td>
+              <td>Encapsula requisição HTTP com sanitização automática</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\View</code></td>
+              <td>Renderizador de templates com suporte a layouts</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Repository</code></td>
+              <td>Base de acesso a dados desacoplado e testável</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+            <tr>
+              <td><code>Core\Service</code></td>
+              <td>Base de lógica de negócio com suporte a transações</td>
+              <td><span class="badge badge-accent">Core</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── INSTALAÇÃO ─────────────────── -->
+      <section class="doc-section" id="instalacao">
+        <div class="section-label">Primeiros Passos</div>
+        <h2 class="section-title">Instalação</h2>
+        <p class="section-subtitle">Do zero ao servidor local em menos de 2 minutos.</p>
+
+        <div class="steps">
+          <div class="step">
+            <div class="step-content">
+              <h4>Instale as dependências</h4>
+              <p>PHP 8.1+, Composer e MySQL devem estar instalados.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-content">
+              <h4>Configure o ambiente</h4>
+              <p>Copie <code>.env.example</code> para <code>.env</code> e preencha as credenciais do banco.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-content">
+              <h4>Execute as migrations</h4>
+              <p>Cria as tabelas <code>users</code> e <code>password_resets</code>.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-content">
+              <h4>Popule o banco (opcional)</h4>
+              <p>Cria dois usuários iniciais para teste.</p>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-content">
+              <h4>Inicie o servidor</h4>
+              <p>Acesse <code>http://localhost:8000</code></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Terminal</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-bash"># 1. Instalar dependências
+composer install
+
+# 2. Configurar ambiente
+cp .env.example .env
+# Edite .env com suas credenciais de banco
+
+# 3. Criar tabelas
+php database/migrate.php
+
+# 4. Dados iniciais (admin@example.com / admin123)
+php database/seeds/UserSeeder.php
+
+# 5. Servidor local
+composer serve
+# → http://localhost:8000</code></pre>
+        </div>
+
+        <h3 class="subsection">Requisitos</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Requisito</th>
+              <th>Versão mínima</th>
+              <th>Extensões necessárias</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>PHP</code></td>
+              <td>8.1+</td>
+              <td>pdo_mysql, mbstring, openssl, fileinfo</td>
+            </tr>
+            <tr>
+              <td><code>MySQL / MariaDB</code></td>
+              <td>5.7+ / 10.3+</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>Composer</code></td>
+              <td>2.x</td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td><code>Apache / Nginx</code></td>
+              <td>Qualquer</td>
+              <td>mod_rewrite (Apache)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="callout callout-tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>Configuração do servidor web</strong>
+            <p>O <code>.htaccess</code> incluído já configura o URL rewriting para Apache. Para Nginx, adicione
+              <code>try_files $uri $uri/ /index.php?$query_string;</code> no bloco <code>location /</code>.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────── ESTRUTURA ─────────────────── -->
+      <section class="doc-section" id="estrutura">
+        <div class="section-label">Organização</div>
+        <h2 class="section-title">Estrutura de Pastas</h2>
+        <p class="section-subtitle">Cada pasta tem uma responsabilidade única e bem definida.</p>
+
+        <style>
+          .ftree-root {
+            display: flex;
+            flex-direction: column;
+            gap: 10px
+          }
+
+          .ftree-group {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden
+          }
+
+          .ftree-group-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 18px;
+            background: var(--surface2);
+            border-bottom: 1px solid var(--border);
+            cursor: pointer;
+            user-select: none;
+            transition: .15s
+          }
+
+          .ftree-group-header:hover {
+            background: var(--surface3)
+          }
+
+          .ftree-group-icon {
+            font-size: 15px;
+            width: 20px;
+            text-align: center;
+            flex-shrink: 0
+          }
+
+          .ftree-group-name {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent)
+          }
+
+          .ftree-group-badge {
+            margin-left: auto;
+            font-size: 10px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            padding: 2px 9px;
+            border-radius: 20px;
+            flex-shrink: 0
+          }
+
+          .badge-core {
+            background: rgba(124, 106, 247, .18);
+            color: var(--accent)
+          }
+
+          .badge-app {
+            background: var(--green-bg);
+            color: var(--green)
+          }
+
+          .badge-infra {
+            background: var(--blue-bg);
+            color: var(--blue)
+          }
+
+          .badge-storage {
+            background: var(--yellow-bg);
+            color: var(--yellow)
+          }
+
+          .ftree-group-desc {
+            font-size: 11px;
+            color: var(--text3);
+            margin-left: auto;
+            padding-right: 8px
+          }
+
+          .ftree-chevron {
+            font-size: 10px;
+            color: var(--text3);
+            transition: transform .2s;
+            margin-left: 6px
+          }
+
+          .ftree-group.collapsed .ftree-chevron {
+            transform: rotate(-90deg)
+          }
+
+          .ftree-group.collapsed .ftree-items {
+            display: none
+          }
+
+          .ftree-items {
+            padding: 4px 0 8px
+          }
+
+          .ftree-item {
+            display: grid;
+            grid-template-columns: auto 1fr auto;
+            align-items: baseline;
+            gap: 0 10px;
+            padding: 5px 18px 5px 36px;
+            font-size: 12.5px;
+            line-height: 1.5
+          }
+
+          .ftree-item:hover {
+            background: var(--surface2)
+          }
+
+          .ftree-item-indent {
+            padding-left: 54px
+          }
+
+          .ftree-item-indent2 {
+            padding-left: 72px
+          }
+
+          .ftree-connector {
+            color: var(--text3);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            flex-shrink: 0;
+            opacity: .5
+          }
+
+          .ftree-name {
+            font-family: var(--font-mono);
+            font-weight: 600
+          }
+
+          .ftree-name.is-dir {
+            color: var(--accent)
+          }
+
+          .ftree-name.is-file {
+            color: var(--text)
+          }
+
+          .ftree-name.is-core {
+            color: #a78bfa
+          }
+
+          .ftree-desc {
+            font-size: 11.5px;
+            color: var(--text3);
+            line-height: 1.4
+          }
+
+          .ftree-sep {
+            height: 1px;
+            background: var(--border);
+            margin: 4px 18px
+          }
+
+          .ftree-tag {
+            display: inline-block;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 1px 6px;
+            border-radius: 4px;
+            margin-left: 6px;
+            vertical-align: middle
+          }
+
+          .tag-new {
+            background: var(--green-bg);
+            color: var(--green)
+          }
+
+          .tag-core {
+            background: rgba(124, 106, 247, .15);
+            color: var(--accent)
+          }
+
+          .tag-warn {
+            background: var(--red-bg);
+            color: var(--red)
+          }
+        </style>
+
+        <div class="ftree-root">
+
+          <!-- public/ -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">🌐</span>
+              <span class="ftree-group-name">public/</span>
+              <span class="ftree-group-desc">Única pasta exposta ao servidor web</span>
+              <span class="ftree-group-badge badge-infra">WEB ROOT</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">index.php</span></span>
+                <span class="ftree-desc">Entry point único — toda requisição passa aqui</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">.htaccess</span></span>
+                <span class="ftree-desc">URL rewriting + headers de segurança</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">assets/</span></span>
+                <span class="ftree-desc">CSS, JS, imagens estáticas</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- app/Core/ -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">⚙️</span>
+              <span class="ftree-group-name">app/Core/</span>
+              <span class="ftree-group-desc">Framework reutilizável — não edite</span>
+              <span class="ftree-group-badge badge-core">CORE</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Application.php</span></span>
+                <span class="ftree-desc">Kernel: boot, dispatch, error handling centralizado</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Router.php</span></span>
+                <span class="ftree-desc">Roteamento com grupos, parâmetros e middlewares</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Controller.php</span></span>
+                <span class="ftree-desc">Base de controllers: view(), json(), redirect(), validate()</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Model.php</span></span>
+                <span class="ftree-desc">Active Record + query builder fluente + paginação</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Database.php</span></span>
+                <span class="ftree-desc">Singleton PDO com prepared statements e transações</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Session.php</span></span>
+                <span class="ftree-desc">Sessões seguras, flash messages, CSRF, old input</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Auth.php</span></span>
+                <span class="ftree-desc">Autenticação genérica e plugável</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Validator.php</span></span>
+                <span class="ftree-desc">20+ regras de validação com mensagens em português</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Upload.php</span></span>
+                <span class="ftree-desc">Upload seguro com validação de MIME real (finfo)</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Logger.php</span></span>
+                <span class="ftree-desc">Logs diários em arquivo, compatível com PSR-3</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Request.php</span></span>
+                <span class="ftree-desc">Encapsula requisição HTTP com sanitização automática</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">View.php</span></span>
+                <span class="ftree-desc">Renderizador de templates com suporte a layouts</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Repository.php</span></span>
+                <span class="ftree-desc">Base de acesso a dados desacoplado e testável</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-core">Service.php</span></span>
+                <span class="ftree-desc">Base de lógica de negócio com suporte a transações</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">Interfaces/</span></span>
+                <span class="ftree-desc">RepositoryInterface.php</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- app/ camadas -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">🏗</span>
+              <span class="ftree-group-name">app/</span>
+              <span class="ftree-group-desc">Código da sua aplicação</span>
+              <span class="ftree-group-badge badge-app">APP</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Controllers/</span></span>
+                <span class="ftree-desc">Recebem request, delegam para Service, retornam response</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Models/</span></span>
+                <span class="ftree-desc">Acesso ao banco + regras de dados da entidade</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Services/</span></span>
+                <span class="ftree-desc">Lógica de negócio pura — sem HTTP, sem HTML</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Repositories/</span></span>
+                <span class="ftree-desc">Queries de banco centralizadas e reutilizáveis</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Requests/</span><span class="ftree-tag tag-new">NOVO</span></span>
+                <span class="ftree-desc">FormRequests — validação, sanitização e autorização</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">FormRequest.php</span></span>
+                <span class="ftree-desc">Classe base reutilizável</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">Auth/</span> &nbsp;<span
+                    class="ftree-name is-dir">Users/</span></span>
+                <span class="ftree-desc">Sub-pastas por domínio</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Middlewares/</span></span>
+                <span class="ftree-desc">Auth, Guest, Csrf, Role — filtros pré-controller</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Helpers/</span></span>
+                <span class="ftree-desc">functions.php, SecurityHelper, Mailer — utilitários globais</span>
+              </div>
+              <div class="ftree-sep"></div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">Views/</span></span>
+                <span class="ftree-desc">Templates PHP organizados por módulo</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">layouts/</span></span>
+                <span class="ftree-desc">main.php, auth.php</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">components/</span></span>
+                <span class="ftree-desc">alerts, sidebar, topbar, pagination, footer</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">auth/</span></span>
+                <span class="ftree-desc">login, register, forgot, reset</span>
+              </div>
+              <div class="ftree-item ftree-item-indent2">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">errors/</span></span>
+                <span class="ftree-desc">404, generic, debug (rich debug page)</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Infraestrutura -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">🔧</span>
+              <span class="ftree-group-name">bootstrap/ &nbsp; config/ &nbsp; routes/</span>
+              <span class="ftree-group-desc">Inicialização e configuração</span>
+              <span class="ftree-group-badge badge-infra">CONFIG</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">bootstrap/app.php</span></span>
+                <span class="ftree-desc">Inicialização: .env, constantes, sessão, Application</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">config/app.php</span></span>
+                <span class="ftree-desc">Constantes globais, timezone, debug mode</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">config/database.php</span></span>
+                <span class="ftree-desc">Conexão com banco — lê credenciais do .env</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">config/mail.php</span></span>
+                <span class="ftree-desc">Driver de e-mail: smtp | log | dev</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-file">routes/web.php</span></span>
+                <span class="ftree-desc">Todas as rotas da aplicação registradas aqui</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- database/ -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">🗄</span>
+              <span class="ftree-group-name">database/</span>
+              <span class="ftree-group-desc">Migrations, seeds e runner</span>
+              <span class="ftree-group-badge badge-infra">DATABASE</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">migrate.php</span></span>
+                <span class="ftree-desc">CLI runner — <code>php mvc migrate</code> ou
+                  <code>php database/migrate.php</code></span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">migrations/</span></span>
+                <span class="ftree-desc">Arquivos SQL numerados: 001_create_base_tables.sql …</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">seeds/</span></span>
+                <span class="ftree-desc">Scripts PHP para popular o banco com dados iniciais</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- storage/ -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">📦</span>
+              <span class="ftree-group-name">storage/</span>
+              <span class="ftree-group-desc">Arquivos gerados em runtime — não versionar conteúdo</span>
+              <span class="ftree-group-badge badge-storage">RUNTIME</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">logs/</span></span>
+                <span class="ftree-desc">app-YYYY-MM-DD.log — rotação diária automática</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">uploads/</span></span>
+                <span class="ftree-desc">Arquivos enviados pelos usuários (nomes aleatórios)</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">sessions/</span></span>
+                <span class="ftree-desc">Sessões PHP armazenadas fora do public/ (seguro)</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">cache/</span></span>
+                <span class="ftree-desc">Cache de dados — reservado para expansão futura</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- cli/ -->
+          <div class="ftree-group">
+            <div class="ftree-group-header" onclick="toggleGroup(this)">
+              <span class="ftree-group-icon">⚡</span>
+              <span class="ftree-group-name">cli/ &nbsp;&nbsp; mvc</span>
+              <span class="ftree-group-desc">CLI do framework — semelhante ao Artisan</span>
+              <span class="ftree-group-badge badge-new"
+                style="background:var(--green-bg);color:var(--green);font-size:10px;font-weight:700;padding:2px 9px;border-radius:20px">NOVO</span>
+              <span class="ftree-chevron">▼</span>
+            </div>
+            <div class="ftree-items">
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">mvc</span></span>
+                <span class="ftree-desc">Executável: <code>php mvc make:controller UserController</code></span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">Kernel.php</span></span>
+                <span class="ftree-desc">Roteador de comandos CLI</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-file">Command.php</span></span>
+                <span class="ftree-desc">Classe base dos comandos (args, options, generateFile)</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">├──</span>
+                <span><span class="ftree-name is-dir">Commands/</span></span>
+                <span class="ftree-desc">make:controller, make:model, make:request, serve, migrate …</span>
+              </div>
+              <div class="ftree-item ftree-item-indent">
+                <span class="ftree-connector">└──</span>
+                <span><span class="ftree-name is-dir">Stubs/</span></span>
+                <span class="ftree-desc">Templates para geração de código com placeholders</span>
+              </div>
+            </div>
+          </div>
+
+        </div><!-- /ftree-root -->
+
+        <script>
+          function toggleGroup(header) {
+            header.parentElement.classList.toggle('collapsed');
+          }
+        </script>
+      </section>
+
+      <!-- ─────────────────── ARQUITETURA ─────────────────── -->
+      <section class="doc-section" id="arquitetura">
+        <div class="section-label">Design</div>
+        <h2 class="section-title">Arquitetura em Camadas</h2>
+        <p class="section-subtitle">Cada camada tem uma responsabilidade única. Nenhuma camada sabe mais do que precisa
+          sobre as outras.</p>
+
+        <div class="layer-stack">
+          <div class="layer l1"><span class="layer-name">🌐 HTTP Request</span><span class="layer-desc">Chega em
+              public/index.php → bootstrap/app.php</span></div>
+          <div class="layer l2"><span class="layer-name">🛣 Router</span><span class="layer-desc">Resolve URI →
+              Controller@method, aplica middlewares</span></div>
+          <div class="layer l3"><span class="layer-name">🔒 Middlewares</span><span class="layer-desc">Auth, CSRF, Role
+              — executados antes do controller</span></div>
+          <div class="layer l4"><span class="layer-name">🎮 Controller</span><span class="layer-desc">Lê request, chama
+              Service ou Repository, retorna View/JSON</span></div>
+          <div class="layer l5"><span class="layer-name">⚙️ Service</span><span class="layer-desc">Lógica de negócio
+              pura — sem HTTP, sem HTML</span></div>
+          <div class="layer l6"><span class="layer-name">📦 Repository</span><span class="layer-desc">Queries SQL
+              encapsuladas e reutilizáveis</span></div>
+          <div class="layer l6"><span class="layer-name">🗄 Model + Database</span><span class="layer-desc">Active
+              Record sobre PDO com prepared statements</span></div>
+        </div>
+
+        <h3 class="subsection">Regra de ouro por camada</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Camada</th>
+              <th>✅ Deve ter</th>
+              <th>❌ Não deve ter</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Controller</strong></td>
+              <td>Ler request, chamar Service, retornar View/JSON</td>
+              <td>Queries SQL, regras de negócio complexas</td>
+            </tr>
+            <tr>
+              <td><strong>Service</strong></td>
+              <td>Lógica de negócio, orquestração, validações de domínio</td>
+              <td><code>$_POST</code>, <code>header()</code>, HTML, redirect()</td>
+            </tr>
+            <tr>
+              <td><strong>Repository</strong></td>
+              <td>Queries SQL da entidade, buscas customizadas</td>
+              <td>Lógica de negócio, validações</td>
+            </tr>
+            <tr>
+              <td><strong>Model</strong></td>
+              <td>Estrutura da tabela, fillable, queries simples</td>
+              <td>Lógica de apresentação, HTTP</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── ROUTER ─────────────────── -->
+      <section class="doc-section" id="rotas">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Router</h2>
+        <p class="section-subtitle">Roteamento desacoplado com grupos, parâmetros dinâmicos, middlewares e rotas
+          nomeadas.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">routes/web.php</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+use App\Controllers\PostController;
+use Core\Router;
+
+/** @var Router $router */
+
+// Rotas simples
+$router->get('/posts',         [PostController::class, 'index'])->name('posts.index');
+$router->post('/posts',        [PostController::class, 'store'],   ['CsrfMiddleware']);
+$router->get('/posts/{id}',    [PostController::class, 'show'])->name('posts.show');
+$router->put('/posts/{id}',    [PostController::class, 'update'],  ['CsrfMiddleware']);
+$router->delete('/posts/{id}', [PostController::class, 'destroy'], ['CsrfMiddleware']);
+
+// Parâmetro opcional
+$router->get('/archive/{year?}', [PostController::class, 'archive']);
+
+// CRUD completo — 7 rotas de uma vez
+$router->resource('/posts', PostController::class);
+// Ou apenas algumas:
+$router->resource('/posts', PostController::class, only: ['index', 'store', 'destroy']);
+
+// Grupos com prefixo e middleware compartilhado
+$router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], function (Router $r) {
+    $r->get('', [DashboardController::class, 'index'])->name('dashboard');
+    $r->get('/posts', [PostController::class, 'index']);
+
+    // Sub-grupo dentro do grupo
+    $r->group(['prefix' => '/admin', 'middleware' => ['RoleMiddleware:admin']], function (Router $r) {
+        $r->get('/users', [AdminController::class, 'users']);
+    });
+});
+
+// Rota nomeada → gera URL com route()
+$router->get('/login', [AuthController::class, 'loginForm'])->name('auth.login');
+echo route('auth.login');              // → https://app.com/login
+echo route('posts.show', ['id' => 5]); // → https://app.com/posts/5</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── MIDDLEWARES ─────────────────── -->
+      <section class="doc-section" id="middlewares">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Middlewares</h2>
+        <p class="section-subtitle">Filtros executados antes do controller. Quatro middlewares incluídos, prontos para
+          usar.</p>
+
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Middleware</th>
+              <th>O que faz</th>
+              <th>Uso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>AuthMiddleware</code></td>
+              <td>Redireciona para login se não autenticado</td>
+              <td>Rotas da área logada</td>
+            </tr>
+            <tr>
+              <td><code>GuestMiddleware</code></td>
+              <td>Redireciona para dashboard se já logado</td>
+              <td>Login, registro</td>
+            </tr>
+            <tr>
+              <td><code>CsrfMiddleware</code></td>
+              <td>Valida token CSRF em POST/PUT/DELETE</td>
+              <td>Formulários e APIs</td>
+            </tr>
+            <tr>
+              <td><code>RoleMiddleware:admin</code></td>
+              <td>Exige role específica após autenticação</td>
+              <td>Áreas restritas</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Criando um middleware personalizado</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Middlewares;
+
+use Core\Request;
+use Core\Session;
+
+class SubscriberMiddleware
+{
+    public function handle(Request $request): void
+    {
+        $user = Session::get('user');
+
+        if (!$user || $user->plan !== 'premium') {
+            $request->isJson()
+                ? (http_response_code(403) and die(json_encode(['error' => 'Premium required'])))
+                : (Session::flash('error', 'Recurso exclusivo para assinantes Premium.')
+                   and redirect('dashboard'));
+        }
+    }
+}
+
+// Uso nas rotas:
+$router->get('/premium', [ContentController::class, 'index'], ['AuthMiddleware', 'SubscriberMiddleware']);</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── CONTROLLER ─────────────────── -->
+      <section class="doc-section" id="controller">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Controller</h2>
+        <p class="section-subtitle">Todos os controllers herdam de <code>Core\Controller</code> e ganham um arsenal de
+          helpers para views, JSON, redirecionamento e validação.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Controllers/PostController.php</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Controllers;
+
+use Core\Controller;
+use App\Services\PostService;
+use App\Repositories\PostRepository;
+
+class PostController extends Controller
+{
+    private PostService    $service;
+    private PostRepository $repo;
+
+    public function __construct()
+    {
+        $this->service = new PostService();
+        $this->repo    = new PostRepository();
+    }
+
+    // Renderiza view com layout
+    public function index(): void
+    {
+        $posts = $this->repo->paginate(15, (int)($_GET['page'] ?? 1));
+
+        $this->view('posts.index', [
+            'title' => 'Posts',
+            'posts' => $posts,
+        ]); // usa layouts/main.php por padrão
+    }
+
+    // View com layout alternativo
+    public function create(): void
+    {
+        $this->view('posts.create', ['title' => 'Novo Post'], 'main');
+    }
+
+    // Valida → redireciona se falhar → continua se OK
+    public function store(): void
+    {
+        $this->validate($_POST, [
+            'title'   => 'required|min:3|max:200',
+            'content' => 'required|min:10',
+            'status'  => 'required|in:draft,published',
+        ]);
+
+        $result = $this->service->create($_POST, $this->userId());
+
+        $result['success']
+            ? $this->redirectWith('dashboard/posts', 'success', 'Post criado!')
+            : $this->redirectWith('dashboard/posts/create', 'error', $result['message']);
+    }
+
+    // Resposta JSON (para APIs)
+    public function apiList(): void
+    {
+        $posts = $this->repo->paginate(10);
+        $this->jsonSuccess('OK', ['posts' => $posts]);
+    }
+
+    // Abort com código HTTP
+    public function show(int $id): void
+    {
+        $post = $this->repo->findById($id);
+        $this->abortUnless((bool)$post, 404, 'Post não encontrado');
+        $this->view('posts.show', compact('post'));
+    }
+}</code></pre>
+        </div>
+
+        <h3 class="subsection">Métodos disponíveis</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Método</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>view($view, $data, $layout)</code></td>
+              <td>Renderiza view com layout (padrão: <code>main</code>)</td>
+            </tr>
+            <tr>
+              <td><code>viewOnly($view, $data)</code></td>
+              <td>Renderiza view sem layout</td>
+            </tr>
+            <tr>
+              <td><code>redirect($url)</code></td>
+              <td>Redireciona para URL</td>
+            </tr>
+            <tr>
+              <td><code>back()</code></td>
+              <td>Redireciona para a URL anterior</td>
+            </tr>
+            <tr>
+              <td><code>redirectWith($url, $type, $msg)</code></td>
+              <td>Redireciona + flash message</td>
+            </tr>
+            <tr>
+              <td><code>json($data, $status)</code></td>
+              <td>Resposta JSON com status HTTP</td>
+            </tr>
+            <tr>
+              <td><code>jsonSuccess($msg, $data, $status)</code></td>
+              <td>JSON <code>{"success":true,...}</code></td>
+            </tr>
+            <tr>
+              <td><code>jsonError($msg, $status)</code></td>
+              <td>JSON <code>{"success":false,...}</code></td>
+            </tr>
+            <tr>
+              <td><code>validate($data, $rules)</code></td>
+              <td>Valida e redireciona de volta se falhar</td>
+            </tr>
+            <tr>
+              <td><code>auth()</code></td>
+              <td><code>bool</code> — está logado?</td>
+            </tr>
+            <tr>
+              <td><code>user()</code></td>
+              <td><code>object</code> — dados do usuário logado</td>
+            </tr>
+            <tr>
+              <td><code>userId()</code></td>
+              <td><code>int</code> — ID do usuário logado</td>
+            </tr>
+            <tr>
+              <td><code>abort($code, $msg)</code></td>
+              <td>Lança exceção HTTP</td>
+            </tr>
+            <tr>
+              <td><code>abortUnless($cond, $code)</code></td>
+              <td>Aborta se condição for falsa</td>
+            </tr>
+            <tr>
+              <td><code>abortIf($cond, $code)</code></td>
+              <td>Aborta se condição for verdadeira</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── MODEL ─────────────────── -->
+      <section class="doc-section" id="model">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Model &amp; Query Builder</h2>
+        <p class="section-subtitle">Active Record com query builder fluente. Cada model mapeia uma tabela e herda CRUD
+          completo, paginação e soft delete.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Models/Post.php</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Models;
+
+use Core\Model;
+
+class Post extends Model
+{
+    protected string $table      = 'posts';
+    protected array  $fillable   = ['title', 'content', 'status', 'user_id', 'slug'];
+    protected array  $hidden     = ['deleted_at'];    // campos ocultos na serialização
+    protected bool   $timestamps = true;              // created_at / updated_at automáticos
+    protected bool   $softDelete = false;             // true → usa deleted_at ao invés de DELETE
+
+    // Método customizado (vai no Model quando é simples)
+    public function findBySlug(string $slug): object|false
+    {
+        return $this->findBy('slug', $slug);
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso do Query Builder</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">$post = new Post();
+
+// CRUD básico
+$post->all();                               // SELECT * ORDER BY id
+$post->all('created_at', 'DESC');          // ORDER BY created_at DESC
+$post->find(42);                           // WHERE id = 42 LIMIT 1
+$post->findBy('slug', 'meu-post');         // WHERE slug = '...' LIMIT 1
+$post->create(['title' => 'Oi', 'user_id' => 1]); // INSERT → retorna lastInsertId
+$post->update(42, ['title' => 'Oi!']);     // UPDATE WHERE id = 42
+$post->delete(42);                         // DELETE (ou soft delete)
+
+// Query builder fluente
+$post->where('status', 'published')
+     ->where('user_id', 5)
+     ->orderBy('created_at', 'DESC')
+     ->limit(10)
+     ->get();                              // → array de objetos
+
+$post->where('status', 'published')->count();
+$post->where('email', $email)->exists();
+$post->where('status', 'published')->first();
+
+// SELECT específico
+$post->select('id', 'title', 'created_at')
+     ->where('status', 'published')
+     ->get();
+
+// Paginação
+$result = $post->where('status', 'published')
+               ->paginate(15, (int)($_GET['page'] ?? 1));
+// $result = [
+//   'data'      => [...],   ← array de objetos
+//   'total'     => 120,
+//   'page'      => 1,
+//   'per_page'  => 15,
+//   'last_page' => 8,
+//   'from'      => 1,
+//   'to'        => 15,
+// ]</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── DATABASE ─────────────────── -->
+      <section class="doc-section" id="database">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Database</h2>
+        <p class="section-subtitle">Singleton PDO com interface fluente para queries seguras e transações.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Queries diretas e transações</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">$db = Core\Database::getInstance();
+
+// Query simples com bind (prepared statement — sempre seguro)
+$user = $db->query("SELECT * FROM users WHERE email = :e AND active = 1")
+           ->bind(':e', $email)
+           ->fetch();                     // → objeto | false
+
+$users = $db->query("SELECT * FROM users WHERE role = :r ORDER BY name")
+            ->bind(':r', 'admin')
+            ->fetchAll();                 // → array de objetos
+
+// INSERT / UPDATE / DELETE
+$db->query("INSERT INTO logs (user_id, action) VALUES (:uid, :act)")
+   ->bind(':uid', $userId)
+   ->bind(':act', 'login')
+   ->execute();
+
+$lastId = $db->lastInsertId();
+$rows   = $db->rowCount();
+
+// Transação com closure (commit automático, rollback em exceção)
+$db->transaction(function ($db) use ($userId, $data) {
+    $db->query("UPDATE wallets SET balance = balance - :v WHERE user_id = :uid")
+       ->bind(':v', $data['amount'])->bind(':uid', $userId)->execute();
+
+    $db->query("INSERT INTO transactions (user_id, amount, type) VALUES (:uid, :v, 'debit')")
+       ->bind(':uid', $userId)->bind(':v', $data['amount'])->execute();
+});
+
+// Transação manual
+$db->beginTransaction();
+try {
+    // ... queries ...
+    $db->commit();
+} catch (\Throwable $e) {
+    $db->rollback();
+    throw $e;
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── REQUEST ─────────────────── -->
+      <section class="doc-section" id="request">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Request</h2>
+        <p class="section-subtitle">Encapsula a requisição HTTP com sanitização automática em todos os getters de
+          entrada.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso do Request</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">$req = new Core\Request();
+
+// Método e URI
+$req->method();             // 'GET', 'POST', 'PUT', 'DELETE'
+                            // Suporta override via campo hidden _method
+$req->uri();                // '/dashboard/posts/42'
+$req->isGet(); $req->isPost(); $req->isAjax(); $req->isJson();
+
+// Dados de entrada (sanitizados)
+$req->get('page', 1);       // $_GET com default
+$req->post('name');         // $_POST sanitizado
+$req->all();                // todos os $_POST sanitizados
+$req->input('q');           // busca em POST e GET, nessa ordem
+$req->raw('content');       // sem sanitização (para markdown, HTML editor, etc.)
+$req->has('email');         // bool: campo existe?
+
+// JSON body (para APIs)
+$data  = $req->json();          // array completo
+$title = $req->json('title');   // campo específico
+
+// Arquivos
+$req->file('avatar');           // dados de $_FILES
+$req->hasFile('avatar');        // bool
+
+// Meta
+$req->ip();                     // IP real (respeita proxies)
+$req->header('Authorization');  // header HTTP
+$req->userAgent();</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── SESSION ─────────────────── -->
+      <section class="doc-section" id="session">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Session</h2>
+        <p class="section-subtitle">Sessões com configuração segura, flash messages, repopulação de formulários e CSRF
+          integrado.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso da Session</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use Core\Session;
+
+// CRUD básico
+Session::set('chave', $valor);
+Session::get('chave', $default);
+Session::has('chave');
+Session::forget('chave');
+Session::destroy();           // logout completo
+
+// Flash messages (existem por apenas 1 requisição)
+Session::flash('success', 'Salvo com sucesso!');
+Session::flash('error',   'Algo deu errado.');
+$msg = Session::getFlash('success');   // lê e remove
+Session::hasFlash('error');            // bool
+
+// Old input (repopulação de formulários)
+Session::flashInput($_POST);           // salva inputs após erro
+Session::oldInput('email');            // recupera na view
+
+// CSRF
+$token = Session::csrfToken();         // gera ou retorna token existente
+Session::validateCsrf($token);         // bool — valida token enviado
+Session::regenerateCsrf();             // novo token (após uso)</code></pre>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>Helpers globais equivalentes</strong>
+            <p>Use <code>flash('success')</code>, <code>old('email')</code>, <code>hasError('campo')</code>,
+              <code>error('campo')</code> e <code>csrf_field()</code> diretamente nas views — são wrappers para os
+              métodos acima.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────── AUTH ─────────────────── -->
+      <section class="doc-section" id="auth">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Auth</h2>
+        <p class="section-subtitle">Sistema de autenticação genérico e plugável. Funciona com qualquer Model que
+          implemente <code>authenticate()</code>.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso do Auth</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use Core\Auth;
+
+// Login
+if (Auth::attempt($email, $password)) {
+    redirect('dashboard');
+}
+
+// Verificações
+Auth::check();              // bool: está logado?
+Auth::guest();              // bool: não está logado?
+Auth::user();               // object: {id, name, email, role}
+Auth::id();                 // int|null
+Auth::role();               // string: 'admin', 'member', ...
+Auth::is('admin');          // bool: tem essa role?
+Auth::isAny('admin','editor'); // bool: tem alguma dessas?
+
+// Guards (redirecionam se condição não atendida)
+Auth::require('auth/login');              // exige login
+Auth::requireRole('admin', 'dashboard'); // exige role
+
+// Logout
+Auth::logout();
+
+// Login manual (após OAuth, registro automático, etc.)
+$user = (new User())->find($id);
+Auth::loginUser($user);
+Auth::loginUser($user, remember: true);
+
+// Usar modelo de usuário diferente
+Auth::setUserModel(AdminUser::class);</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── VALIDAÇÃO ─────────────────── -->
+      <section class="doc-section" id="validacao">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Validação</h2>
+        <p class="section-subtitle">20+ regras de validação com mensagens em português. Integrado ao Controller Base
+          para redirecionar automaticamente em caso de falha.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso do Validator</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use Core\Validator;
+
+// Factory estática
+$v = Validator::make($_POST, [
+    'name'     => 'required|min:2|max:100',
+    'email'    => 'required|email|unique:users,email',
+    'password' => 'required|min:6|confirmed',  // exige password_confirmation
+    'age'      => 'required|integer',
+    'website'  => 'nullable|url',
+    'role'     => 'required|in:admin,editor,viewer',
+    'user_id'  => 'required|exists:users,id',
+]);
+
+if ($v->fails()) {
+    $errors = $v->errors();          // ['email' => ['E-mail já em uso.'], ...]
+    $first  = $v->firstError();      // 'Nome é obrigatório.'
+    $field  = $v->firstError('email');
+}
+
+// No Controller — valida e redireciona de volta automaticamente:
+$this->validate($_POST, [
+    'title' => 'required|min:3',
+    'email' => 'required|email',
+]);
+// Se falhar: salva erros na sessão, redireciona para URL anterior
+// Se passar: continua normalmente</code></pre>
+        </div>
+
+        <h3 class="subsection">Todas as regras</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Regra</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>required</code></td>
+              <td>Campo obrigatório (não vazio)</td>
+            </tr>
+            <tr>
+              <td><code>min:N</code></td>
+              <td>Mínimo de N caracteres (string) ou valor N (número)</td>
+            </tr>
+            <tr>
+              <td><code>max:N</code></td>
+              <td>Máximo de N caracteres (string) ou valor N (número)</td>
+            </tr>
+            <tr>
+              <td><code>email</code></td>
+              <td>E-mail válido via <code>filter_var</code></td>
+            </tr>
+            <tr>
+              <td><code>url</code></td>
+              <td>URL válida</td>
+            </tr>
+            <tr>
+              <td><code>numeric</code></td>
+              <td>Valor numérico</td>
+            </tr>
+            <tr>
+              <td><code>integer</code></td>
+              <td>Número inteiro</td>
+            </tr>
+            <tr>
+              <td><code>alpha</code></td>
+              <td>Apenas letras</td>
+            </tr>
+            <tr>
+              <td><code>alphanumeric</code></td>
+              <td>Letras e números</td>
+            </tr>
+            <tr>
+              <td><code>date</code></td>
+              <td>Data válida via <code>strtotime()</code></td>
+            </tr>
+            <tr>
+              <td><code>confirmed</code></td>
+              <td>Deve ser igual a <code>{campo}_confirmation</code></td>
+            </tr>
+            <tr>
+              <td><code>same:outro</code></td>
+              <td>Deve ser igual ao campo especificado</td>
+            </tr>
+            <tr>
+              <td><code>different:outro</code></td>
+              <td>Deve ser diferente do campo especificado</td>
+            </tr>
+            <tr>
+              <td><code>in:a,b,c</code></td>
+              <td>Deve estar na lista de valores</td>
+            </tr>
+            <tr>
+              <td><code>not_in:a,b,c</code></td>
+              <td>Não deve estar na lista</td>
+            </tr>
+            <tr>
+              <td><code>regex:/pattern/</code></td>
+              <td>Deve corresponder à expressão regular</td>
+            </tr>
+            <tr>
+              <td><code>unique:tabela,col</code></td>
+              <td>Valor único no banco (<code>unique:users,email,{id_ignorado}</code>)</td>
+            </tr>
+            <tr>
+              <td><code>exists:tabela,col</code></td>
+              <td>Deve existir no banco</td>
+            </tr>
+            <tr>
+              <td><code>nullable</code></td>
+              <td>Permite vazio — pula as demais regras se vazio</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── VIEWS ─────────────────── -->
+      <section class="doc-section" id="views">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Views &amp; Layouts</h2>
+        <p class="section-subtitle">Sistema de templates PHP com layouts, componentes parciais e helpers de segurança.
+        </p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Como funciona o sistema de layouts</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">// Controller chama:
+$this->view('posts.index', ['title' => 'Posts', 'posts' => $posts]);
+// Equivalente a:
+$this->view('posts.index', $data, 'main'); // layout padrão = main
+
+// Internamente:
+// 1. Executa app/Views/posts/index.php → captura em $content
+// 2. Executa app/Views/layouts/main.php com $content disponível
+
+// Outros layouts
+$this->view('auth.login', $data, 'auth');  // layouts/auth.php
+$this->viewOnly('components.alerts');      // sem layout algum
+
+// View::render() — para usar em qualquer lugar
+\Core\View::render('components.pagination', ['data' => $pagResult]);
+$html = \Core\View::capture('emails.welcome', compact('user')); // captura como string</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Views/posts/index.php — exemplo de view</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;div class="page-header"&gt;
+    &lt;h1&gt;&lt;?= e($title) ?&gt;&lt;/h1&gt;                 &lt;!-- e() escapa XSS --&gt;
+    &lt;a href="&lt;?= url('dashboard/posts/create') ?&gt;" class="btn btn-primary"&gt;Novo&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;?php \Core\View::render('components.alerts'); ?&gt;   &lt;!-- flash messages --&gt;
+
+&lt;div class="card"&gt;
+    &lt;?php foreach ($posts['data'] as $post): ?&gt;
+        &lt;div class="list-item"&gt;
+            &lt;h3&gt;&lt;?= e($post-&gt;title) ?&gt;&lt;/h3&gt;
+            &lt;span class="text-muted"&gt;&lt;?= dateBR($post-&gt;created_at) ?&gt;&lt;/span&gt;
+
+            &lt;form method="POST" action="&lt;?= url("dashboard/posts/{$post-&gt;id}") ?&gt;"&gt;
+                &lt;?= csrf_field() ?&gt;                    &lt;!-- proteção CSRF --&gt;
+                &lt;?= method_field('DELETE') ?&gt;          &lt;!-- override para DELETE --&gt;
+                &lt;button class="btn btn-danger btn-sm" data-confirm="Excluir?"&gt;Excluir&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
+    &lt;?php endforeach; ?&gt;
+&lt;/div&gt;
+
+&lt;?php \Core\View::render('components.pagination', ['data' =&gt; $posts]); ?&gt;</code></pre>
+        </div>
+
+        <h3 class="subsection">Helpers de views</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Helper</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>e($valor)</code></td>
+              <td>Escapa HTML — use sempre ao exibir dados do usuário</td>
+            </tr>
+            <tr>
+              <td><code>url('path')</code></td>
+              <td>URL absoluta baseada em APP_URL</td>
+            </tr>
+            <tr>
+              <td><code>asset('css/app.css')</code></td>
+              <td>URL de asset estático em public/assets/</td>
+            </tr>
+            <tr>
+              <td><code>csrf_field()</code></td>
+              <td>Hidden input com token CSRF</td>
+            </tr>
+            <tr>
+              <td><code>csrf_token()</code></td>
+              <td>Apenas o valor do token</td>
+            </tr>
+            <tr>
+              <td><code>method_field('DELETE')</code></td>
+              <td>Hidden input para override de método HTTP</td>
+            </tr>
+            <tr>
+              <td><code>old('campo')</code></td>
+              <td>Repopula campo após falha de validação</td>
+            </tr>
+            <tr>
+              <td><code>error('campo')</code></td>
+              <td>Primeiro erro de validação do campo</td>
+            </tr>
+            <tr>
+              <td><code>hasError('campo')</code></td>
+              <td>Bool: campo tem erro?</td>
+            </tr>
+            <tr>
+              <td><code>flash('success')</code></td>
+              <td>Lê e remove flash message</td>
+            </tr>
+            <tr>
+              <td><code>auth()</code></td>
+              <td>Bool: usuário está logado?</td>
+            </tr>
+            <tr>
+              <td><code>user()</code></td>
+              <td>Objeto do usuário logado</td>
+            </tr>
+            <tr>
+              <td><code>isActive('path')</code></td>
+              <td>Retorna <code>'active'</code> se URL atual bate com o path</td>
+            </tr>
+            <tr>
+              <td><code>dateBR($date)</code></td>
+              <td>Formata data para DD/MM/YYYY</td>
+            </tr>
+            <tr>
+              <td><code>diffForHumans($date)</code></td>
+              <td>"2 dias atrás", "agora mesmo"</td>
+            </tr>
+            <tr>
+              <td><code>str_limit($text, 100)</code></td>
+              <td>Trunca texto com "..."</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── UPLOAD ─────────────────── -->
+      <section class="doc-section" id="upload">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Upload</h2>
+        <p class="section-subtitle">Upload seguro com validação de MIME real (via finfo), nomes aleatórios e interface
+          fluente.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Upload de imagem e documento</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use Core\Upload;
+
+// Upload de avatar — preset de imagens
+$upload = new Upload($_FILES['avatar']);
+$upload->forImages(maxMb: 2)
+       ->setUploadDir(STORAGE_PATH . '/uploads/avatars')
+       ->setPrefix('user_' . $userId . '_');
+
+if ($upload->process()) {
+    $filename = $upload->getFilename(); // 'user_42_a3f8c1d2e4b8.jpg'
+    (new User())->update($userId, ['avatar' => $filename]);
+} else {
+    Session::flash('error', $upload->getFirstError());
+}
+
+// Upload de documento — preset de documentos
+$upload = new Upload($_FILES['doc']);
+$upload->forDocuments(maxMb: 10)
+       ->setUploadDir(STORAGE_PATH . '/uploads/docs');
+
+// Configuração totalmente manual
+$upload->setAllowedTypes(['image/jpeg', 'image/png'])
+       ->setAllowedExtensions(['jpg', 'jpeg', 'png'])
+       ->setMaxSize(3 * 1024 * 1024)   // 3 MB
+       ->setUploadDir('/path/to/uploads')
+       ->setRandomName(true)
+       ->setPrefix('thumb_');</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── LOGGER ─────────────────── -->
+      <section class="doc-section" id="logger">
+        <div class="section-label">Core</div>
+        <h2 class="section-title">Logger</h2>
+        <p class="section-subtitle">Logs em arquivo diário (<code>storage/logs/app-YYYY-MM-DD.log</code>) com contexto
+          JSON e cores no terminal.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Uso do Logger</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use Core\Logger;
+
+// 5 níveis (DEBUG < INFO < WARNING < ERROR < CRITICAL)
+Logger::debug('Query executada',    ['sql' => $sql, 'time_ms' => 12.3]);
+Logger::info('Usuário logado',      ['user_id' => 42, 'ip' => $ip]);
+Logger::warning('Login falhou',     ['email' => $email, 'tentativa' => 3]);
+Logger::error('Falha no upload',    ['arquivo' => $name, 'erro' => $msg]);
+Logger::critical('Banco offline',   ['host' => $host, 'port' => 3306]);
+
+// Nível mínimo (em produção, ignore DEBUG e INFO)
+Logger::setMinLevel('WARNING');
+
+// Formato no arquivo:
+// [2024-03-15 14:32:01] [INFO] Usuário logado {"user_id":42,"ip":"127.0.0.1"}</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── HELPERS ─────────────────── -->
+      <section class="doc-section" id="helpers">
+        <div class="section-label">App</div>
+        <h2 class="section-title">Helpers</h2>
+        <p class="section-subtitle">Funções utilitárias globais disponíveis em qualquer lugar sem import. Carregadas via
+          <code>autoload.files</code> no Composer.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Helpers/functions.php — funções principais</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">// URLs
+url('dashboard/posts')      // URL absoluta
+asset('css/app.css')        // URL de asset
+storageUrl('uploads/img.png') // URL de arquivo em storage
+
+// Segurança
+e($valor)                   // escapa HTML (XSS protection)
+csrf_field()                // &lt;input hidden name="_csrf_token"&gt;
+method_field('DELETE')      // &lt;input hidden name="_method"&gt;
+
+// Formulários
+old('email', '')            // valor anterior após erro
+error('email')              // primeiro erro do campo
+hasError('email')           // bool: campo tem erro?
+flash('success')            // lê e remove flash message
+
+// Usuário
+auth()                      // bool: logado?
+user()                      // object: dados do usuário
+userId()                    // int: ID
+userRole()                  // string: role
+
+// Ambiente
+env('APP_NAME', 'default')  // variável de ambiente com fallback
+
+// Strings
+str_limit($text, 150)       // trunca com "..."
+slug('Meu Título')          // → 'meu-titulo'
+
+// Datas
+dateBR($date)               // DD/MM/YYYY
+dateTimeBR($date)           // DD/MM/YYYY HH:MM
+diffForHumans($date)        // "3 dias atrás"
+
+// Debug
+dd($valor)                  // dump and die
+dump($a, $b)                // dump (continua execução)
+
+// Navegação
+isActive('dashboard')       // 'active' se URL atual bate
+redirect('auth/login')      // redireciona e encerra</code></pre>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>Criando helpers específicos do seu projeto</strong>
+            <p>Crie <code>app/Helpers/MeuProjetoHelper.php</code> com uma classe estática ou funções adicionais no final
+              de <code>functions.php</code>. Não misture helpers de domínio com os utilitários genéricos.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────── MAILER ─────────────────── -->
+      <section class="doc-section" id="mailer">
+        <div class="section-label">App</div>
+        <h2 class="section-title">Mailer</h2>
+        <p class="section-subtitle">Wrapper de e-mail com 3 drivers: <code>smtp</code> (produção), <code>log</code>
+          (homologação), <code>dev</code> (desenvolvimento).</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Envio de e-mail</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">use App\Helpers\Mailer;
+
+$mailer = new Mailer();
+
+$result = $mailer->send(
+    to:      'destinatario@example.com',
+    subject: 'Bem-vindo ao sistema!',
+    body:    '&lt;h1&gt;Olá, João!&lt;/h1&gt;&lt;p&gt;Sua conta foi criada.&lt;/p&gt;',
+    altBody: 'Olá, João! Sua conta foi criada.',  // versão texto puro
+    toName:  'João Silva'
+);
+
+if ($result['success']) {
+    Logger::info('E-mail enviado', ['to' => 'destinatario@example.com']);
+} else {
+    Logger::error('Falha no e-mail', ['message' => $result['message']]);
+}</code></pre>
+        </div>
+
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Driver (<code>MAIL_DRIVER</code>)</th>
+              <th>Comportamento</th>
+              <th>Quando usar</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>dev</code></td>
+              <td>Não envia. Retorna conteúdo no array de retorno.</td>
+              <td>Desenvolvimento local</td>
+            </tr>
+            <tr>
+              <td><code>log</code></td>
+              <td>Grava em <code>storage/logs/mail.log</code></td>
+              <td>Homologação / staging</td>
+            </tr>
+            <tr>
+              <td><code>smtp</code></td>
+              <td>Envia via PHPMailer + SMTP configurado</td>
+              <td>Produção</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+
+      <!-- ─────────────────── REQUESTS ─────────────────── -->
+      <section class="doc-section" id="requests">
+        <div class="section-label">App</div>
+        <h2 class="section-title">FormRequests</h2>
+        <p class="section-subtitle">Camada dedicada a centralizar validação, sanitização e autorização de cada
+          formulário. Mantém os Controllers finos e sem lógica de entrada.</p>
+
+        <div class="callout callout-tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>Por que usar FormRequests?</strong>
+            <p>Sem essa camada, validações ficam espalhadas nos Controllers. Com ela, cada formulário tem sua própria
+              classe com regras, mensagens e sanitização isoladas, reutilizáveis e testáveis de forma independente.</p>
+          </div>
+        </div>
+
+        <h3 class="subsection">Estrutura</h3>
+        <div class="folder-tree">
+          <span class="tree-dir">app/Requests/</span>
+          ├── <span class="tree-file">FormRequest.php</span> <span class="tree-comment">← Classe base — estenda esta
+            para criar novos requests</span>
+          ├── <span class="tree-dir">Auth/</span>
+          │ ├── <span class="tree-file">LoginRequest.php</span>
+          │ ├── <span class="tree-file">RegisterRequest.php</span>
+          │ ├── <span class="tree-file">ForgotPasswordRequest.php</span>
+          │ └── <span class="tree-file">ResetPasswordRequest.php</span>
+          └── <span class="tree-dir">Users/</span>
+          ├── <span class="tree-file">StoreUserRequest.php</span>
+          └── <span class="tree-file">UpdateUserRequest.php</span>
+        </div>
+
+        <h3 class="subsection">Fluxo interno</h3>
+        <div class="layer-stack">
+          <div class="layer l2"><span class="layer-name">new LoginRequest()</span><span class="layer-desc">Captura dados
+              da requisição: $_POST, JSON body, $_FILES</span></div>
+          <div class="layer l3"><span class="layer-name">authorize()</span><span class="layer-desc">Verifica permissão —
+              retorna false → 403 imediato</span></div>
+          <div class="layer l4"><span class="layer-name">sanitize()</span><span class="layer-desc">Limpa e normaliza os
+              dados (trim, lowercase, strip_tags…)</span></div>
+          <div class="layer l5"><span class="layer-name">validate(rules())</span><span class="layer-desc">Aplica regras
+              do Core\Validator com messages() customizadas</span></div>
+          <div class="layer l1"><span class="layer-name">validated()</span><span class="layer-desc">Retorna apenas os
+              campos válidos e limpos para usar no Service</span></div>
+        </div>
+
+        <h3 class="subsection">Criando um FormRequest</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Requests/Posts/StorePostRequest.php</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Requests\Posts;
+
+use App\Requests\FormRequest;
+use Core\Auth;
+
+class StorePostRequest extends FormRequest
+{
+    // Quem pode realizar esta ação?
+    public function authorize(): bool
+    {
+        return Auth::check(); // apenas usuários logados
+    }
+
+    // Regras de validação (mesma sintaxe do Core\Validator)
+    public function rules(): array
+    {
+        return [
+            'title'   =&gt; 'required|min:3|max:255',
+            'content' =&gt; 'required|min:10',
+            'status'  =&gt; 'required|in:draft,published',
+            'slug'    =&gt; 'nullable|max:260|unique:posts,slug',
+        ];
+    }
+
+    // Mensagens customizadas — formato: 'campo.regra' =&gt; 'mensagem'
+    public function messages(): array
+    {
+        return [
+            'title.required' =&gt; 'O título é obrigatório.',
+            'title.min'      =&gt; 'O título deve ter pelo menos 3 caracteres.',
+            'content.required' =&gt; 'O conteúdo é obrigatório.',
+            'status.in'      =&gt; 'Status inválido. Use: draft ou published.',
+            'slug.unique'    =&gt; 'Este slug já está em uso.',
+        ];
+    }
+
+    // Sanitização customizada — executada ANTES da validação
+    public function sanitize(): array
+    {
+        return [
+            'title'   =&gt; ucfirst(trim($this-&gt;input['title']   ?? '')),
+            'content' =&gt; trim($this-&gt;input['content'] ?? ''),
+            'status'  =&gt; trim($this-&gt;input['status']  ?? 'draft'),
+            'slug'    =&gt; !empty($this-&gt;input['slug'])
+                           ? slug($this-&gt;input['slug'])
+                           : slug($this-&gt;input['title'] ?? ''),
+        ];
+    }
+}</code></pre>
+        </div>
+
+        <h3 class="subsection">Uso no Controller</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">app/Controllers/PostController.php</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Controllers;
+
+use Core\Controller;
+use Core\Session;
+use App\Requests\Posts\StorePostRequest;
+use App\Services\PostService;
+
+class PostController extends Controller
+{
+    public function store(): void
+    {
+        // 1. Instancia o Request → valida no construtor automaticamente
+        $request = new StorePostRequest();
+
+        // 2. Se falhar: redireciona de volta com o primeiro erro
+        if ($request-&gt;fails()) {
+            Session::flash('error', $request-&gt;firstError());
+            Session::flashInput($request-&gt;all()); // salva inputs para repopular form
+            $this-&gt;back();
+        }
+
+        // 3. Delega para o Service com dados já limpos e validados
+        $result = (new PostService())-&gt;create(
+            $request-&gt;validated(),
+            $this-&gt;userId()
+        );
+
+        $result['success']
+            ? $this-&gt;redirectWith('dashboard/posts', 'success', 'Post criado!')
+            : $this-&gt;redirectWith('dashboard/posts/create', 'error', $result['message']);
+    }
+}</code></pre>
+        </div>
+
+        <h3 class="subsection">API do FormRequest</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Método</th>
+              <th>Retorno</th>
+              <th>Descrição</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>fails()</code></td>
+              <td><code>bool</code></td>
+              <td>True se a validação falhou</td>
+            </tr>
+            <tr>
+              <td><code>passes()</code></td>
+              <td><code>bool</code></td>
+              <td>True se a validação passou</td>
+            </tr>
+            <tr>
+              <td><code>errors()</code></td>
+              <td><code>array</code></td>
+              <td>Todos os erros: <code>['campo' =&gt; ['msg',...]]</code></td>
+            </tr>
+            <tr>
+              <td><code>firstError()</code></td>
+              <td><code>?string</code></td>
+              <td>Primeiro erro global</td>
+            </tr>
+            <tr>
+              <td><code>firstError('email')</code></td>
+              <td><code>?string</code></td>
+              <td>Primeiro erro do campo</td>
+            </tr>
+            <tr>
+              <td><code>validated()</code></td>
+              <td><code>array</code></td>
+              <td>Dados válidos e sanitizados — use no Service</td>
+            </tr>
+            <tr>
+              <td><code>get('campo')</code></td>
+              <td><code>mixed</code></td>
+              <td>Campo específico do validated()</td>
+            </tr>
+            <tr>
+              <td><code>old('campo')</code></td>
+              <td><code>mixed</code></td>
+              <td>Valor anterior (para repopular form)</td>
+            </tr>
+            <tr>
+              <td><code>all()</code></td>
+              <td><code>array</code></td>
+              <td>Todos os dados sanitizados (antes da validação)</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3 class="subsection">Uso para API REST (JSON)</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Controller de API com FormRequest</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">public function store(): void
+{
+    // Funciona para JSON body (Content-Type: application/json) e form data
+    $request = new StorePostRequest();
+
+    if ($request-&gt;fails()) {
+        // Para JSON, retorna todos os erros estruturados
+        $this-&gt;jsonError('Dados inválidos.', 422, ['errors' =&gt; $request-&gt;errors()]);
+    }
+
+    $result = (new PostService())-&gt;create($request-&gt;validated(), $this-&gt;userId());
+    $this-&gt;jsonSuccess('Post criado.', ['id' =&gt; $result['id']], 201);
+}</code></pre>
+        </div>
+
+        <h3 class="subsection">Requests de autenticação incluídos</h3>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Classe</th>
+              <th>Campos validados</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>LoginRequest</code></td>
+              <td>email, password</td>
+              <td>Email normalizado para lowercase</td>
+            </tr>
+            <tr>
+              <td><code>RegisterRequest</code></td>
+              <td>name, email, password, password_confirmation</td>
+              <td>Email único no banco, password_confirmation confirmada</td>
+            </tr>
+            <tr>
+              <td><code>ForgotPasswordRequest</code></td>
+              <td>email</td>
+              <td>Não valida existência (evita user enumeration)</td>
+            </tr>
+            <tr>
+              <td><code>ResetPasswordRequest</code></td>
+              <td>token, password, confirm</td>
+              <td>Token validado contra o banco em <code>authorize()</code></td>
+            </tr>
+            <tr>
+              <td><code>StoreUserRequest</code></td>
+              <td>name, email, password, role</td>
+              <td>Apenas admins (<code>authorize()</code>)</td>
+            </tr>
+            <tr>
+              <td><code>UpdateUserRequest</code></td>
+              <td>name, email, password?, role?</td>
+              <td>Admin edita todos; usuário edita apenas a si</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── NOVO MÓDULO ─────────────────── -->
+      <section class="doc-section" id="novo-modulo">
+        <div class="section-label">Guia</div>
+        <h2 class="section-title">Criando um Módulo Completo</h2>
+        <p class="section-subtitle">Passo a passo para adicionar um novo módulo — exemplo: <strong>Posts</strong>.</p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">1. Migration —
+              database/migrations/002_create_posts_table.sql</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-sql">CREATE TABLE IF NOT EXISTS posts (
+    id         INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
+    user_id    INT UNSIGNED  NOT NULL,
+    title      VARCHAR(255)  NOT NULL,
+    slug       VARCHAR(260)  NOT NULL UNIQUE,
+    content    TEXT          NOT NULL,
+    status     ENUM('draft','published') NOT NULL DEFAULT 'draft',
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    INDEX idx_status (status),
+    INDEX idx_user   (user_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">2. Model — app/Models/Post.php</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Models;
+
+use Core\Model;
+
+class Post extends Model
+{
+    protected string $table    = 'posts';
+    protected array  $fillable = ['user_id', 'title', 'slug', 'content', 'status'];
+
+    public function findBySlug(string $slug): object|false
+    {
+        return $this->findBy('slug', $slug);
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">3. Repository —
+              app/Repositories/PostRepository.php</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Repositories;
+
+use Core\Repository;
+use App\Models\Post;
+
+class PostRepository extends Repository
+{
+    protected string $modelClass = Post::class;
+
+    public function findPublished(int $page = 1): array
+    {
+        return $this->model()
+            ->where('status', 'published')
+            ->orderBy('created_at', 'DESC')
+            ->paginate(15, $page);
+    }
+
+    public function findByAuthor(int $userId): array
+    {
+        return $this->model()->where('user_id', $userId)->orderBy('created_at', 'DESC')->get();
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">4. Service — app/Services/PostService.php</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Services;
+
+use Core\Service;
+use Core\Logger;
+use App\Repositories\PostRepository;
+
+class PostService extends Service
+{
+    public function __construct(
+        private readonly PostRepository $posts = new PostRepository()
+    ) {}
+
+    public function create(array $data, int $userId): array
+    {
+        $id = $this->posts->create([
+            'user_id' => $userId,
+            'title'   => $data['title'],
+            'slug'    => slug($data['title']),
+            'content' => $data['content'],
+            'status'  => $data['status'] ?? 'draft',
+        ]);
+
+        if (!$id) return ['success' => false, 'message' => 'Erro ao criar post.'];
+
+        Logger::info('Post criado', ['id' => $id, 'user_id' => $userId]);
+        return ['success' => true, 'id' => $id];
+    }
+
+    public function delete(int $postId, int $userId): array
+    {
+        $post = $this->posts->findById($postId);
+        if (!$post || (int)$post->user_id !== $userId)
+            return ['success' => false, 'message' => 'Sem permissão.'];
+
+        $this->posts->delete($postId);
+        return ['success' => true];
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">5. Controller —
+              app/Controllers/PostController.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button>
+          </div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Controllers;
+
+use Core\Controller;
+use App\Services\PostService;
+use App\Repositories\PostRepository;
+
+class PostController extends Controller
+{
+    private PostService    $service;
+    private PostRepository $repo;
+
+    public function __construct()
+    {
+        $this->service = new PostService();
+        $this->repo    = new PostRepository();
+    }
+
+    public function index(): void
+    {
+        $this->view('posts.index', [
+            'title' => 'Posts',
+            'posts' => $this->repo->findPublished((int)($_GET['page'] ?? 1)),
+        ]);
+    }
+
+    public function store(): void
+    {
+        $this->validate($_POST, [
+            'title'   => 'required|min:3|max:255',
+            'content' => 'required|min:10',
+        ]);
+        $result = $this->service->create($_POST, $this->userId());
+        $result['success']
+            ? $this->redirectWith('dashboard/posts', 'success', 'Post criado!')
+            : $this->redirectWith('dashboard/posts', 'error', $result['message']);
+    }
+
+    public function destroy(int $id): void
+    {
+        $result = $this->service->delete($id, $this->userId());
+        $this->json(['success' => $result['success'], 'message' => $result['message'] ?? '']);
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">6. Rotas — routes/web.php</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">// Dentro do grupo ['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']]:
+$r->get('/posts',              [PostController::class, 'index'])->name('posts.index');
+$r->get('/posts/create',       [PostController::class, 'create'])->name('posts.create');
+$r->post('/posts',             [PostController::class, 'store'],   ['CsrfMiddleware']);
+$r->get('/posts/{id}',         [PostController::class, 'show'])->name('posts.show');
+$r->get('/posts/{id}/edit',    [PostController::class, 'edit']);
+$r->put('/posts/{id}',         [PostController::class, 'update'],  ['CsrfMiddleware']);
+$r->delete('/posts/{id}',      [PostController::class, 'destroy'], ['CsrfMiddleware']);</code></pre>
+        </div>
+
+        <div class="callout callout-tip">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body"><strong>Atalho: resource()</strong>
+            <p>Use <code>$r->resource('/posts', PostController::class)</code> para registrar as 7 rotas CRUD de uma vez.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────────────── API REST ─────────────────── -->
+      <section class="doc-section" id="api-rest">
+        <div class="section-label">Guia</div>
+        <h2 class="section-title">API REST</h2>
+        <p class="section-subtitle">O boilerplate já está preparado para APIs JSON. Use os métodos do Controller base.
+        </p>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Controller de API</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;?php
+namespace App\Controllers;
+
+use Core\Controller;
+
+class ApiPostController extends Controller
+{
+    public function index(): void
+    {
+        $posts = (new PostRepository())->paginate(10, (int)($_GET['page'] ?? 1));
+        $this->jsonSuccess('OK', ['posts' => $posts]);
+    }
+
+    public function store(): void
+    {
+        // Lê JSON body (Content-Type: application/json)
+        $data = json_decode(file_get_contents('php://input'), true) ?? [];
+
+        if (empty($data['title'])) {
+            $this->jsonError('Título obrigatório.', 422);
+        }
+
+        $id = (new Post())->create(['title' => $data['title'], 'user_id' => $this->userId()]);
+        $this->jsonSuccess('Post criado.', ['id' => $id], 201);
+    }
+
+    public function destroy(int $id): void
+    {
+        $post = (new Post())->find($id);
+        $this->abortUnless($post && (int)$post->user_id === $this->userId(), 403);
+        (new Post())->delete($id);
+        $this->json(['success' => true], 204);
+    }
+}</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Formato padrão de resposta</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-json">// Sucesso
+{ "success": true, "message": "Post criado.", "id": 42 }
+
+// Lista paginada
+{ "success": true, "message": "OK", "posts": { "data": [...], "total": 120, "page": 1 } }
+
+// Erro
+{ "success": false, "message": "Não autorizado" }
+
+// Erro de validação
+{ "success": false, "message": "Título obrigatório." }</code></pre>
+        </div>
+
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Chamada via JavaScript (apiFetch helper)</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-javascript">// apiFetch é definido em public/assets/js/app.js
+// Inclui automaticamente o CSRF token e Content-Type: application/json
+
+const result = await apiFetch('/api/posts', {
+    method: 'POST',
+    body: JSON.stringify({ title: 'Novo Post', content: '...' }),
+});
+
+if (result.success) {
+    console.log('Criado com ID:', result.id);
+} else {
+    console.error(result.message);
+}</code></pre>
+        </div>
+      </section>
+
+      <!-- ─────────────────── SEGURANÇA ─────────────────── -->
+      <section class="doc-section" id="seguranca">
+        <div class="section-label">Guia</div>
+        <h2 class="section-title">Segurança</h2>
+        <p class="section-subtitle">Proteções ativas por padrão. Nenhuma configuração adicional necessária para os casos
+          comuns.</p>
+
+        <h3 class="subsection">CSRF — Cross-Site Request Forgery</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Formulários HTML</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">&lt;form method="POST" action="&lt;?= url('posts') ?&gt;"&gt;
+    &lt;?= csrf_field() ?&gt;   &lt;!-- &lt;input type="hidden" name="_csrf_token" value="..."&gt; --&gt;
+    ...
+&lt;/form&gt;</code></pre>
+        </div>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">AJAX / fetch</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-javascript">// O apiFetch() já inclui o token automaticamente via meta tag
+const result = await apiFetch('/api/posts', { method: 'POST', body: JSON.stringify(data) });
+
+// Manual:
+fetch('/api/posts', {
+    method: 'POST',
+    headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content },
+    body: JSON.stringify(data),
+});</code></pre>
+        </div>
+
+        <h3 class="subsection">XSS — Cross-Site Scripting</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Sempre use e() nas views</span><button class="copy-btn"
+              onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">// ✅ Correto — escapa entidades HTML
+echo e($user->name);
+echo e($post->title);
+
+// ❌ NUNCA faça isso — vulnerável a XSS
+echo $user->name;
+echo "&lt;h1&gt;{$post->title}&lt;/h1&gt;";</code></pre>
+        </div>
+
+        <h3 class="subsection">SQL Injection</h3>
+        <div class="code-block">
+          <div class="code-header"><span class="code-file">Prepared statements em todo lugar</span><button
+              class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
+          <pre><code class="language-php">// ✅ Seguro — prepared statement automático
+$user = (new User())->findBy('email', $email);
+$user = (new User())->where('email', $email)->first();
+
+// ✅ Seguro — bind manual
+$db->query("SELECT * FROM users WHERE email = :e")->bind(':e', $email)->fetch();
+
+// ❌ NUNCA interpolue variáveis em SQL
+$db->query("SELECT * FROM users WHERE email = '$email'"); // vulnerável!</code></pre>
+        </div>
+
+        <h3 class="subsection">Headers de Segurança</h3>
+        <p>Configurados automaticamente em dois lugares: <code>public/.htaccess</code> (Apache) e
+          <code>Core\Application::setSecurityHeaders()</code> (PHP).</p>
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Header</th>
+              <th>Valor padrão</th>
+              <th>Proteção</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code>X-Content-Type-Options</code></td>
+              <td>nosniff</td>
+              <td>Evita MIME sniffing</td>
+            </tr>
+            <tr>
+              <td><code>X-Frame-Options</code></td>
+              <td>SAMEORIGIN</td>
+              <td>Evita clickjacking</td>
+            </tr>
+            <tr>
+              <td><code>X-XSS-Protection</code></td>
+              <td>1; mode=block</td>
+              <td>XSS em browsers antigos</td>
+            </tr>
+            <tr>
+              <td><code>Referrer-Policy</code></td>
+              <td>strict-origin-when-cross-origin</td>
+              <td>Privacidade de URL</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- ─────────────────── BOAS PRÁTICAS ─────────────────── -->
+      <section class="doc-section" id="boas-praticas">
+        <div class="section-label">Guia</div>
+        <h2 class="section-title">Boas Práticas</h2>
+        <p class="section-subtitle">Padrões aplicados em todo o boilerplate.</p>
+
+        <table class="doc-table">
+          <thead>
+            <tr>
+              <th>Prática</th>
+              <th>Onde aplicada</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>PSR-4 Autoload</strong></td>
+              <td><code>composer.json</code> — namespaces mapeados por pasta</td>
+            </tr>
+            <tr>
+              <td><strong>Single Entry Point</strong></td>
+              <td><code>public/index.php</code> — toda requisição passa aqui</td>
+            </tr>
+            <tr>
+              <td><strong>Prepared Statements</strong></td>
+              <td><code>Core\Database</code> — 100% das queries são seguras</td>
+            </tr>
+            <tr>
+              <td><strong>Responsabilidade Única</strong></td>
+              <td>Cada classe tem uma única razão para mudar</td>
+            </tr>
+            <tr>
+              <td><strong>Separation of Concerns</strong></td>
+              <td>Core (infra) × App (negócio) completamente separados</td>
+            </tr>
+            <tr>
+              <td><strong>DRY</strong></td>
+              <td>Query builder no Model base elimina repetição de SQL</td>
+            </tr>
+            <tr>
+              <td><strong>CSRF Protection</strong></td>
+              <td>Middleware + token em todos os formulários POST</td>
+            </tr>
+            <tr>
+              <td><strong>XSS Prevention</strong></td>
+              <td><code>e()</code> helper + sanitização automática no Request</td>
+            </tr>
+            <tr>
+              <td><strong>Upload Seguro</strong></td>
+              <td>Validação por MIME real (finfo), nomes aleatórios</td>
+            </tr>
+            <tr>
+              <td><strong>Sessões Seguras</strong></td>
+              <td>Path fora do public, httpOnly, SameSite, regeneração periódica</td>
+            </tr>
+            <tr>
+              <td><strong>Logs Estruturados</strong></td>
+              <td><code>Core\Logger</code> — arquivo diário com contexto JSON</td>
+            </tr>
+            <tr>
+              <td><strong>Error Handling</strong></td>
+              <td>Debug rico em dev, página amigável em produção</td>
+            </tr>
+            <tr>
+              <td><strong>Config via .env</strong></td>
+              <td>Zero credenciais no código — sempre via variáveis de ambiente</td>
+            </tr>
+            <tr>
+              <td><strong>Flash Messages</strong></td>
+              <td>Feedback pós-redirect sem query string</td>
+            </tr>
+            <tr>
+              <td><strong>Old Input</strong></td>
+              <td>Repopulação de forms após falha de validação</td>
+            </tr>
+            <tr>
+              <td><strong>Security Headers</strong></td>
+              <td>X-Frame-Options, X-Content-Type-Options, XSS-Protection</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+    </main>
+  </div>
+
+  <script>
+    // ── Highlight.js ──────────────────────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => { hljs.highlightAll(); });
+
+    // ── Tema ──────────────────────────────────────────────────────────────────────
+    const themeBtn = document.getElementById('themeBtn');
+    const html = document.documentElement;
+
+    const saved = localStorage.getItem('docs-theme') || 'dark';
+    html.setAttribute('data-theme', saved);
+    themeBtn.textContent = saved === 'dark' ? '☀ Tema Claro' : '🌙 Tema Escuro';
+
+    themeBtn.addEventListener('click', () => {
+      const cur = html.getAttribute('data-theme');
+      const next = cur === 'dark' ? 'light' : 'dark';
+      html.setAttribute('data-theme', next);
+      localStorage.setItem('docs-theme', next);
+      themeBtn.textContent = next === 'dark' ? '☀ Tema Claro' : '🌙 Tema Escuro';
+    });
+
+    // ── Active nav link on scroll ─────────────────────────────────────────────────
+    const sections = document.querySelectorAll('.doc-section');
+    const navLinks = document.querySelectorAll('.nav-link');
+
+    const observer = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (!entry.isIntersecting) return;
+        navLinks.forEach(l => l.classList.remove('active'));
+        const active = document.querySelector(`.nav-link[href="#${entry.target.id}"]`);
+        if (active) {
+          active.classList.add('active');
+          active.scrollIntoView({ block: 'nearest' });
+        }
+      });
+    }, { rootMargin: '-20% 0px -70% 0px' });
+
+    sections.forEach(s => observer.observe(s));
+
+    // ── Nav links smooth scroll ───────────────────────────────────────────────────
+    navLinks.forEach(link => {
+      link.addEventListener('click', e => {
+        e.preventDefault();
+        const target = document.querySelector(link.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        document.getElementById('sidebar')?.classList.remove('open');
+      });
+    });
+
+    // ── Mobile menu ───────────────────────────────────────────────────────────────
+    document.getElementById('mobileMenuBtn')?.addEventListener('click', () => {
+      document.getElementById('sidebar')?.classList.toggle('open');
+    });
+
+    // ── Copy buttons ──────────────────────────────────────────────────────────────
+    function copyCode(btn) {
+      const code = btn.closest('.code-block').querySelector('code');
+      navigator.clipboard.writeText(code.innerText).then(() => {
+        btn.textContent = '✓ Copiado';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = 'Copiar'; btn.classList.remove('copied'); }, 2000);
+      });
+    }
+  </script>
+</body>
+
+</html>

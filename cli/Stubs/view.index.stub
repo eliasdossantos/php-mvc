@@ -1,0 +1,62 @@
+<!-- app/Views/{{ viewPath }}/index.php -->
+<div class="page-header">
+    <h1><?= e($title ?? '{{ ModelName }}') ?></h1>
+    <a href="<?= url('dashboard/{{ routePrefix }}/create') ?>" class="btn btn-primary">
+        + Novo {{ ModelName }}
+    </a>
+</div>
+
+<?php \Core\View::render('components.alerts'); ?>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Nome</th>
+                    <th>Criado em</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php if (empty($items['data'] ?? [])): ?>
+                    <tr>
+                        <td colspan="4" class="text-center text-muted">
+                            Nenhum registro encontrado.
+                        </td>
+                    </tr>
+                <?php else: ?>
+                    <?php foreach ($items['data'] as $item): ?>
+                        <tr>
+                            <td><?= e($item->id) ?></td>
+                            <td><?= e($item->name) ?></td>
+                            <td><?= dateBR($item->created_at) ?></td>
+                            <td>
+                                <a href="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>"
+                                   class="btn btn-sm btn-outline">Ver</a>
+
+                                <a href="<?= url("dashboard/{{ routePrefix }}/{$item->id}/edit") ?>"
+                                   class="btn btn-sm btn-secondary">Editar</a>
+
+                                <form method="POST"
+                                      action="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>"
+                                      style="display:inline">
+                                    <?= csrf_field() ?>
+                                    <?= method_field('DELETE') ?>
+                                    <button type="submit"
+                                            class="btn btn-sm btn-danger"
+                                            data-confirm="Excluir este {{ ModelName }}?">
+                                        Excluir
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    <?php endforeach; ?>
+                <?php endif; ?>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<?php \Core\View::render('components.pagination', ['data' => $items ?? []]); ?>

@@ -1,0 +1,74 @@
+{
+    "name": "elias-antonio/php-mvc",
+    "description": "PHP MVC Boilerplate — framework MVC leve e reutilizável para projetos PHP puro",
+    "keywords": [
+        "mvc",
+        "framework",
+        "boilerplate",
+        "php",
+        "router",
+        "orm"
+    ],
+    "homepage": "https://github.com/eliasdossantos/php-mvc",
+    "bugs": {
+        "url": "https://github.com/eliasdossantos/php-mvc/issues"
+    },
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/eliasdossantos/php-mvc.git"
+    },
+    "type": "project",
+    "license": "Unlicense",
+    "authors": [
+        {
+            "name": "eliasdossantos/php-mvc",
+            "homepage": "https://github.com/eliasdossantos/php-mvc"
+        }
+    ],
+    "require": {
+        "php": ">=8.1",
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^6.9"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^10.0"
+    },
+    "bin": [
+        "mvc"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Core\\": "app/Core/",
+            "App\\Controllers\\": "app/Controllers/",
+            "App\\Models\\": "app/Models/",
+            "App\\Services\\": "app/Services/",
+            "App\\Repositories\\": "app/Repositories/",
+            "App\\Middlewares\\": "app/Middlewares/",
+            "App\\Helpers\\": "app/Helpers/",
+            "App\\Requests\\": "app/Requests/",
+            "Cli\\": "cli/"
+        },
+        "files": [
+            "app/Helpers/functions.php"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Tests\\": "tests/"
+        }
+    },
+    "scripts": {
+        "post-create-project-cmd": [
+            "@php -r \"copy('.env.example', '.env');\"",
+            "@php -r \"echo '\\n✅  .env criado a partir de .env.example\\n';\""
+        ],
+        "serve": "php -S localhost:8000 -t public",
+        "test": "vendor/bin/phpunit"
+    },
+    "config": {
+        "optimize-autoloader": true,
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

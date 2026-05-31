@@ -1,0 +1,44 @@
+<!-- app/Views/{{ viewPath }}/edit.php -->
+<div class="page-header">
+    <div>
+        <a href="<?= url('dashboard/{{ routePrefix }}') ?>" class="btn btn-outline btn-sm">
+            ← Voltar
+        </a>
+        <h1 style="margin-top:12px"><?= e($title ?? 'Editar {{ ModelName }}') ?></h1>
+    </div>
+</div>
+
+<?php \Core\View::render('components.alerts'); ?>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST"
+              action="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>">
+            <?= csrf_field() ?>
+            <?= method_field('PUT') ?>
+
+            <!-- Campo: nome -->
+            <div class="form-group">
+                <label for="name">Nome <span style="color:var(--color-danger)">*</span></label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       value="<?= old('name', $item->name ?? '') ?>"
+                       class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>"
+                       required
+                       autofocus>
+                <?php if (hasError('name')): ?>
+                    <span class="form-error"><?= error('name') ?></span>
+                <?php endif; ?>
+            </div>
+
+            <!-- Adicione mais campos conforme o model -->
+
+            <div class="mt-2" style="display:flex;gap:10px">
+                <button type="submit" class="btn btn-primary">Atualizar</button>
+                <a href="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>"
+                   class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

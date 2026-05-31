@@ -1,0 +1,53 @@
+Options -Indexes
+Options -MultiViews
+
+# ── Desabilita ETAG (segurança) ───────────────────────────────────────────────
+FileETag None
+Header unset ETag
+
+# ── Compressão Gzip ───────────────────────────────────────────────────────────
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/html text/plain text/xml text/css
+    AddOutputFilterByType DEFLATE application/javascript application/json
+    AddOutputFilterByType DEFLATE font/woff2 font/woff
+</IfModule>
+
+# ── Cache de assets estáticos ─────────────────────────────────────────────────
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg  "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/gif  "access plus 1 year"
+    ExpiresByType image/png  "access plus 1 year"
+    ExpiresByType image/svg+xml "access plus 1 year"
+    ExpiresByType text/css   "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+    ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>
+
+# ── Rewrite Engine ────────────────────────────────────────────────────────────
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteBase /
+
+    # Não redireciona requisições de arquivos e diretórios existentes
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+
+    # Redireciona tudo para index.php
+    RewriteRule ^ index.php [QSA,L]
+</IfModule>
+
+# ── Bloqueia acesso a arquivos sensíveis ──────────────────────────────────────
+<FilesMatch "\.(env|log|json|lock|md|yml|yaml|ini|sh|sql)$">
+    Require all denied
+</FilesMatch>
+
+# ── Headers de segurança ──────────────────────────────────────────────────────
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+</IfModule>

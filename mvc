@@ -1,0 +1,48 @@
+#!/usr/bin/env php
+<?php
+
+/**
+ * ┌─────────────────────────────────────────────────────────────────────────┐
+ * │  PHP MVC Base — CLI                                                      │
+ * │  Ponto de entrada único para todos os comandos do framework.             │
+ * │                                                                          │
+ * │  Uso:                                                                    │
+ * │    php mvc <comando> [argumentos]                                        │
+ * │                                                                          │
+ * │  Exemplos:                                                               │
+ * │    php mvc make:controller UserController                                │
+ * │    php mvc make:model Product                                            │
+ * │    php mvc make:request StoreProductRequest                              │
+ * │    php mvc make:service ProductService                                   │
+ * │    php mvc make:repository UserRepository                                │
+ * │    php mvc make:seed ProductSeeder                                       │
+ * │    php mvc make:view product                                             │
+ * │    php mvc migrate                                                       │
+ * │    php mvc migrate --fresh                                               │
+ * │    php mvc serve                                                         │
+ * │    php mvc serve --port=8080                                             │
+ * │    php mvc list                                                          │
+ * └─────────────────────────────────────────────────────────────────────────┘
+ */
+
+// ── Garante execução apenas via CLI ──────────────────────────────────────────
+if (PHP_SAPI !== 'cli' && PHP_SAPI !== 'phpdbg') {
+    fwrite(STDERR, "Este script deve ser executado via linha de comando.\n");
+    exit(1);
+}
+
+define('CLI_START', microtime(true));
+define('ROOT_PATH', __DIR__);
+define('CLI_VERSION', '1.0.0');
+
+// ── Autoload ──────────────────────────────────────────────────────────────────
+$autoload = ROOT_PATH . '/vendor/autoload.php';
+if (!file_exists($autoload)) {
+    fwrite(STDERR, "\n  ❌  Dependências não instaladas.\n  Execute: composer install\n\n");
+    exit(1);
+}
+require $autoload;
+
+// ── Inicializa o Kernel do CLI e executa ──────────────────────────────────────
+$kernel = new Cli\Kernel($argv);
+exit($kernel->run());

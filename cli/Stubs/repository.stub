@@ -1,0 +1,82 @@
+<?php
+
+namespace App\Repositories;
+
+use Core\Repository;
+use App\Models\{{ ModelName }};
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Encapsula todas as queries relacionadas à entidade {{ ModelName }}.
+ *
+ * Herda do Repository base:
+ *   all(), findById(), create(), update(), delete(), paginate()
+ *
+ * Adicione aqui apenas queries específicas desta entidade.
+ * Lógica de negócio → Service (nunca aqui).
+ *
+ * Uso no Controller ou Service:
+ *   $repo = new {{ ClassName }}();
+ *   $item = $repo->findById(42);
+ *   $list = $repo->paginate(15, (int)($_GET['page'] ?? 1));
+ */
+class {{ ClassName }} extends Repository
+{
+    /** Model associado a este repository */
+    protected string $modelClass = {{ ModelName }}::class;
+
+    // ── Buscas customizadas ───────────────────────────────────────────────────
+
+    /**
+     * Busca por nome exato.
+     */
+    public function findByName(string $name): object|false
+    {
+        return $this->model()->findBy('name', $name);
+    }
+
+    /**
+     * Retorna registros ativos (se a tabela tiver campo 'active').
+     */
+    public function getActive(): array
+    {
+        return $this->model()
+            ->where('active', 1)
+            ->orderBy('name', 'ASC')
+            ->get();
+    }
+
+    /**
+     * Busca paginada com filtro de texto.
+     *
+     * @return array{data: array, total: int, page: int, per_page: int, last_page: int}
+     */
+    public function search(string $term = '', int $page = 1, int $perPage = 15): array
+    {
+        $like   = '%' . $term . '%';
+        $offset = ($page - 1) * $perPage;
+
+        $data = $this->db()
+            ->query("SELECT * FROM {{ tableName }}
+                     WHERE name LIKE :t
+                     ORDER BY id DESC LIMIT :lim OFFSET :off")
+            ->bind(':t',   $like)
+            ->bind(':lim', $perPage, \PDO::PARAM_INT)
+            ->bind(':off', $offset,  \PDO::PARAM_INT)
+            ->fetchAll();
+
+        $total = (int)($this->db()
+            ->query("SELECT COUNT(*) AS n FROM {{ tableName }} WHERE name LIKE :t")
+            ->bind(':t', $like)
+            ->fetch()->n ?? 0);
+
+        return [
+            'data'      => $data,
+            'total'     => $total,
+            'page'      => $page,
+            'per_page'  => $perPage,
+            'last_page' => (int)ceil($total / max(1, $perPage)),
+        ];
+    }
+}

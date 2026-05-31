@@ -1,0 +1,109 @@
+<?php
+
+namespace App\Services;
+
+use Core\Service;
+use Core\Logger;
+// use App\Repositories\{{ ModelName }}Repository;
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Camada de lógica de negócio da entidade {{ ModelName }}.
+ *
+ * Regras desta camada:
+ *   ✅ Contém: regras de negócio, orquestração, validações de domínio
+ *   ❌ Não contém: $_POST, $_GET, header(), redirect(), HTML
+ *
+ * Controllers são finos: recebem request → chamam Service → retornam response.
+ *
+ * Uso no Controller:
+ *   $service = new {{ ClassName }}();
+ *   $result  = $service->create($data, $userId);
+ *   if ($result['success']) { ... }
+ */
+class {{ ClassName }} extends Service
+{
+    // private {{ ModelName }}Repository $repo;
+
+    public function __construct(
+        // private readonly {{ ModelName }}Repository $repo = new {{ ModelName }}Repository()
+    ) {}
+
+    /**
+     * Cria um novo registro de {{ ModelName }}.
+     *
+     * @param  array $data   Dados já validados (vindos do FormRequest)
+     * @param  int   $userId ID do usuário autenticado
+     * @return array{success: bool, message: string, id?: int|string}
+     */
+    public function create(array $data, int $userId = 0): array
+    {
+        // Exemplo de lógica de negócio:
+        // if ($this->repo->findBy('name', $data['name'])) {
+        //     return ['success' => false, 'message' => 'Registro já existe.'];
+        // }
+        //
+        // $id = $this->repo->create($data);
+        //
+        // if (!$id) {
+        //     return ['success' => false, 'message' => 'Erro ao criar registro.'];
+        // }
+        //
+        // Logger::info('{{ ModelName }} criado', ['id' => $id, 'user_id' => $userId]);
+        // return ['success' => true, 'id' => $id];
+
+        return ['success' => true, 'message' => 'Implementar lógica de criação.'];
+    }
+
+    /**
+     * Atualiza um registro existente.
+     *
+     * @param  int   $id     ID do registro
+     * @param  array $data   Dados já validados
+     * @param  int   $userId ID do usuário autenticado (para checar permissão)
+     * @return array{success: bool, message: string}
+     */
+    public function update(int $id, array $data, int $userId = 0): array
+    {
+        // $record = $this->repo->findById($id);
+        //
+        // if (!$record) {
+        //     return ['success' => false, 'message' => 'Registro não encontrado.'];
+        // }
+        //
+        // // Verificação de permissão (exemplo):
+        // if ((int)$record->user_id !== $userId) {
+        //     return ['success' => false, 'message' => 'Sem permissão para editar.'];
+        // }
+        //
+        // $this->repo->update($id, $data);
+        // Logger::info('{{ ModelName }} atualizado', ['id' => $id]);
+        // return ['success' => true, 'message' => 'Atualizado com sucesso.'];
+
+        return ['success' => true, 'message' => 'Implementar lógica de atualização.'];
+    }
+
+    /**
+     * Remove um registro.
+     * Usa transação para garantir atomicidade em operações compostas.
+     *
+     * @return array{success: bool, message: string}
+     */
+    public function delete(int $id, int $userId = 0): array
+    {
+        // return $this->transaction(function () use ($id, $userId) {
+        //     $record = $this->repo->findById($id);
+        //
+        //     if (!$record) {
+        //         return ['success' => false, 'message' => 'Registro não encontrado.'];
+        //     }
+        //
+        //     $this->repo->delete($id);
+        //     Logger::info('{{ ModelName }} removido', ['id' => $id]);
+        //     return ['success' => true, 'message' => 'Removido com sucesso.'];
+        // });
+
+        return ['success' => true, 'message' => 'Implementar lógica de remoção.'];
+    }
+}

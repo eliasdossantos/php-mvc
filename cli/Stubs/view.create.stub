@@ -1,0 +1,42 @@
+<!-- app/Views/{{ viewPath }}/create.php -->
+<div class="page-header">
+    <div>
+        <a href="<?= url('dashboard/{{ routePrefix }}') ?>" class="btn btn-outline btn-sm">
+            ← Voltar
+        </a>
+        <h1 style="margin-top:12px"><?= e($title ?? 'Novo {{ ModelName }}') ?></h1>
+    </div>
+</div>
+
+<?php \Core\View::render('components.alerts'); ?>
+
+<div class="card">
+    <div class="card-body">
+        <form method="POST" action="<?= url('dashboard/{{ routePrefix }}') ?>">
+            <?= csrf_field() ?>
+
+            <!-- Campo: nome -->
+            <div class="form-group">
+                <label for="name">Nome <span style="color:var(--color-danger)">*</span></label>
+                <input type="text"
+                       id="name"
+                       name="name"
+                       value="<?= old('name') ?>"
+                       class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>"
+                       required
+                       autofocus>
+                <?php if (hasError('name')): ?>
+                    <span class="form-error"><?= error('name') ?></span>
+                <?php endif; ?>
+            </div>
+
+            <!-- Adicione mais campos conforme o model -->
+
+            <div class="mt-2" style="display:flex;gap:10px">
+                <button type="submit" class="btn btn-primary">Salvar</button>
+                <a href="<?= url('dashboard/{{ routePrefix }}') ?>"
+                   class="btn btn-secondary">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,130 @@
+<?php
+
+namespace App\Controllers{{ SubNamespace }};
+
+use Core\Controller;
+use Core\Session;
+{{ UseRepository }}
+{{ UseRequest }}
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Responsável por receber as requisições HTTP, delegar para o Service/Repository
+ * e retornar a resposta adequada (View ou JSON).
+ *
+ * Regra: controllers devem ser finos.
+ * Lógica de negócio → Service | Acesso a dados → Repository
+ */
+class {{ ClassName }} extends Controller
+{
+    public function __construct()
+    {
+        // Inicialize dependências aqui
+        // $this->repository = new {{ ModelName }}Repository();
+    }
+
+    /**
+     * Lista todos os registros.
+     * GET /{{ routePrefix }}
+     */
+    public function index(): void
+    {
+        $this->view('{{ viewPath }}.index', [
+            'title' => '{{ ModelName }}',
+            // 'items' => $this->repository->paginate(15, (int)($_GET['page'] ?? 1)),
+        ]);
+    }
+
+    /**
+     * Exibe um registro específico.
+     * GET /{{ routePrefix }}/{id}
+     */
+    public function show(int $id): void
+    {
+        // $item = $this->repository->findById($id);
+        // $this->abortUnless((bool)$item, 404);
+
+        $this->view('{{ viewPath }}.show', [
+            'title' => 'Detalhes',
+            // 'item'  => $item,
+        ]);
+    }
+
+    /**
+     * Exibe o formulário de criação.
+     * GET /{{ routePrefix }}/create
+     */
+    public function create(): void
+    {
+        $this->view('{{ viewPath }}.create', [
+            'title' => 'Novo {{ ModelName }}',
+        ]);
+    }
+
+    /**
+     * Processa a criação de um novo registro.
+     * POST /{{ routePrefix }}
+     */
+    public function store(): void
+    {
+        // Exemplo com FormRequest:
+        // $request = new Store{{ ModelName }}Request();
+        // if ($request->fails()) {
+        //     Session::flash('error', $request->firstError());
+        //     Session::flashInput($request->all());
+        //     $this->back();
+        // }
+        // $data = $request->validated();
+
+        // Exemplo com validate() inline:
+        $this->validate($_POST, [
+            'name' => 'required|min:2|max:100',
+        ]);
+
+        // $id = $this->repository->create($_POST);
+        $this->redirectWith('{{ routePrefix }}', 'success', '{{ ModelName }} criado com sucesso!');
+    }
+
+    /**
+     * Exibe o formulário de edição.
+     * GET /{{ routePrefix }}/{id}/edit
+     */
+    public function edit(int $id): void
+    {
+        // $item = $this->repository->findById($id);
+        // $this->abortUnless((bool)$item, 404);
+
+        $this->view('{{ viewPath }}.edit', [
+            'title' => 'Editar {{ ModelName }}',
+            // 'item'  => $item,
+        ]);
+    }
+
+    /**
+     * Processa a atualização de um registro.
+     * PUT /{{ routePrefix }}/{id}
+     */
+    public function update(int $id): void
+    {
+        $this->validate($_POST, [
+            'name' => 'required|min:2|max:100',
+        ]);
+
+        // $this->repository->update($id, $_POST);
+        $this->redirectWith('{{ routePrefix }}', 'success', '{{ ModelName }} atualizado com sucesso!');
+    }
+
+    /**
+     * Remove um registro.
+     * DELETE /{{ routePrefix }}/{id}
+     */
+    public function destroy(int $id): void
+    {
+        // $item = $this->repository->findById($id);
+        // $this->abortUnless((bool)$item, 404);
+        // $this->repository->delete($id);
+
+        $this->jsonSuccess('{{ ModelName }} removido com sucesso.');
+    }
+}
