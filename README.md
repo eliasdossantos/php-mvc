@@ -132,7 +132,7 @@ Abra o arquivo em seu navegador para acessar:
 ### Via Composer
 
 ```bash
-composer create-project eliasdossantos/php-mvc
+composer create-project elias-antonio/php-mvc
 ```
 
 ### Instalação Manual
