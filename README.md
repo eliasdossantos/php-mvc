@@ -92,6 +92,7 @@ Comandos para geração rápida de código:
 - Views
 - Migrations
 - Seeders
+- Key generation (`php mvc key:generate`)
 
 ---
 
@@ -221,6 +222,14 @@ php mvc make:seed UserSeeder
 
 php mvc make:view users
 ```
+
+### Configuração
+
+```bash
+php mvc key:generate
+```
+
+Gera ou atualiza a variável `APP_KEY` no arquivo `.env` com uma chave segura de 32 caracteres.
 
 ### Informações
 
