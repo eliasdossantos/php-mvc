@@ -4,6 +4,7 @@ namespace Cli;
 
 use Cli\Commands\KeyGenerateCommand;
 use Cli\Commands\MakeControllerCommand;
+use Cli\Commands\MakeMigrationCommand;
 use Cli\Commands\MakeModelCommand;
 use Cli\Commands\MakeRequestCommand;
 use Cli\Commands\MakeServiceCommand;
@@ -103,18 +104,19 @@ class Kernel
     {
         $this->commands = [
             // Geradores de código
-            'make:controller' => MakeControllerCommand::class,
-            'make:model'      => MakeModelCommand::class,
-            'make:request'    => MakeRequestCommand::class,
-            'make:service'    => MakeServiceCommand::class,
-            'make:repository' => MakeRepositoryCommand::class,
-            'make:seed'       => MakeSeedCommand::class,
-            'make:view'       => MakeViewCommand::class,
+            'make:controller'  => MakeControllerCommand::class,
+            'make:migration'   => MakeMigrationCommand::class,
+            'make:model'       => MakeModelCommand::class,
+            'make:request'     => MakeRequestCommand::class,
+            'make:service'     => MakeServiceCommand::class,
+            'make:repository'  => MakeRepositoryCommand::class,
+            'make:seed'        => MakeSeedCommand::class,
+            'make:view'        => MakeViewCommand::class,
 
             // Utilitários
-            'key:generate'    => KeyGenerateCommand::class,
-            'migrate'         => MigrateCommand::class,
-            'serve'           => ServeCommand::class,
+            'key:generate'     => KeyGenerateCommand::class,
+            'migrate'          => MigrateCommand::class,
+            'serve'            => ServeCommand::class,
         ];
     }
 

@@ -133,7 +133,7 @@ Abra o arquivo em seu navegador para acessar:
 ### Via Composer
 
 ```bash
-composer create-project elias-antonio/php-mvc
+composer create-project eliasdossantos/php-mvc
 ```
 
 ### Instalação Manual
@@ -171,19 +171,36 @@ DB_PASSWORD=
 
 ---
 
-## Banco de Dados
+## Banco de Dados Migrations (Criar e Aplicar)
 
-Executa todas as migrations pendentes:
+Crie uma nova migration SQL com o comando generator. O arquivo será criado em `database/migrations/` com prefixo numérico sequencial (`001_`, `002_`, ...).
+
+Exemplos:
+
+```bash
+php mvc make:migration CreatePostsTable
+php mvc make:migration AddEmailToUsers
+php mvc make:migration drop_comments_table
+```
+
+O comando converte o nome para snake_case e gera um arquivo como `002_create_posts_table.sql`. Dentro dele há um template comentado — descomente e ajuste o `CREATE TABLE` conforme sua necessidade. O nome da tabela gerado automaticamente é baseado no nome fornecido (`CreatePostsTable` → `posts`).
+
+Depois de editar sua migration, aplique as migrations pendentes com:
 
 ```bash
 php mvc migrate
 ```
 
-Recria o banco do zero (DROP + migrate):
+Se quiser recriar tudo do zero (DROP + migrate):
 
 ```bash
 php mvc migrate --fresh
 ```
+
+Dica rápida:
+
+- Os arquivos de migration ficam em `database/migrations/` e são executados em ordem crescente pelo prefixo numérico.
+- Verifique se o `CREATE TABLE` está com o nome da tabela correto (ex.: `posts`, `users`) e com os campos desejados.
 
 ---
 
