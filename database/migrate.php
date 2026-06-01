@@ -4,25 +4,27 @@
  * PHP MVC — Migration Runner — CLI
  *
  * Executa todos os arquivos .sql de database/migrations/
- * 
+ *
  * Uso:
  * php database/migrate.php
- * php database/migrate.php --fresh (recria tudo do zero — CUIDADO em produção)
+ * php database/migrate.php --fresh
  */
-// Evita redefinição se já foi definido pelo CLI
+
 if (!defined('ROOT_PATH')) {
     define('ROOT_PATH', dirname(__DIR__));
 }
+
 if (!defined('APP_PATH')) {
     define('APP_PATH', ROOT_PATH . '/app');
 }
+
 if (!defined('CONFIG_PATH')) {
     define('CONFIG_PATH', ROOT_PATH . '/config');
 }
+
 if (!defined('STORAGE_PATH')) {
     define('STORAGE_PATH', ROOT_PATH . '/storage');
 }
-
 
 require ROOT_PATH . '/vendor/autoload.php';
 
@@ -52,7 +54,7 @@ function tableExists(PDO $pdo, string $database, string $table): bool
 
     $stmt->execute([
         ':database' => $database,
-        ':table' => $table
+        ':table' => $table,
     ]);
 
     return (bool) $stmt->fetchColumn();
@@ -71,7 +73,7 @@ function columnExists(PDO $pdo, string $database, string $table, string $column)
     $stmt->execute([
         ':database' => $database,
         ':table' => $table,
-        ':column' => $column
+        ':column' => $column,
     ]);
 
     return (bool) $stmt->fetchColumn();
@@ -89,7 +91,7 @@ function foreignKeyExists(PDO $pdo, string $database, string $fkName): bool
 
     $stmt->execute([
         ':database' => $database,
-        ':fk' => $fkName
+        ':fk' => $fkName,
     ]);
 
     return (bool) $stmt->fetchColumn();
@@ -108,7 +110,7 @@ function indexExists(PDO $pdo, string $database, string $table, string $index): 
     $stmt->execute([
         ':database' => $database,
         ':table' => $table,
-        ':index' => $index
+        ':index' => $index,
     ]);
 
     return (bool) $stmt->fetchColumn();
@@ -125,7 +127,6 @@ function splitSqlStatements(string $sql): array
 
 function shouldSkipStatement(PDO $pdo, string $database, string $statement): ?string
 {
-    // CREATE TABLE users (...)
     if (preg_match('/^CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?([a-zA-Z0-9_]+)`?/i', $statement, $match)) {
         $table = $match[1];
 
@@ -134,7 +135,6 @@ function shouldSkipStatement(PDO $pdo, string $database, string $statement): ?st
         }
     }
 
-    // ALTER TABLE users ADD COLUMN active ...
     if (preg_match('/^ALTER\s+TABLE\s+`?([a-zA-Z0-9_]+)`?\s+ADD\s+(?:COLUMN\s+)?`?([a-zA-Z0-9_]+)`?/i', $statement, $match)) {
         $table = $match[1];
         $column = $match[2];
@@ -144,7 +144,6 @@ function shouldSkipStatement(PDO $pdo, string $database, string $statement): ?st
         }
     }
 
-    // ALTER TABLE users ADD CONSTRAINT fk_name FOREIGN KEY (...)
     if (preg_match('/^ALTER\s+TABLE\s+`?([a-zA-Z0-9_]+)`?\s+ADD\s+CONSTRAINT\s+`?([a-zA-Z0-9_]+)`?\s+FOREIGN\s+KEY/i', $statement, $match)) {
         $fkName = $match[2];
 
@@ -153,7 +152,6 @@ function shouldSkipStatement(PDO $pdo, string $database, string $statement): ?st
         }
     }
 
-    // CREATE INDEX index_name ON table (...)
     if (preg_match('/^CREATE\s+(?:UNIQUE\s+)?INDEX\s+`?([a-zA-Z0-9_]+)`?\s+ON\s+`?([a-zA-Z0-9_]+)`?/i', $statement, $match)) {
         $index = $match[1];
         $table = $match[2];
@@ -191,6 +189,8 @@ try {
         ]
     );
 
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
     if ($isFresh) {
         echo "⚠  Modo --fresh: recriando banco '{$dbName}'...\n";
 
@@ -218,12 +218,14 @@ try {
 
     $migrationsPath = __DIR__ . '/migrations';
     $files = glob($migrationsPath . '/*.sql');
-    sort($files);
 
     if (!$files) {
         echo "ℹ  Nenhuma migration encontrada.\n";
         exit(0);
     }
+
+    natsort($files);
+    $files = array_values($files);
 
     $ran = 0;
     $skipped = 0;
@@ -233,7 +235,9 @@ try {
 
         if (!$isFresh) {
             $check = $pdo->prepare("SELECT COUNT(*) FROM `{$migrationsTable}` WHERE migration = :migration");
-            $check->execute([':migration' => $name]);
+            $check->execute([
+                ':migration' => $name,
+            ]);
 
             if ($check->fetchColumn()) {
                 echo "  [SKIP] {$name} já executada\n";
@@ -245,9 +249,12 @@ try {
         echo "  [RUN]  {$name}\n";
 
         $sql = file_get_contents($file);
-        $statements = splitSqlStatements($sql);
 
-        $pdo->beginTransaction();
+        if ($sql === false) {
+            throw new RuntimeException("Não foi possível ler a migration {$name}");
+        }
+
+        $statements = splitSqlStatements($sql);
 
         try {
             foreach ($statements as $statement) {
@@ -269,15 +276,13 @@ try {
             }
 
             $insert = $pdo->prepare("INSERT IGNORE INTO `{$migrationsTable}` (migration) VALUES (:migration)");
-            $insert->execute([':migration' => $name]);
-
-            $pdo->commit();
+            $insert->execute([
+                ':migration' => $name,
+            ]);
 
             echo "        ✓ executada com sucesso\n";
             $ran++;
         } catch (Throwable $e) {
-            $pdo->rollBack();
-
             echo "        ✕ erro: {$e->getMessage()}\n";
             exit(1);
         }
