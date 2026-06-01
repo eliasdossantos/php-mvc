@@ -28,12 +28,15 @@ mb_internal_encoding('UTF-8');
 
 // ── Sessão segura ─────────────────────────────────────────────────────────────
 
-ini_set('session.cookie_httponly', 1);
-ini_set('session.use_only_cookies', 1);
-ini_set('session.cookie_samesite', 'Lax');
+// Apenas configurar se headers ainda não foram enviados (não estamos em CLI com output)
+if (!headers_sent()) {
+    ini_set('session.cookie_httponly', 1);
+    ini_set('session.use_only_cookies', 1);
+    ini_set('session.cookie_samesite', 'Lax');
 
-if (filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
-    ini_set('session.cookie_secure', 1);
+    if (filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN)) {
+        ini_set('session.cookie_secure', 1);
+    }
 }
 
 // ── Constantes Globais ────────────────────────────────────────────────────────

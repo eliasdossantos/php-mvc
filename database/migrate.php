@@ -9,11 +9,20 @@
  * php database/migrate.php
  * php database/migrate.php --fresh (recria tudo do zero — CUIDADO em produção)
  */
+// Evita redefinição se já foi definido pelo CLI
+if (!defined('ROOT_PATH')) {
+    define('ROOT_PATH', dirname(__DIR__));
+}
+if (!defined('APP_PATH')) {
+    define('APP_PATH', ROOT_PATH . '/app');
+}
+if (!defined('CONFIG_PATH')) {
+    define('CONFIG_PATH', ROOT_PATH . '/config');
+}
+if (!defined('STORAGE_PATH')) {
+    define('STORAGE_PATH', ROOT_PATH . '/storage');
+}
 
-define('ROOT_PATH', dirname(__DIR__));
-define('APP_PATH', ROOT_PATH . '/app');
-define('CONFIG_PATH', ROOT_PATH . '/config');
-define('STORAGE_PATH', ROOT_PATH . '/storage');
 
 require ROOT_PATH . '/vendor/autoload.php';
 
