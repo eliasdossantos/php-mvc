@@ -2,6 +2,7 @@
 
 namespace Cli;
 
+use Cli\Commands\KeyGenerateCommand;
 use Cli\Commands\MakeControllerCommand;
 use Cli\Commands\MakeModelCommand;
 use Cli\Commands\MakeRequestCommand;
@@ -111,6 +112,7 @@ class Kernel
             'make:view'       => MakeViewCommand::class,
 
             // Utilitários
+            'key:generate'    => KeyGenerateCommand::class,
             'migrate'         => MigrateCommand::class,
             'serve'           => ServeCommand::class,
         ];
@@ -175,6 +177,9 @@ class Kernel
             'Banco de dados' => [
                 'migrate'          => 'Executa todas as migrations pendentes',
                 'migrate --fresh'  => 'Recria o banco do zero (DROP + migrate)',
+            ],
+            'Configuração' => [
+                'key:generate'  => 'Gera chave de aplicação segura no .env',
             ],
             'Servidor' => [
                 'serve'              => 'Inicia o servidor local na porta 8000',
