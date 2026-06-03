@@ -32,7 +32,7 @@ namespace Core;
  */
 class Router
 {
-    protected array   $routes     = [];
+    protected array   $routes      = [];
     protected array   $namedRoutes = [];
     protected Request $request;
 
@@ -41,6 +41,21 @@ class Router
 
     // Namespace padrão de controllers
     protected string $controllerNamespace = 'App\\Controllers\\';
+
+    // ── Registry estático ─────────────────────────────────────────────────────
+    // ── BUG CORRIGIDO #14 (parte do Router) ──────────────────────────────────
+    // Permite que a função global route() acesse a instância sem `global $router`.
+    protected static ?self $instance = null;
+
+    public static function getInstance(): ?static
+    {
+        return static::$instance;
+    }
+
+    public static function setInstance(static $router): void
+    {
+        static::$instance = $router;
+    }
 
     public function __construct(Request $request)
     {
@@ -143,7 +158,7 @@ class Router
             ?? throw new \InvalidArgumentException("Rota [{$name}] não encontrada.");
 
         foreach ($params as $key => $value) {
-            $path = preg_replace('/\{' . $key . '\??\}/', $value, $path);
+            $path = preg_replace('/\{' . preg_quote($key, '/') . '\??\}/', $value, $path);
         }
 
         // Remove parâmetros opcionais não fornecidos
@@ -162,7 +177,7 @@ class Router
         foreach ($this->routes as $route) {
             if ($route['method'] !== $method) continue;
 
-            $params = $this->matchUri($route['path'], $uri);
+            $params = $this->matchUri($route['path'], $uri, $route['paramNames']);
             if ($params === false) continue;
 
             // ── Executa middlewares ──────────────────────────────────────────
@@ -180,7 +195,7 @@ class Router
 
     // ── Internos ──────────────────────────────────────────────────────────────
 
-    protected function addRoute(string $method, string $path, array|string $action, array $middlewares): static
+    protected function addRoute(string $method, string $path, array|string $action, array $middlewares = []): static
     {
         // Resolve stack de grupos
         $prefix     = '';
@@ -194,9 +209,20 @@ class Router
 
         // Resolve "ControllerClass@method"
         if (is_string($action) && str_contains($action, '@')) {
-            [$cls, $method_name] = explode('@', $action, 2);
-            $action = [$cls, $method_name];
+            [$cls, $methodName] = explode('@', $action, 2);
+            $action = [$cls, $methodName];
         }
+
+        // ── BUG CORRIGIDO #1 ─────────────────────────────────────────────────
+        // Extrai os nomes dos parâmetros da rota para mapeamento posicional→nomeado.
+        // Antes: matchUri() retornava array posicional ([$val1, $val2])
+        // e callAction() passava esses valores sem os nomes para o método do controller,
+        // tornando impossível o acesso por nome e quebrando rotas com parâmetros opcionais
+        // ausentes (que geravam índices "pulados").
+        // Agora: os nomes são extraídos aqui e armazenados junto com a rota,
+        // permitindo montar um array associativo ['id' => '42'] no dispatch.
+        preg_match_all('/\{([a-zA-Z_]+)\??\}/', $fullPath, $matches);
+        $paramNames = $matches[1] ?? [];
 
         $this->routes[] = [
             'method'      => strtoupper($method),
@@ -204,26 +230,60 @@ class Router
             'action'      => $action,
             'middlewares' => array_merge($groupMidds, $middlewares),
             'name'        => null,
+            'paramNames'  => $paramNames,   // ← novo campo
         ];
 
         return $this;
     }
 
-    /** Tenta casar a URI com o padrão da rota; retorna parâmetros ou false */
-    protected function matchUri(string $pattern, string $uri): array|false
+    /**
+     * Tenta casar a URI com o padrão da rota.
+     *
+     * ── BUG CORRIGIDO #2 ────────────────────────────────────────────────────
+     * Antes: retornava array posicional de valores capturados.
+     * Agora: retorna array associativo ['nomeDoParm' => 'valor'] usando
+     * $paramNames extraídos em addRoute(). Parâmetros opcionais ausentes
+     * recebem null explicitamente, em vez de simplesmente não existirem no array,
+     * evitando deslocamento de índices quando um param opcional fica vazio.
+     *
+     * @return array<string,string|null>|false
+     */
+    protected function matchUri(string $pattern, string $uri, array $paramNames): array|false
     {
-        // {param} → captura obrigatória, {param?} → opcional
+        // {param}  → captura obrigatória, {param?} → opcional
         $regex = preg_replace('/\{([a-zA-Z_]+)\?\}/', '([^/]*)',  $pattern);
         $regex = preg_replace('/\{([a-zA-Z_]+)\}/',   '([^/]+)',  $regex);
         $regex = '#^' . $regex . '$#';
 
         if (!preg_match($regex, $uri, $matches)) return false;
 
-        array_shift($matches);
-        return $matches;
+        array_shift($matches); // remove o match completo
+
+        // Monta array associativo: ['id' => '42', 'slug' => null, ...]
+        $result = [];
+        foreach ($paramNames as $i => $name) {
+            $val = $matches[$i] ?? '';
+            // Parâmetro opcional não informado → null (evita string vazia enganosa)
+            $result[$name] = ($val === '') ? null : $val;
+        }
+
+        return $result;
     }
 
-    /** Resolve e instancia o controller, chamando o método */
+    /**
+     * Resolve e instancia o controller, chamando o método.
+     *
+     * ── BUG CORRIGIDO #3 ────────────────────────────────────────────────────
+     * Antes: usava call_user_func_array() com array posicional de params,
+     * ignorando os nomes dos parâmetros do método do controller.
+     * Isso funcionava por acidente enquanto a ordem batia, mas quebrava
+     * silenciosamente em rotas com parâmetros opcionais ausentes.
+     *
+     * Agora: usa ReflectionMethod para injetar os parâmetros por nome,
+     * respeitando parâmetros opcionais com valor padrão definidos no método.
+     * Qualquer parâmetro não presente na URI usa o valor padrão do método,
+     * e parâmetros extras na URI são simplesmente ignorados.
+     */
     protected function callAction(array $action, array $params): void
     {
         [$ctrl, $methodName] = $action;
@@ -244,7 +304,48 @@ class Router
             throw new \RuntimeException("Método [{$methodName}] não existe em [{$fqcn}].", 500);
         }
 
-        call_user_func_array([$instance, $methodName], $params);
+        // Injeta parâmetros por nome via Reflection
+        $reflection = new \ReflectionMethod($instance, $methodName);
+        $args       = [];
+
+        foreach ($reflection->getParameters() as $rParam) {
+            $name = $rParam->getName();
+
+            if (array_key_exists($name, $params) && $params[$name] !== null) {
+                // Converte para o tipo declarado no método (int, string…)
+                $args[] = $this->castParam($params[$name], $rParam);
+            } elseif ($rParam->isOptional()) {
+                $args[] = $rParam->getDefaultValue();
+            } else {
+                // Parâmetro obrigatório não presente na URI → erro claro
+                throw new \RuntimeException(
+                    "Parâmetro obrigatório [{$name}] não encontrado na URI para {$fqcn}::{$methodName}().",
+                    500
+                );
+            }
+        }
+
+        $reflection->invokeArgs($instance, $args);
+    }
+
+    /**
+     * Converte o valor capturado da URI para o tipo declarado no parâmetro do método.
+     * Suporta int, float, bool, string. Outros tipos recebem o valor bruto (string).
+     */
+    protected function castParam(string $value, \ReflectionParameter $param): mixed
+    {
+        $type = $param->getType();
+
+        if (!$type instanceof \ReflectionNamedType || $type->isBuiltin() === false) {
+            return $value;
+        }
+
+        return match ($type->getName()) {
+            'int'    => (int)   $value,
+            'float'  => (float) $value,
+            'bool'   => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+            default  => $value,
+        };
     }
 
     /** Resolve e executa um middleware */

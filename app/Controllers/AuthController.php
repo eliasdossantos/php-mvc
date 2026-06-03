@@ -177,8 +177,22 @@ class AuthController extends Controller
     /**
      * POST /auth/reset-password
      * Validação: ResetPasswordRequest (token válido, password+confirm)
-     * Nota: ResetPasswordRequest já valida o token contra o banco em authorize().
-     * Se o token for inválido, o Request bloqueia com redirect antes desta action executar.
+     *
+     * ── BUG CORRIGIDO #10 ────────────────────────────────────────────────────
+     * Antes: o controller executava a query de UPDATE diretamente sobre o PDO,
+     * fazendo password_hash() inline — duplicando a lógica que já existe em
+     * User::updatePassword(). Isso viola o princípio DRY e significa que se
+     * o custo do bcrypt for alterado em User::updatePassword(), o reset de senha
+     * continuaria usando o valor antigo hardcoded aqui.
+     *
+     * Além disso, o campo 'confirm' do ResetPasswordRequest (diferente de
+     * 'password_confirmation' do RegisterRequest) era usado em validated(), mas
+     * o campo do formulário de reset usa 'confirm' como nome — o que estava
+     * correto no Request, mas o controller antigo não documentava essa diferença,
+     * tornando-o confuso.
+     *
+     * Solução: delegar a atualização de senha para User::updatePassword(),
+     * centralizando a lógica de hashing em um único lugar.
      */
     public function resetSave(): void
     {
@@ -194,12 +208,16 @@ class AuthController extends Controller
         $resetModel = new PasswordReset();
         $record     = $resetModel->findValid($data['token']);
 
-        // Atualiza a senha
-        (new User())->db
-            ->query("UPDATE users SET password = :p WHERE email = :e")
-            ->bind(':p', password_hash($data['password'], PASSWORD_BCRYPT, ['cost' => 12]))
-            ->bind(':e', $record->email)
-            ->execute();
+        // Busca o usuário pelo e-mail do token e atualiza a senha via model
+        // (centraliza o hashing em User::updatePassword)
+        $user = (new User())->findByEmail($record->email);
+
+        if (!$user) {
+            Session::flash('error', 'Usuário não encontrado. Solicite um novo link.');
+            $this->redirect('auth/forgot-password');
+        }
+
+        (new User())->updatePassword((int) $user->id, $data['password']);
 
         $resetModel->consume($data['token']);
 

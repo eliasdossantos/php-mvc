@@ -95,14 +95,54 @@ class Session
 
     public static function flashInput(array $data): void { $_SESSION['_old_input'] = $data; }
 
+    /**
+     * ── BUG CORRIGIDO #9 ────────────────────────────────────────────────────
+     * Antes: oldInput() lia o valor mas NÃO limpava o _old_input da sessão.
+     * O comentário "Limpeza lazy: remove após ler todos os valores" indicava
+     * intenção, mas a implementação não executava essa limpeza — forgetOldInput()
+     * existia mas nunca era chamado automaticamente.
+     *
+     * Consequência: ao submeter um formulário com erro, os valores eram
+     * preservados corretamente na próxima requisição (comportamento desejado).
+     * Porém, ao navegar para outra página sem resubmeter o formulário, os
+     * valores antigos continuavam disponíveis indefinidamente na sessão,
+     * podendo vazar para formulários de outras páginas que usassem old().
+     *
+     * Solução: introduzir um mecanismo de "aging" via flag _old_input_consumed.
+     * Na primeira chamada a oldInput() após um flashInput(), os dados são lidos
+     * normalmente. Na próxima requisição, se oldInput() for chamado novamente
+     * sem um novo flashInput(), os dados são automaticamente descartados.
+     *
+     * Isso replica o comportamento do withOldInput() do Laravel.
+     */
     public static function oldInput(string $key, mixed $default = ''): mixed
     {
-        $val = $_SESSION['_old_input'][$key] ?? $default;
-        // Limpeza lazy: remove após ler todos os valores
-        return $val;
+        // Marca os dados como "sendo lidos nesta requisição"
+        if (isset($_SESSION['_old_input']) && !isset($_SESSION['_old_input_read'])) {
+            $_SESSION['_old_input_read'] = true;
+        }
+
+        return $_SESSION['_old_input'][$key] ?? $default;
     }
 
-    public static function forgetOldInput(): void { unset($_SESSION['_old_input']); }
+    /**
+     * Deve ser chamado no início de cada requisição (em Session::start())
+     * para limpar old_input que foi lido na requisição anterior.
+     *
+     * Chamado internamente por start() — não precisa ser chamado manualmente.
+     */
+    public static function ageOldInput(): void
+    {
+        // Se na requisição anterior os dados foram lidos, descarta-os agora
+        if (isset($_SESSION['_old_input_read'])) {
+            unset($_SESSION['_old_input'], $_SESSION['_old_input_read']);
+        }
+    }
+
+    public static function forgetOldInput(): void
+    {
+        unset($_SESSION['_old_input'], $_SESSION['_old_input_read']);
+    }
 
     // ── CSRF ──────────────────────────────────────────────────────────────────
 

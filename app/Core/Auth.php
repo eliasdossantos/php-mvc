@@ -47,17 +47,51 @@ class Auth
 
         Session::set('user_id',   $user->id);
         Session::set('user_role', $user->role ?? 'member');
-        Session::set('user', (object)[
-            'id'    => $user->id,
-            'name'  => $user->name,
-            'email' => $user->email,
-            'role'  => $user->role ?? 'member',
-        ]);
+
+        // ── BUG CORRIGIDO #7 ────────────────────────────────────────────────
+        // Antes: o objeto de sessão era criado com (object)[...], que produz
+        // uma instância de stdClass. Ao acessar propriedades inexistentes em
+        // PHP (ex: $user->avatar quando o model não tem esse campo), o código
+        // em views que dependia de propriedades adicionais lançava warnings
+        // silenciosos ou retornava null de forma inesperada.
+        //
+        // Mais importante: os campos gravados na sessão eram apenas um subconjunto
+        // fixo (id, name, email, role). Se uma view ou helper precisasse de outro
+        // campo do usuário (ex: active, created_at), não encontrava — mesmo que
+        // o model tivesse esse dado.
+        //
+        // Solução: persistir na sessão apenas o ID (já feito acima) e campos
+        // essenciais para auth (role). Para acesso a dados completos do usuário,
+        // usar Auth::fresh() que re-busca do banco. O objeto em sessão é mantido
+        // por compatibilidade com o restante do sistema, mas agora inclui todos
+        // os campos públicos do model (exceto os campos $hidden como 'password').
+        //
+        // Campos 'hidden' do model NÃO são incluídos no objeto de sessão,
+        // evitando que dados sensíveis fiquem na sessão serializada.
+        $safeUser = static::buildSessionUser($user);
+        Session::set('user', $safeUser);
 
         if ($remember) {
-            // Token de "lembrar" — implementar conforme necessário
+            // ── BUG CORRIGIDO #8 ────────────────────────────────────────────
+            // Antes: o remember_token era gerado e salvo APENAS na sessão,
+            // não no banco de dados. Isso tornava o recurso "lembrar de mim"
+            // completamente ineficaz — o token era perdido ao encerrar a sessão,
+            // que é exatamente quando ele precisaria ser consultado para
+            // re-autenticar automaticamente.
+            //
+            // A implementação correta requer persistência no banco, mas isso
+            // depende de infraestrutura adicional (cookie + coluna na tabela users).
+            // Para não introduzir mudanças de schema não solicitadas, o código
+            // abaixo prepara o token e o expõe, mas a persistência em banco
+            // deve ser implementada pelo projeto que usa este boilerplate.
+            //
+            // Removemos o salvamento inútil na sessão e adicionamos comentário
+            // claro sobre o que precisa ser feito para completar a feature.
             $token = bin2hex(random_bytes(32));
-            Session::set('remember_token', $token);
+            // TODO: persistir $token no banco (coluna remember_token em users)
+            // e setar cookie seguro com setcookie('remember', $token, time()+2592000, '/', '', true, true)
+            // A re-autenticação automática deve ser feita em Session::start() ou em um middleware.
+            unset($token); // evita variável pendente sem uso
         }
 
         Logger::info('Login bem-sucedido', ['user_id' => $user->id, 'email' => $user->email]);
@@ -72,8 +106,8 @@ class Auth
 
     // ── Verificações ──────────────────────────────────────────────────────────
 
-    public static function check(): bool  { return Session::has('user_id'); }
-    public static function guest(): bool  { return !static::check(); }
+    public static function check(): bool   { return Session::has('user_id'); }
+    public static function guest(): bool   { return !static::check(); }
     public static function user(): ?object { return Session::get('user'); }
     public static function id(): ?int
     {
@@ -121,5 +155,33 @@ class Auth
     public static function setUserModel(string $modelClass): void
     {
         static::$userModel = $modelClass;
+    }
+
+    // ── Internos ─────────────────────────────────────────────────────────────
+
+    /**
+     * Constrói o objeto de sessão do usuário excluindo campos sensíveis ($hidden).
+     * Suporta tanto objetos (PDO stdClass) quanto arrays.
+     */
+    protected static function buildSessionUser(object $user): object
+    {
+        // Descobre campos hidden do model para excluí-los da sessão
+        $hidden = [];
+        try {
+            $modelInstance = new (static::$userModel)();
+            $reflection    = new \ReflectionProperty($modelInstance, 'hidden');
+            $reflection->setAccessible(true);
+            $hidden = $reflection->getValue($modelInstance);
+        } catch (\Throwable) {
+            // Se não conseguir ler $hidden, usa padrão seguro
+            $hidden = ['password', 'remember_token'];
+        }
+
+        $data = (array) $user;
+        foreach ($hidden as $field) {
+            unset($data[$field]);
+        }
+
+        return (object) $data;
     }
 }

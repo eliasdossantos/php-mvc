@@ -53,12 +53,12 @@ abstract class Model
     protected bool $softDelete = false;
 
     // ── Query builder interno ─────────────────────────────────────────────────
-    private array  $wheres      = [];
-    private array  $bindings    = [];
+    private array  $wheres        = [];
+    private array  $bindings      = [];
     private string $orderByClause = '';
-    private ?int   $limitVal    = null;
-    private ?int   $offsetVal   = null;
-    private array  $selects     = ['*'];
+    private ?int   $limitVal      = null;
+    private ?int   $offsetVal     = null;
+    private array  $selects       = ['*'];
 
     public function __construct()
     {
@@ -70,7 +70,15 @@ abstract class Model
     /** Retorna todos os registros */
     public function all(string $orderBy = 'id', string $direction = 'ASC'): array
     {
-        $dir = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+        // ── BUG CORRIGIDO #4 ────────────────────────────────────────────────
+        // orderBy e direction são injetados diretamente na query sem sanitização.
+        // Um atacante que controle esses valores (ex: via query string repassada
+        // sem filtragem pelo controller) poderia injetar SQL arbitrário.
+        // Solução: validar direction contra whitelist e validar orderBy
+        // contra padrão de identificador SQL seguro.
+        $dir     = strtoupper($direction) === 'DESC' ? 'DESC' : 'ASC';
+        $orderBy = $this->sanitizeIdentifier($orderBy);
+
         $sql = "SELECT * FROM {$this->table}";
         if ($this->softDelete) $sql .= " WHERE deleted_at IS NULL";
         $sql .= " ORDER BY {$orderBy} {$dir}";
@@ -90,7 +98,8 @@ abstract class Model
     /** Busca registro por coluna/valor */
     public function findBy(string $column, mixed $value): object|false
     {
-        $where = $this->softDelete ? "AND deleted_at IS NULL" : '';
+        $column = $this->sanitizeIdentifier($column);
+        $where  = $this->softDelete ? "AND deleted_at IS NULL" : '';
         return $this->db
             ->query("SELECT * FROM {$this->table} WHERE {$column} = :v {$where} LIMIT 1")
             ->bind(':v', $value)
@@ -100,30 +109,42 @@ abstract class Model
     /** Busca registros por coluna/valor (múltiplos) */
     public function where(string $column, mixed $value, string $op = '='): static
     {
-        $param = ':w_' . $column . '_' . count($this->wheres);
-        $this->wheres[]   = "{$column} {$op} {$param}";
-        $this->bindings[$param] = $value;
+        $column = $this->sanitizeIdentifier($column);
+        $op     = $this->sanitizeOperator($op);
+        $param  = ':w_' . $column . '_' . count($this->wheres);
+        $this->wheres[]          = "{$column} {$op} {$param}";
+        $this->bindings[$param]  = $value;
         return $this;
     }
 
     public function orWhere(string $column, mixed $value, string $op = '='): static
     {
-        $param = ':ow_' . $column . '_' . count($this->wheres);
-        $last  = array_pop($this->wheres) ?? '';
-        $this->wheres[]   = "({$last} OR {$column} {$op} {$param})";
-        $this->bindings[$param] = $value;
+        $column = $this->sanitizeIdentifier($column);
+        $op     = $this->sanitizeOperator($op);
+        $param  = ':ow_' . $column . '_' . count($this->wheres);
+        $last   = array_pop($this->wheres) ?? '';
+        $this->wheres[]          = "({$last} OR {$column} {$op} {$param})";
+        $this->bindings[$param]  = $value;
         return $this;
     }
 
     public function orderBy(string $column, string $dir = 'ASC'): static
     {
-        $this->orderByClause = " ORDER BY {$column} " . (strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC');
+        $column = $this->sanitizeIdentifier($column);
+        $dir    = strtoupper($dir) === 'DESC' ? 'DESC' : 'ASC';
+        $this->orderByClause = " ORDER BY {$column} {$dir}";
         return $this;
     }
 
     public function limit(int $n): static  { $this->limitVal  = $n; return $this; }
     public function offset(int $n): static { $this->offsetVal = $n; return $this; }
-    public function select(string ...$cols): static { $this->selects = $cols; return $this; }
+    public function select(string ...$cols): static
+    {
+        // ── BUG CORRIGIDO #5 ────────────────────────────────────────────────
+        // Colunas passadas para SELECT eram injetadas sem sanitização.
+        $this->selects = array_map([$this, 'sanitizeIdentifier'], $cols);
+        return $this;
+    }
 
     /** Executa a query e retorna múltiplos resultados */
     public function get(): array
@@ -151,13 +172,28 @@ abstract class Model
     /** Conta registros */
     public function count(): int
     {
+        // ── BUG CORRIGIDO #6 ────────────────────────────────────────────────
+        // O método count() consumia o estado do builder ($wheres, $bindings)
+        // chamando resetBuilder() no final — correto. Porém, paginate() chamava
+        // count() e depois tentava chamar get() com os mesmos wheres/bindings,
+        // mas count() já havia destruído o estado com resetBuilder(), resultando
+        // em paginate() retornando TODOS os registros sem filtros quando chamado
+        // após where().
+        //
+        // Solução: count() agora salva e restaura o estado do builder, garantindo
+        // que encadeamentos como ->where('active',1)->paginate() funcionem corretamente.
+        $savedState = $this->captureBuilderState();
+
         $softWhere = $this->softDelete ? " AND deleted_at IS NULL" : '';
         $sql = "SELECT COUNT(*) as total FROM {$this->table} WHERE 1=1 {$softWhere}";
         if ($this->wheres) $sql .= ' AND ' . implode(' AND ', $this->wheres);
+
         $stmt = $this->db->query($sql);
         foreach ($this->bindings as $k => $v) $stmt->bind($k, $v);
         $r = $stmt->fetch();
-        $this->resetBuilder();
+
+        $this->restoreBuilderState($savedState);
+
         return (int)($r->total ?? 0);
     }
 
@@ -234,17 +270,21 @@ abstract class Model
     /**
      * Retorna dados paginados
      *
+     * ── BUG CORRIGIDO #6 (continuação) ──────────────────────────────────────
+     * count() agora preserva o estado do builder; portanto o get() subsequente
+     * ainda enxerga os wheres/bindings corretamente.
+     *
      * @return array{data: array, total: int, page: int, per_page: int, last_page: int}
      */
     public function paginate(int $perPage = 15, int $page = 1): array
     {
-        $total    = $this->count();
+        $total    = $this->count();                              // estado preservado
         $lastPage = (int) ceil($total / $perPage);
         $page     = max(1, min($page, max(1, $lastPage)));
 
         $this->limitVal  = $perPage;
         $this->offsetVal = ($page - 1) * $perPage;
-        $data = $this->get();
+        $data = $this->get();                                    // usa wheres intactos
 
         return [
             'data'      => $data,
@@ -279,11 +319,70 @@ abstract class Model
 
     protected function resetBuilder(): void
     {
-        $this->wheres       = [];
-        $this->bindings     = [];
+        $this->wheres        = [];
+        $this->bindings      = [];
         $this->orderByClause = '';
-        $this->limitVal     = null;
-        $this->offsetVal    = null;
-        $this->selects      = ['*'];
+        $this->limitVal      = null;
+        $this->offsetVal     = null;
+        $this->selects       = ['*'];
+    }
+
+    // ── Utilitários de segurança ───────────────────────────────────────────────
+
+    /**
+     * Sanitiza um identificador SQL (nome de coluna/tabela).
+     * Permite apenas letras, números, underscores e pontos (schema.coluna).
+     * Lança exceção se o identificador for inválido.
+     *
+     * ── BUG CORRIGIDO #4 / #5 ────────────────────────────────────────────────
+     */
+    protected function sanitizeIdentifier(string $identifier): string
+    {
+        if (!preg_match('/^[a-zA-Z_][a-zA-Z0-9_.]*$/', $identifier)) {
+            throw new \InvalidArgumentException(
+                "Identificador SQL inválido: [{$identifier}]. Use apenas letras, números e underscores."
+            );
+        }
+        return $identifier;
+    }
+
+    /**
+     * Valida o operador de comparação contra uma whitelist.
+     */
+    protected function sanitizeOperator(string $op): string
+    {
+        $allowed = ['=', '!=', '<>', '<', '>', '<=', '>=', 'LIKE', 'NOT LIKE', 'IN', 'NOT IN'];
+        $op      = strtoupper(trim($op));
+        if (!in_array($op, $allowed, true)) {
+            throw new \InvalidArgumentException("Operador SQL inválido: [{$op}].");
+        }
+        return $op;
+    }
+
+    /**
+     * Captura o estado atual do query builder para restauração posterior.
+     * Usado por count() para não destruir wheres/bindings ao ser chamado
+     * dentro de paginate().
+     */
+    private function captureBuilderState(): array
+    {
+        return [
+            'wheres'        => $this->wheres,
+            'bindings'      => $this->bindings,
+            'orderByClause' => $this->orderByClause,
+            'limitVal'      => $this->limitVal,
+            'offsetVal'     => $this->offsetVal,
+            'selects'       => $this->selects,
+        ];
+    }
+
+    private function restoreBuilderState(array $state): void
+    {
+        $this->wheres        = $state['wheres'];
+        $this->bindings      = $state['bindings'];
+        $this->orderByClause = $state['orderByClause'];
+        $this->limitVal      = $state['limitVal'];
+        $this->offsetVal     = $state['offsetVal'];
+        $this->selects       = $state['selects'];
     }
 }

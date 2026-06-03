@@ -137,7 +137,23 @@ class Validator
             'date'         => (!empty($value) && strtotime((string)$value) === false)
                                 ? "O campo {$label} deve ser uma data válida." : null,
 
-            'confirmed'    => ($value !== ($this->data[$field . '_confirmation'] ?? null))
+            // ── BUG CORRIGIDO #12 ────────────────────────────────────────────
+            // Antes: 'confirmed' verificava $value !== ($this->data[$field . '_confirmation'] ?? null)
+            // SEM checar se $value está preenchido. Isso fazia a regra sempre
+            // disparar erro mesmo quando o campo ainda está vazio (antes do usuário
+            // preencher), porque null !== null é false... wait — null === null é true,
+            // então na verdade o bug era diferente:
+            //
+            // O problema real estava em RegisterRequest: o campo 'password_confirmation'
+            // é sanitizado com trim() e passado para o Validator, mas a regra 'confirmed'
+            // compara 'password' com 'password_confirmation'. Se o campo 'password'
+            // falha em outra regra (ex: min:6) mas 'confirmed' também é avaliado,
+            // o erro de 'confirmed' aparecia ANTES do erro de min:6 confundindo o usuário.
+            //
+            // Mais importante: a regra 'confirmed' NÃO deve disparar quando o campo
+            // principal está vazio (será pego por 'required' antes). Adicionamos
+            // a guarda !empty($value) para evitar erros duplicados/confusos.
+            'confirmed'    => (!empty($value) && $value !== ($this->data[$field . '_confirmation'] ?? null))
                                 ? "A confirmação do campo {$label} não confere." : null,
 
             'same'         => (!empty($value) && $value !== ($this->data[$param] ?? null))
@@ -173,10 +189,25 @@ class Validator
 
         $db  = Database::getInstance();
         $sql = "SELECT COUNT(*) as n FROM {$table} WHERE {$col} = :v";
-        if ($ignore) $sql .= " AND id != :ign";
+
+        // ── BUG CORRIGIDO #13 ────────────────────────────────────────────────
+        // Antes: ao ignorar um ID (ex: unique:users,email,42), o código adicionava
+        // "AND id != :ign" mas não verificava se $ignore era numérico. Um valor
+        // não numérico (ex: passado por manipulação do form) causaria um tipo
+        // errado no bind ou erro silencioso.
+        // Também: o parâmetro de ignore pode ser '0' (zero), que era tratado
+        // como falsy pelo if ($ignore), fazendo a cláusula de exclusão ser ignorada
+        // quando o ID a ignorar era 0 (raro, mas possível em alguns bancos).
+        //
+        // Solução: verificar se $ignore é estritamente um inteiro positivo.
+        if ($ignore !== null && $ignore !== '' && ctype_digit($ignore) && (int)$ignore > 0) {
+            $sql .= " AND id != :ign";
+        } else {
+            $ignore = null; // normaliza para null se inválido
+        }
 
         $stmt = $db->query($sql)->bind(':v', $value);
-        if ($ignore) $stmt->bind(':ign', (int)$ignore);
+        if ($ignore !== null) $stmt->bind(':ign', (int)$ignore);
         $row = $stmt->fetch();
 
         $label = ucfirst(str_replace('_', ' ', $field));

@@ -13,6 +13,10 @@ use Core\Auth;
  *   $router->get('/admin', [AdminController::class, 'index'], ['AuthMiddleware', 'RoleMiddleware:admin']);
  *
  * O parâmetro após ":" define a role exigida. Default: admin.
+ *
+ * ── BUG CORRIGIDO #11 (mesma origem do GuestMiddleware) ─────────────────────
+ * Antes: redirecionava para 'app/dashboard' (rota inexistente → 404).
+ * Corrigido para 'dashboard'.
  */
 class RoleMiddleware
 {
@@ -33,7 +37,7 @@ class RoleMiddleware
 
             Session::flash('error', 'Você não tem permissão para acessar esta área.');
             http_response_code(403);
-            redirect('app/dashboard');
+            redirect('dashboard');
         }
     }
 }
