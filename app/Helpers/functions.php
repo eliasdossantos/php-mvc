@@ -28,10 +28,39 @@ function storageUrl(string $path): string
     return url('storage/' . ltrim($path, '/'));
 }
 
+/**
+ * ── BUG CORRIGIDO #14 ────────────────────────────────────────────────────────
+ * Antes: route() dependia de `global $router`, que funciona apenas quando
+ * $router é uma variável global no escopo onde a função é chamada.
+ *
+ * O problema: em routes/web.php, o arquivo é carregado via require dentro
+ * de Application::run(), onde a variável local se chama $router. Porém,
+ * quando route() é chamada dentro de uma view ou helper, `global $router`
+ * busca $router no escopo global PHP — que pode não ter sido definido lá,
+ * pois o require em Application::run() cria a variável apenas no escopo
+ * do método, não no escopo global.
+ *
+ * Consequência: route() retornava url($name) como fallback silencioso,
+ * gerando URLs incorretas sem nenhum aviso.
+ *
+ * Solução: usar um Registry estático simples para armazenar a instância do
+ * router, eliminando a dependência de variável global.
+ *
+ * O Application::run() chama Router::setInstance($this->router) antes do
+ * require de rotas, e route() passa a usar Router::getInstance().
+ * 
+ * NOTA: a variável global $router é MANTIDA em routes/web.php por
+ * compatibilidade (o arquivo usa @var Router $router na docblock), mas
+ * route() não depende mais dela.
+ */
 function route(string $name, array $params = []): string
 {
-    global $router;
-    return $router?->route($name, $params) ?? url($name);
+    $router = \Core\Router::getInstance();
+    if ($router === null) {
+        // Fallback seguro: gera URL simples sem parâmetros nomeados
+        return url($name);
+    }
+    return $router->route($name, $params);
 }
 
 // ── Redirecionamento ──────────────────────────────────────────────────────────
@@ -45,17 +74,32 @@ function redirect(string $path): never
 
 // ── Sessão / Flash / Validação ────────────────────────────────────────────────
 
-function flash(string $key): ?string       { return \Core\Session::getFlash($key); }
-function hasFlash(string $key): bool       { return \Core\Session::hasFlash($key); }
+function flash(string $key): ?string
+{
+    return \Core\Session::getFlash($key);
+}
+function hasFlash(string $key): bool
+{
+    return \Core\Session::hasFlash($key);
+}
 
 function old(string $key, string $default = ''): string
 {
     return htmlspecialchars((string) \Core\Session::oldInput($key, $default), ENT_QUOTES, 'UTF-8');
 }
 
-function errors(): array             { return \Core\Session::get('_errors', []); }
-function hasError(string $field): bool { return !empty(\Core\Session::get('_errors')[$field]); }
-function error(string $field): string  { return \Core\Session::get('_errors')[$field][0] ?? ''; }
+function errors(): array
+{
+    return \Core\Session::get('_errors', []);
+}
+function hasError(string $field): bool
+{
+    return !empty(\Core\Session::get('_errors')[$field]);
+}
+function error(string $field): string
+{
+    return \Core\Session::get('_errors')[$field][0] ?? '';
+}
 
 // ── Segurança ─────────────────────────────────────────────────────────────────
 
@@ -65,7 +109,10 @@ function csrf_field(): string
     return "<input type=\"hidden\" name=\"_csrf_token\" value=\"{$t}\">";
 }
 
-function csrf_token(): string { return \Core\Session::csrfToken(); }
+function csrf_token(): string
+{
+    return \Core\Session::csrfToken();
+}
 
 function e(mixed $value): string
 {
@@ -79,11 +126,26 @@ function method_field(string $method): string
 
 // ── Autenticação ──────────────────────────────────────────────────────────────
 
-function auth(): bool         { return \Core\Auth::check(); }
-function user(): ?object      { return \Core\Auth::user(); }
-function userId(): int        { return \Core\Auth::id() ?? 0; }
-function userRole(): string   { return \Core\Auth::role(); }
-function isRole(string $r): bool { return \Core\Auth::is($r); }
+function auth(): bool
+{
+    return \Core\Auth::check();
+}
+function user(): ?object
+{
+    return \Core\Auth::user();
+}
+function userId(): int
+{
+    return \Core\Auth::id() ?? 0;
+}
+function userRole(): string
+{
+    return \Core\Auth::role();
+}
+function isRole(string $r): bool
+{
+    return \Core\Auth::is($r);
+}
 
 // ── Ambiente ──────────────────────────────────────────────────────────────────
 
@@ -137,8 +199,12 @@ function diffForHumans(?string $date): string
 function formatBytes(int $bytes, int $precision = 1): string
 {
     $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-    $i = 0; $val = (float) $bytes;
-    while ($val >= 1024 && $i < count($units) - 1) { $val /= 1024; $i++; }
+    $i = 0;
+    $val = (float) $bytes;
+    while ($val >= 1024 && $i < count($units) - 1) {
+        $val /= 1024;
+        $i++;
+    }
     return round($val, $precision) . ' ' . $units[$i];
 }
 
@@ -157,14 +223,22 @@ function isActive(string $path, string $class = 'active'): string
 function dd(mixed ...$values): never
 {
     $s = 'background:#1e293b;color:#f8f8f2;padding:16px 20px;margin:8px;border-radius:8px;'
-       . 'font-family:monospace;font-size:13px;overflow:auto;white-space:pre;line-height:1.5;';
-    foreach ($values as $v) { echo "<pre style=\"{$s}\">"; var_dump($v); echo '</pre>'; }
+        . 'font-family:monospace;font-size:13px;overflow:auto;white-space:pre;line-height:1.5;';
+    foreach ($values as $v) {
+        echo "<pre style=\"{$s}\">";
+        var_dump($v);
+        echo '</pre>';
+    }
     exit;
 }
 
 function dump(mixed ...$values): void
 {
     $s = 'background:#1e293b;color:#f8f8f2;padding:12px 16px;margin:4px;border-radius:6px;'
-       . 'font-family:monospace;font-size:12px;white-space:pre;';
-    foreach ($values as $v) { echo "<pre style=\"{$s}\">"; var_dump($v); echo '</pre>'; }
+        . 'font-family:monospace;font-size:12px;white-space:pre;';
+    foreach ($values as $v) {
+        echo "<pre style=\"{$s}\">";
+        var_dump($v);
+        echo '</pre>';
+    }
 }

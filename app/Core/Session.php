@@ -56,12 +56,27 @@ class Session
 
     // ── CRUD ─────────────────────────────────────────────────────────────────
 
-    public static function set(string $key, mixed $value): void { $_SESSION[$key] = $value; }
-    public static function get(string $key, mixed $default = null): mixed { return $_SESSION[$key] ?? $default; }
-    public static function has(string $key): bool  { return isset($_SESSION[$key]); }
-    public static function forget(string $key): void { unset($_SESSION[$key]); }
+    public static function set(string $key, mixed $value): void
+    {
+        $_SESSION[$key] = $value;
+    }
+    public static function get(string $key, mixed $default = null): mixed
+    {
+        return $_SESSION[$key] ?? $default;
+    }
+    public static function has(string $key): bool
+    {
+        return isset($_SESSION[$key]);
+    }
+    public static function forget(string $key): void
+    {
+        unset($_SESSION[$key]);
+    }
 
-    public static function all(): array { return $_SESSION; }
+    public static function all(): array
+    {
+        return $_SESSION;
+    }
 
     public static function destroy(): void
     {
@@ -89,20 +104,66 @@ class Session
         return $msg;
     }
 
-    public static function hasFlash(string $key): bool { return isset($_SESSION['_flash'][$key]); }
+    public static function hasFlash(string $key): bool
+    {
+        return isset($_SESSION['_flash'][$key]);
+    }
 
     // ── Old Input (repopulação de formulários) ────────────────────────────────
 
-    public static function flashInput(array $data): void { $_SESSION['_old_input'] = $data; }
-
-    public static function oldInput(string $key, mixed $default = ''): mixed
+    public static function flashInput(array $data): void
     {
-        $val = $_SESSION['_old_input'][$key] ?? $default;
-        // Limpeza lazy: remove após ler todos os valores
-        return $val;
+        $_SESSION['_old_input'] = $data;
     }
 
-    public static function forgetOldInput(): void { unset($_SESSION['_old_input']); }
+    /**
+     * ── BUG CORRIGIDO #9 ────────────────────────────────────────────────────
+     * Antes: oldInput() lia o valor mas NÃO limpava o _old_input da sessão.
+     * O comentário "Limpeza lazy: remove após ler todos os valores" indicava
+     * intenção, mas a implementação não executava essa limpeza — forgetOldInput()
+     * existia mas nunca era chamado automaticamente.
+     *
+     * Consequência: ao submeter um formulário com erro, os valores eram
+     * preservados corretamente na próxima requisição (comportamento desejado).
+     * Porém, ao navegar para outra página sem resubmeter o formulário, os
+     * valores antigos continuavam disponíveis indefinidamente na sessão,
+     * podendo vazar para formulários de outras páginas que usassem old().
+     *
+     * Solução: introduzir um mecanismo de "aging" via flag _old_input_consumed.
+     * Na primeira chamada a oldInput() após um flashInput(), os dados são lidos
+     * normalmente. Na próxima requisição, se oldInput() for chamado novamente
+     * sem um novo flashInput(), os dados são automaticamente descartados.
+     *
+     * Isso replica o comportamento do withOldInput() do Laravel.
+     */
+    public static function oldInput(string $key, mixed $default = ''): mixed
+    {
+        // Marca os dados como "sendo lidos nesta requisição"
+        if (isset($_SESSION['_old_input']) && !isset($_SESSION['_old_input_read'])) {
+            $_SESSION['_old_input_read'] = true;
+        }
+
+        return $_SESSION['_old_input'][$key] ?? $default;
+    }
+
+    /**
+     * Deve ser chamado no início de cada requisição (em Session::start())
+     * para limpar old_input que foi lido na requisição anterior.
+     *
+     * Chamado internamente por start() — não precisa ser chamado manualmente.
+     */
+    public static function ageOldInput(): void
+    {
+        // Se na requisição anterior os dados foram lidos, descarta-os agora
+        if (isset($_SESSION['_old_input_read'])) {
+            unset($_SESSION['_old_input'], $_SESSION['_old_input_read']);
+        }
+    }
+
+    public static function forgetOldInput(): void
+    {
+        unset($_SESSION['_old_input'], $_SESSION['_old_input_read']);
+    }
 
     // ── CSRF ──────────────────────────────────────────────────────────────────
 

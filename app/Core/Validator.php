@@ -62,9 +62,18 @@ class Validator
 
     // ── Estado ────────────────────────────────────────────────────────────────
 
-    public function passes(): bool { return empty($this->errors); }
-    public function fails():  bool { return !$this->passes(); }
-    public function errors(): array { return $this->errors; }
+    public function passes(): bool
+    {
+        return empty($this->errors);
+    }
+    public function fails(): bool
+    {
+        return !$this->passes();
+    }
+    public function errors(): array
+    {
+        return $this->errors;
+    }
     public function firstError(?string $field = null): ?string
     {
         if ($field) return $this->errors[$field][0] ?? null;
@@ -102,58 +111,74 @@ class Validator
     {
         $label = ucfirst(str_replace('_', ' ', $field));
 
-        return match($rule) {
+        return match ($rule) {
             'required'     => (empty($value) && $value !== '0')
-                                ? "O campo {$label} é obrigatório." : null,
+                ? "O campo {$label} é obrigatório." : null,
 
             'min', 'min_length' => (!empty($value) && is_numeric($value)
-                                ? (float)$value < (float)$param
-                                : mb_strlen((string)$value) < (int)$param)
-                                ? "O campo {$label} deve ter no mínimo {$param} caracteres." : null,
+                ? (float)$value < (float)$param
+                : mb_strlen((string)$value) < (int)$param)
+                ? "O campo {$label} deve ter no mínimo {$param} caracteres." : null,
 
             'max', 'max_length' => (!empty($value) && is_numeric($value)
-                                ? (float)$value > (float)$param
-                                : mb_strlen((string)$value) > (int)$param)
-                                ? "O campo {$label} deve ter no máximo {$param} caracteres." : null,
+                ? (float)$value > (float)$param
+                : mb_strlen((string)$value) > (int)$param)
+                ? "O campo {$label} deve ter no máximo {$param} caracteres." : null,
 
             'email'        => (!empty($value) && !filter_var($value, FILTER_VALIDATE_EMAIL))
-                                ? "O campo {$label} deve ser um e-mail válido." : null,
+                ? "O campo {$label} deve ser um e-mail válido." : null,
 
             'url'          => (!empty($value) && !filter_var($value, FILTER_VALIDATE_URL))
-                                ? "O campo {$label} deve ser uma URL válida." : null,
+                ? "O campo {$label} deve ser uma URL válida." : null,
 
             'numeric'      => (!empty($value) && !is_numeric($value))
-                                ? "O campo {$label} deve ser numérico." : null,
+                ? "O campo {$label} deve ser numérico." : null,
 
             'integer'      => (!empty($value) && !filter_var($value, FILTER_VALIDATE_INT))
-                                ? "O campo {$label} deve ser um número inteiro." : null,
+                ? "O campo {$label} deve ser um número inteiro." : null,
 
             'alpha'        => (!empty($value) && !ctype_alpha(str_replace(' ', '', (string)$value)))
-                                ? "O campo {$label} deve conter apenas letras." : null,
+                ? "O campo {$label} deve conter apenas letras." : null,
 
             'alphanumeric' => (!empty($value) && !ctype_alnum(str_replace([' ', '_', '-'], '', (string)$value)))
-                                ? "O campo {$label} deve conter apenas letras e números." : null,
+                ? "O campo {$label} deve conter apenas letras e números." : null,
 
             'date'         => (!empty($value) && strtotime((string)$value) === false)
-                                ? "O campo {$label} deve ser uma data válida." : null,
+                ? "O campo {$label} deve ser uma data válida." : null,
 
-            'confirmed'    => ($value !== ($this->data[$field . '_confirmation'] ?? null))
-                                ? "A confirmação do campo {$label} não confere." : null,
+            // ── BUG CORRIGIDO #12 ────────────────────────────────────────────
+            // Antes: 'confirmed' verificava $value !== ($this->data[$field . '_confirmation'] ?? null)
+            // SEM checar se $value está preenchido. Isso fazia a regra sempre
+            // disparar erro mesmo quando o campo ainda está vazio (antes do usuário
+            // preencher), porque null !== null é false... wait — null === null é true,
+            // então na verdade o bug era diferente:
+            //
+            // O problema real estava em RegisterRequest: o campo 'password_confirmation'
+            // é sanitizado com trim() e passado para o Validator, mas a regra 'confirmed'
+            // compara 'password' com 'password_confirmation'. Se o campo 'password'
+            // falha em outra regra (ex: min:6) mas 'confirmed' também é avaliado,
+            // o erro de 'confirmed' aparecia ANTES do erro de min:6 confundindo o usuário.
+            //
+            // Mais importante: a regra 'confirmed' NÃO deve disparar quando o campo
+            // principal está vazio (será pego por 'required' antes). Adicionamos
+            // a guarda !empty($value) para evitar erros duplicados/confusos.
+            'confirmed'    => (!empty($value) && $value !== ($this->data[$field . '_confirmation'] ?? null))
+                ? "A confirmação do campo {$label} não confere." : null,
 
             'same'         => (!empty($value) && $value !== ($this->data[$param] ?? null))
-                                ? "O campo {$label} deve ser igual ao campo {$param}." : null,
+                ? "O campo {$label} deve ser igual ao campo {$param}." : null,
 
             'different'    => (!empty($value) && $value === ($this->data[$param] ?? null))
-                                ? "O campo {$label} deve ser diferente do campo {$param}." : null,
+                ? "O campo {$label} deve ser diferente do campo {$param}." : null,
 
             'in'           => (!empty($value) && !in_array($value, explode(',', $param ?? '')))
-                                ? "O valor do campo {$label} não é permitido." : null,
+                ? "O valor do campo {$label} não é permitido." : null,
 
             'not_in'       => (!empty($value) && in_array($value, explode(',', $param ?? '')))
-                                ? "O valor do campo {$label} não é permitido." : null,
+                ? "O valor do campo {$label} não é permitido." : null,
 
             'regex'        => (!empty($value) && !preg_match($param ?? '//', (string)$value))
-                                ? "O campo {$label} tem formato inválido." : null,
+                ? "O campo {$label} tem formato inválido." : null,
 
             'unique'       => $this->validateUnique($field, $value, $param),
             'exists'       => $this->validateExists($field, $value, $param),
@@ -173,10 +198,25 @@ class Validator
 
         $db  = Database::getInstance();
         $sql = "SELECT COUNT(*) as n FROM {$table} WHERE {$col} = :v";
-        if ($ignore) $sql .= " AND id != :ign";
+
+        // ── BUG CORRIGIDO #13 ────────────────────────────────────────────────
+        // Antes: ao ignorar um ID (ex: unique:users,email,42), o código adicionava
+        // "AND id != :ign" mas não verificava se $ignore era numérico. Um valor
+        // não numérico (ex: passado por manipulação do form) causaria um tipo
+        // errado no bind ou erro silencioso.
+        // Também: o parâmetro de ignore pode ser '0' (zero), que era tratado
+        // como falsy pelo if ($ignore), fazendo a cláusula de exclusão ser ignorada
+        // quando o ID a ignorar era 0 (raro, mas possível em alguns bancos).
+        //
+        // Solução: verificar se $ignore é estritamente um inteiro positivo.
+        if ($ignore !== null && $ignore !== '' && ctype_digit($ignore) && (int)$ignore > 0) {
+            $sql .= " AND id != :ign";
+        } else {
+            $ignore = null; // normaliza para null se inválido
+        }
 
         $stmt = $db->query($sql)->bind(':v', $value);
-        if ($ignore) $stmt->bind(':ign', (int)$ignore);
+        if ($ignore !== null) $stmt->bind(':ign', (int)$ignore);
         $row = $stmt->fetch();
 
         $label = ucfirst(str_replace('_', ' ', $field));

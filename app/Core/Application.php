@@ -54,8 +54,15 @@ class Application
     public function run(): void
     {
         try {
-            $router = $this->router;                // disponível no escopo do require
-            require ROUTES_PATH . '/web.php';       // registra as rotas
+            $router = $this->router; // disponível no escopo do require (routes/web.php)
+
+            // ── BUG CORRIGIDO #14 (parte da Application) ─────────────────────
+            // Registra a instância do router no Registry estático ANTES de
+            // carregar as rotas, para que route() funcione dentro de views
+            // sem depender de `global $router`.
+            Router::setInstance($this->router);
+
+            require ROUTES_PATH . '/web.php'; // registra as rotas
             $this->router->dispatch();
             $this->logDebugInfo();
         } catch (\Throwable $e) {

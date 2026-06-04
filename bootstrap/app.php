@@ -45,6 +45,11 @@ require CONFIG_PATH . '/app.php';
 
 \Core\Session::start();
 
+// ── BUG CORRIGIDO #9 (continuação) ───────────────────────────────────────────
+// Descarta old_input que foi lido na requisição anterior (mecanismo de aging).
+// Deve ser chamado APÓS session_start() e ANTES de qualquer leitura de oldInput().
+\Core\Session::ageOldInput();
+
 // ── 6. Instancia e retorna a Application ─────────────────────────────────────
 
 return new \Core\Application();
