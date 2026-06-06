@@ -3,9 +3,6 @@
 -- Execute: php database/migrate.php
 -- ─────────────────────────────────────────────────────────────────────────────
 
-SET NAMES utf8mb4;
-SET foreign_key_checks = 0;
-
 -- ── {{ TableName }} ────────────────────────────────────────────────────────────
 -- TODO: Implemente sua migration aqui
 
