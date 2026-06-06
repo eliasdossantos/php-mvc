@@ -169,6 +169,7 @@ class Kernel
         $groups = [
             'Geradores de código' => [
                 'make:controller {Nome}' => 'Cria um Controller com métodos CRUD',
+                'make:migration {Nome}'  => 'Cria uma migration (Create + PrimeiraLetraMaiúscula + Table)',
                 'make:model {Nome}'      => 'Cria um Model com estrutura base',
                 'make:request {Nome}'    => 'Cria um FormRequest com validações',
                 'make:service {Nome}'    => 'Cria um Service com estrutura base',
