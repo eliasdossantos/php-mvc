@@ -251,38 +251,37 @@ try {
         $sql = file_get_contents($file);
 
         if ($sql === false) {
-            throw new RuntimeException("Não foi possível ler a migration {$name}");
+            throw new RuntimeException(
+                "Não foi possível ler a migration {$name}"
+            );
         }
 
-        $statements = splitSqlStatements($sql);
-
         try {
-            foreach ($statements as $statement) {
-                if (
-                    $statement === '' ||
-                    preg_match('/^(CREATE\s+DATABASE|USE)\b/i', $statement)
-                ) {
-                    continue;
-                }
 
-                $reason = shouldSkipStatement($pdo, $dbName, $statement);
+            $pdo->beginTransaction();
 
-                if ($reason !== null) {
-                    echo "        ↳ ignorado: {$reason}\n";
-                    continue;
-                }
+            $pdo->exec($sql);
 
-                $pdo->exec($statement);
-            }
+            $insert = $pdo->prepare("
+        INSERT IGNORE INTO `{$migrationsTable}`
+        (migration)
+        VALUES (:migration)
+    ");
 
-            $insert = $pdo->prepare("INSERT IGNORE INTO `{$migrationsTable}` (migration) VALUES (:migration)");
             $insert->execute([
                 ':migration' => $name,
             ]);
 
+            $pdo->commit();
+
             echo "        ✓ executada com sucesso\n";
             $ran++;
         } catch (Throwable $e) {
+
+            if ($pdo->inTransaction()) {
+                $pdo->rollBack();
+            }
+
             echo "        ✕ erro: {$e->getMessage()}\n";
             exit(1);
         }
