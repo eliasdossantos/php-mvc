@@ -12,6 +12,7 @@ use Cli\Commands\MakeRepositoryCommand;
 use Cli\Commands\MakeSeedCommand;
 use Cli\Commands\MakeViewCommand;
 use Cli\Commands\MigrateCommand;
+use Cli\Commands\SeedRunCommand;
 use Cli\Commands\ServeCommand;
 
 /**
@@ -112,6 +113,7 @@ class Kernel
             'make:repository'  => MakeRepositoryCommand::class,
             'make:seed'        => MakeSeedCommand::class,
             'make:view'        => MakeViewCommand::class,
+            'seed:run'         => SeedRunCommand::class,
 
             // Utilitários
             'key:generate'     => KeyGenerateCommand::class,
@@ -180,6 +182,7 @@ class Kernel
             'Banco de dados' => [
                 'migrate'          => 'Executa todas as migrations pendentes',
                 'migrate --fresh'  => 'Recria o banco do zero (DROP + migrate)',
+                'seed:run {Nome}'   => 'Executa seeders PHP em database/seeds',
             ],
             'Configuração' => [
                 'key:generate'  => 'Gera chave de aplicação segura no .env',

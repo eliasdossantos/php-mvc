@@ -204,6 +204,56 @@ Dica rápida:
 
 ---
 
+## Banco de Dados Seeders
+
+Os Seeders permitem popular o banco de dados com dados iniciais ou de teste de forma automatizada.
+
+São úteis para criar usuários padrão, permissões, configurações iniciais e dados necessários para o funcionamento da aplicação.
+
+### Executar todos os Seeders
+
+Para executar todos os seeders registrados no projeto:
+
+```bash
+php mvc seed:run
+```
+
+O framework localizará e executará automaticamente todos os seeders disponíveis.
+
+### Executar um Seeder Específico
+
+Caso deseje executar apenas um seeder específico:
+
+```bash
+php mvc seed:run UserSeeder
+```
+
+Neste caso, somente o seeder informado será executado.
+
+### Dicas Rápidas
+
+- Os seeders ficam localizados em `database/seeds/`.
+- Utilize seeders para criar dados iniciais da aplicação.
+- É possível executar todos os seeders ou apenas um seeder específico.
+- Os seeders são úteis para ambientes de desenvolvimento, testes e homologação.
+- Recomenda-se executar as migrations antes dos seeders.
+
+Fluxo recomendado:
+
+```bash
+php mvc migrate
+php mvc seed:run
+```
+
+Ou para recriar completamente o banco de dados:
+
+```bash
+php mvc migrate --fresh
+php mvc seed:run
+```
+
+---
+
 ## Executando o Projeto
 
 Servidor local:

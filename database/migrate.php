@@ -257,10 +257,12 @@ try {
         }
 
         try {
-
-            $pdo->beginTransaction();
-
-            $pdo->exec($sql);
+            foreach (splitSqlStatements($sql) as $statement) {
+                if (trim($statement) === '') {
+                    continue;
+                }
+                $pdo->exec($statement);
+            }
 
             $insert = $pdo->prepare("
         INSERT IGNORE INTO `{$migrationsTable}`
@@ -272,16 +274,9 @@ try {
                 ':migration' => $name,
             ]);
 
-            $pdo->commit();
-
             echo "        ✓ executada com sucesso\n";
             $ran++;
         } catch (Throwable $e) {
-
-            if ($pdo->inTransaction()) {
-                $pdo->rollBack();
-            }
-
             echo "        ✕ erro: {$e->getMessage()}\n";
             exit(1);
         }
