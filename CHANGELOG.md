@@ -2,20 +2,22 @@
 
 Todas as alterações relevantes deste projeto serão documentadas neste arquivo.
 
-O formato segue o padrão **Keep a Changelog** e este projeto adota o **Versionamento Semântico (SemVer)**.
+O formato segue o padrão **[Keep a Changelog](https://keepachangelog.com/pt-BR/1.0.0/)** e este projeto adota o **[Versionamento Semântico](https://semver.org/lang/pt-BR/)**.
 
-## [1.0.0] - 2026-05-31
+---
 
-### Adicionado
+## [1.0.0] — 2026-05-31
 
-#### Core MVC
+### ✨ Adicionado
+
+#### 🏗️ Core MVC
 
 - Classe `Application` para inicialização e gerenciamento da aplicação.
 - Sistema de roteamento através da classe `Router`.
 - Classes base `Controller`, `Model`, `View`, `Request` e `Response`.
 - Estrutura MVC organizada e reutilizável para projetos PHP puro.
 
-#### Banco de Dados
+#### 🗄️ Banco de Dados
 
 - Classe `Database` utilizando PDO.
 - Query Builder para consultas dinâmicas.
@@ -23,7 +25,7 @@ O formato segue o padrão **Keep a Changelog** e este projeto adota o **Versiona
 - Sistema de migrations.
 - Sistema de seeders.
 
-#### Autenticação e Segurança
+#### 🔒 Autenticação e Segurança
 
 - Sistema completo de autenticação.
 - Login e logout de usuários.
@@ -33,32 +35,32 @@ O formato segue o padrão **Keep a Changelog** e este projeto adota o **Versiona
 - Proteção CSRF.
 - Controle de acesso baseado em permissões e papéis.
 
-#### Validação
+#### ✅ Validação
 
 - Classe `Validator` com regras declarativas.
 - Mensagens de erro personalizadas.
 - Classe `FormRequest` para validação desacoplada dos controllers.
 
-#### Middlewares
+#### 🛡️ Middlewares
 
 - `AuthMiddleware`
 - `GuestMiddleware`
 - `CsrfMiddleware`
 - `RoleMiddleware`
 
-#### Upload de Arquivos
+#### 📁 Upload de Arquivos
 
 - Classe `Upload` para gerenciamento de arquivos enviados.
 - Validação de tipos e extensões.
 - Organização automática de diretórios.
 
-#### Logs
+#### 📋 Logs
 
 - Sistema de logs inspirado no padrão PSR.
 - Registro de eventos e exceções.
 - Arquivos de log organizados por data.
 
-#### CLI
+#### ⌨️ CLI
 
 Comando `mvc` com suporte para:
 
@@ -72,17 +74,17 @@ Comando `mvc` com suporte para:
 - `migrate`
 - `serve`
 
-#### Geração de Código
+#### ⚙️ Geração de Código
 
 - Stubs para geração automática de arquivos.
 - Estrutura padronizada para novos componentes.
 
-#### E-mail
+#### 📧 E-mail
 
 - Integração com PHPMailer.
 - Suporte ao envio de e-mails transacionais.
 
-#### Views e Layouts
+#### 🎨 Views e Layouts
 
 - Layout padrão `main`.
 - Layout de autenticação `auth`.
@@ -90,7 +92,7 @@ Comando `mvc` com suporte para:
 - Página de exceções.
 - Tela de depuração para ambiente de desenvolvimento.
 
-#### Documentação
+#### 📖 Documentação
 
 - Documentação HTML disponível no diretório `docs/`.
 - Guias de instalação e utilização.

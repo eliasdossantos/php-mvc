@@ -20,13 +20,7 @@ use App\Requests\Auth\ResetPasswordRequest;
  *   - Exibir os formulários de autenticação
  *   - Receber as requisições e delegar para AuthService
  *
- * Toda validação e sanitização foi removida daqui e centralizada
- * nos FormRequests em app/Requests/Auth/.
- *
- * Fluxo de cada action POST:
- *   1. Instancia o Request → valida automaticamente no construtor
- *   2. Se falhar: salva erros na sessão, redireciona de volta
- *   3. Se passar: usa $request->validated() para dados limpos
+ * Toda validação e sanitização foi centralizada nos FormRequests.
  */
 class AuthController extends Controller
 {
@@ -71,7 +65,7 @@ class AuthController extends Controller
 
     /**
      * POST /auth/login
-     * Validação: LoginRequest (email obrigatório+válido, password obrigatório)
+     * Rate limit aplicado na rota: RateLimitMiddleware:login
      */
     public function login(): void
     {
@@ -83,8 +77,9 @@ class AuthController extends Controller
             $this->redirect('auth/login');
         }
 
-        $data   = $request->validated();
-        $result = $this->authService->login($data['email'], $data['password']);
+        $data     = $request->validated();
+        $remember = isset($_POST['remember']) && $_POST['remember'] === '1';
+        $result   = $this->authService->login($data['email'], $data['password'], $remember);
 
         if (!$result['success']) {
             Session::flash('error', $result['message']);
@@ -97,7 +92,6 @@ class AuthController extends Controller
 
     /**
      * POST /auth/register
-     * Validação: RegisterRequest (name, email único, password confirmada)
      */
     public function register(): void
     {
@@ -138,7 +132,7 @@ class AuthController extends Controller
 
     /**
      * POST /auth/forgot-password
-     * Validação: ForgotPasswordRequest (email obrigatório+válido)
+     * Rate limit aplicado na rota: RateLimitMiddleware:forgot
      */
     public function forgotSend(): void
     {
@@ -153,8 +147,7 @@ class AuthController extends Controller
         $email = $request->get('email');
         $user  = (new User())->findByEmail($email);
 
-        // Envia e-mail apenas se o usuário existir —
-        // mas sempre exibe a mesma mensagem (evita user enumeration)
+        // Envia e-mail apenas se existir — sempre exibe a mesma mensagem (anti user-enumeration)
         if ($user) {
             $token = (new PasswordReset())->createToken($email);
             $link  = url('auth/reset-password?token=' . urlencode($token));
@@ -176,23 +169,6 @@ class AuthController extends Controller
 
     /**
      * POST /auth/reset-password
-     * Validação: ResetPasswordRequest (token válido, password+confirm)
-     *
-     * ── BUG CORRIGIDO #10 ────────────────────────────────────────────────────
-     * Antes: o controller executava a query de UPDATE diretamente sobre o PDO,
-     * fazendo password_hash() inline — duplicando a lógica que já existe em
-     * User::updatePassword(). Isso viola o princípio DRY e significa que se
-     * o custo do bcrypt for alterado em User::updatePassword(), o reset de senha
-     * continuaria usando o valor antigo hardcoded aqui.
-     *
-     * Além disso, o campo 'confirm' do ResetPasswordRequest (diferente de
-     * 'password_confirmation' do RegisterRequest) era usado em validated(), mas
-     * o campo do formulário de reset usa 'confirm' como nome — o que estava
-     * correto no Request, mas o controller antigo não documentava essa diferença,
-     * tornando-o confuso.
-     *
-     * Solução: delegar a atualização de senha para User::updatePassword(),
-     * centralizando a lógica de hashing em um único lugar.
      */
     public function resetSave(): void
     {
@@ -208,8 +184,6 @@ class AuthController extends Controller
         $resetModel = new PasswordReset();
         $record     = $resetModel->findValid($data['token']);
 
-        // Busca o usuário pelo e-mail do token e atualiza a senha via model
-        // (centraliza o hashing em User::updatePassword)
         $user = (new User())->findByEmail($record->email);
 
         if (!$user) {
@@ -218,7 +192,6 @@ class AuthController extends Controller
         }
 
         (new User())->updatePassword((int) $user->id, $data['password']);
-
         $resetModel->consume($data['token']);
 
         Session::flash('success', 'Senha redefinida com sucesso! Faça o login.');

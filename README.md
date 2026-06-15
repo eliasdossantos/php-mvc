@@ -105,6 +105,7 @@ O projeto possui mecanismos nativos para mitigação das vulnerabilidades mais c
 - Escape automático contra XSS
 - Sessões seguras
 - Security Headers
+- Rate Limiting (proteção contra força bruta)
 - Prepared Statements obrigatórios
 - Controle de acesso por middleware
 
@@ -402,9 +403,19 @@ Ao contribuir, você concorda que sua contribuição será licenciada sob os ter
 
 ---
 
-## Changelog
+## Versões e Atualizações
 
-Consulte:
+> [!IMPORTANT]
+> **Consulte as [Releases](https://github.com/eliasdossantos/php-mvc/releases) antes de atualizar.**
+> Cada versão pode incluir correções de segurança, novas funcionalidades ou migrações de banco de dados que precisam ser executadas manualmente. Atualizar sem ler o release correspondente pode causar comportamentos inesperados.
+
+As releases seguem o padrão [Semantic Versioning](https://semver.org/lang/pt-BR/) (`MAJOR.MINOR.PATCH`):
+
+- **PATCH** — correções de bugs e ajustes internos sem impacto na API.
+- **MINOR** — novas funcionalidades retrocompatíveis (ex.: novos middlewares, recursos de segurança).
+- **MAJOR** — mudanças que quebram compatibilidade com versões anteriores.
+
+Para o histórico detalhado de cada versão, consulte também:
 
 ```text
 CHANGELOG.md

@@ -13,19 +13,21 @@ $router->get('/', [HomeController::class, 'index'])->name('home');
 // ── Autenticação (apenas visitantes) ─────────────────────────────────────────
 $router->group(['prefix' => '/auth', 'middleware' => ['GuestMiddleware']], function (Router $r) {
     $r->get('/login',            [AuthController::class, 'loginForm'])->name('auth.login');
-    $r->post('/login',           [AuthController::class, 'login'],        ['CsrfMiddleware']);
     $r->get('/register',         [AuthController::class, 'registerForm'])->name('auth.register');
-    $r->post('/register',        [AuthController::class, 'register'],     ['CsrfMiddleware']);
     $r->get('/forgot-password',  [AuthController::class, 'forgotForm'])->name('auth.forgot');
-    $r->post('/forgot-password', [AuthController::class, 'forgotSend'],   ['CsrfMiddleware']);
     $r->get('/reset-password',   [AuthController::class, 'resetForm'])->name('auth.reset');
-    $r->post('/reset-password',  [AuthController::class, 'resetSave'],    ['CsrfMiddleware']);
+
+    // POST com CSRF + Rate Limit
+    $r->post('/login',           [AuthController::class, 'login'],       ['CsrfMiddleware', 'RateLimitMiddleware:login']);
+    $r->post('/register',        [AuthController::class, 'register'],    ['CsrfMiddleware']);
+    $r->post('/forgot-password', [AuthController::class, 'forgotSend'],  ['CsrfMiddleware', 'RateLimitMiddleware:forgot']);
+    $r->post('/reset-password',  [AuthController::class, 'resetSave'],   ['CsrfMiddleware']);
 });
 
 $router->get('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // ── Área protegida ────────────────────────────────────────────────────────────
-$router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], function (Router $r) {
+$router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware', 'SecurityHeadersMiddleware']], function (Router $r) {
     $r->get('', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── Adicione suas rotas aqui ──────────────────────────────────────────────

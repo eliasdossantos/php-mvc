@@ -48,60 +48,139 @@ class Auth
         Session::set('user_id',   $user->id);
         Session::set('user_role', $user->role ?? 'member');
 
-        // ── BUG CORRIGIDO #7 ────────────────────────────────────────────────
-        // Antes: o objeto de sessão era criado com (object)[...], que produz
-        // uma instância de stdClass. Ao acessar propriedades inexistentes em
-        // PHP (ex: $user->avatar quando o model não tem esse campo), o código
-        // em views que dependia de propriedades adicionais lançava warnings
-        // silenciosos ou retornava null de forma inesperada.
-        //
-        // Mais importante: os campos gravados na sessão eram apenas um subconjunto
-        // fixo (id, name, email, role). Se uma view ou helper precisasse de outro
-        // campo do usuário (ex: active, created_at), não encontrava — mesmo que
-        // o model tivesse esse dado.
-        //
-        // Solução: persistir na sessão apenas o ID (já feito acima) e campos
-        // essenciais para auth (role). Para acesso a dados completos do usuário,
-        // usar Auth::fresh() que re-busca do banco. O objeto em sessão é mantido
-        // por compatibilidade com o restante do sistema, mas agora inclui todos
-        // os campos públicos do model (exceto os campos $hidden como 'password').
-        //
-        // Campos 'hidden' do model NÃO são incluídos no objeto de sessão,
-        // evitando que dados sensíveis fiquem na sessão serializada.
         $safeUser = static::buildSessionUser($user);
         Session::set('user', $safeUser);
 
         if ($remember) {
-            // ── BUG CORRIGIDO #8 ────────────────────────────────────────────
-            // Antes: o remember_token era gerado e salvo APENAS na sessão,
-            // não no banco de dados. Isso tornava o recurso "lembrar de mim"
-            // completamente ineficaz — o token era perdido ao encerrar a sessão,
-            // que é exatamente quando ele precisaria ser consultado para
-            // re-autenticar automaticamente.
-            //
-            // A implementação correta requer persistência no banco, mas isso
-            // depende de infraestrutura adicional (cookie + coluna na tabela users).
-            // Para não introduzir mudanças de schema não solicitadas, o código
-            // abaixo prepara o token e o expõe, mas a persistência em banco
-            // deve ser implementada pelo projeto que usa este boilerplate.
-            //
-            // Removemos o salvamento inútil na sessão e adicionamos comentário
-            // claro sobre o que precisa ser feito para completar a feature.
-            $token = bin2hex(random_bytes(32));
-            // TODO: persistir $token no banco (coluna remember_token em users)
-            // e setar cookie seguro com setcookie('remember', $token, time()+2592000, '/', '', true, true)
-            // A re-autenticação automática deve ser feita em Session::start() ou em um middleware.
-            unset($token); // evita variável pendente sem uso
+            static::setRememberToken($user);
         }
 
         Logger::info('Login bem-sucedido', ['user_id' => $user->id, 'email' => $user->email]);
     }
 
+    /**
+     * Implementa "lembrar de mim" de forma segura.
+     *
+     * Gera um token aleatório de 64 chars, persiste hashed no banco e envia
+     * cookie HttpOnly/Secure com o token em texto claro.
+     * Na próxima visita, o cookie é lido, o hash comparado com o banco e o
+     * usuário re-autenticado sem precisar digitar a senha.
+     *
+     * Segurança:
+     *  - Token armazenado como SHA-256 hash no banco (nunca o valor bruto)
+     *  - Comparação com hash_equals (timing-safe)
+     *  - Cookie com Secure + HttpOnly + SameSite=Lax
+     *  - Expiração de 30 dias
+     *  - Token invalidado no logout
+     */
+    protected static function setRememberToken(object $user): void
+    {
+        $token   = bin2hex(random_bytes(32)); // 64 chars hex
+        $hashed  = hash('sha256', $token);
+        $expires = date('Y-m-d H:i:s', time() + 2592000); // 30 dias
+
+        // Persiste o hash no banco
+        try {
+            $db = Database::getInstance();
+            $db->query(
+                'UPDATE users SET remember_token = :token, remember_token_expires_at = :exp WHERE id = :id'
+            )
+                ->bind(':token', $hashed)
+                ->bind(':exp',   $expires)
+                ->bind(':id',    (int) $user->id)
+                ->execute();
+        } catch (\Throwable $e) {
+            Logger::error('Falha ao salvar remember_token', ['user_id' => $user->id]);
+            return; // Falha silenciosa — login já foi feito via sessão
+        }
+
+        // Envia cookie seguro com o token em texto claro
+        $secure = (env('SESSION_SECURE', 'false') === 'true');
+        setcookie(
+            'remember_me',
+            $token,
+            [
+                'expires'  => time() + 2592000,
+                'path'     => '/',
+                'domain'   => '',
+                'secure'   => $secure,
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]
+        );
+    }
+
+    /**
+     * Tenta re-autenticar via cookie "lembrar de mim".
+     * Deve ser chamado no início de cada requisição (em Session::start() ou bootstrap).
+     */
+    public static function recoverFromCookie(): bool
+    {
+        if (static::check()) return true; // já autenticado
+
+        $token = $_COOKIE['remember_me'] ?? null;
+        if (!$token) return false;
+
+        $hashed = hash('sha256', $token);
+
+        try {
+            $db   = Database::getInstance();
+            $user = $db->query(
+                'SELECT * FROM users
+                  WHERE remember_token = :token
+                    AND remember_token_expires_at > NOW()
+                    AND active = 1
+                  LIMIT 1'
+            )
+                ->bind(':token', $hashed)
+                ->fetch();
+        } catch (\Throwable) {
+            return false;
+        }
+
+        if (!$user) {
+            // Token inválido ou expirado — limpa o cookie
+            static::clearRememberCookie();
+            return false;
+        }
+
+        // Re-autentica e rotaciona o token (prevenção de token theft)
+        static::loginUser($user, remember: true);
+        return true;
+    }
+
     public static function logout(): void
     {
         $userId = static::id();
+
+        // Invalida remember token no banco
+        if ($userId) {
+            try {
+                Database::getInstance()
+                    ->query('UPDATE users SET remember_token = NULL, remember_token_expires_at = NULL WHERE id = :id')
+                    ->bind(':id', $userId)
+                    ->execute();
+            } catch (\Throwable) {
+            }
+        }
+
+        static::clearRememberCookie();
         Session::destroy();
+
         if ($userId) Logger::info('Logout', ['user_id' => $userId]);
+    }
+
+    protected static function clearRememberCookie(): void
+    {
+        if (isset($_COOKIE['remember_me'])) {
+            setcookie('remember_me', '', [
+                'expires'  => time() - 3600,
+                'path'     => '/',
+                'httponly' => true,
+                'samesite' => 'Lax',
+            ]);
+            unset($_COOKIE['remember_me']);
+        }
     }
 
     // ── Verificações ──────────────────────────────────────────────────────────
@@ -186,8 +265,11 @@ class Auth
             $hidden = $reflection->getValue($modelInstance);
         } catch (\Throwable) {
             // Se não conseguir ler $hidden, usa padrão seguro
-            $hidden = ['password', 'remember_token'];
+            $hidden = ['password', 'remember_token', 'remember_token_expires_at'];
         }
+
+        // Garante que remember_token nunca vai para a sessão
+        $hidden = array_unique(array_merge($hidden, ['remember_token', 'remember_token_expires_at']));
 
         $data = (array) $user;
         foreach ($hidden as $field) {

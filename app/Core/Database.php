@@ -165,13 +165,27 @@ class Database
 
     // ── Utilidades ────────────────────────────────────────────────────────────
 
-    /** Executa SQL direto (para migrations, seeds) */
-    public function exec(string $sql): int|false
+    /**
+     * Executa SQL direto (apenas para migrations e seeds).
+     *
+     * ⚠️  AVISO: este método NÃO usa prepared statements.
+     * NUNCA passe input de usuário aqui — use query()->bind() para isso.
+     * Uso correto: migrations, seeds, DDL estático em código controlado.
+     */
+    public function execMigration(string $sql): int|false
     {
         return $this->pdo->exec($sql);
     }
 
-    /** Retorna o PDO bruto (para operações avançadas) */
+    /**
+     * Retorna o PDO bruto para operações avançadas.
+     *
+     * ⚠️  AVISO: ao usar o PDO diretamente, você perde as proteções
+     * desta classe (logging, prepared statements obrigatórios).
+     * Prefira sempre query()->bind()->fetch() desta classe.
+     * Use getPdo() apenas para casos que o wrapper não cobre
+     * (ex: bulk insert com executemany, operações específicas de driver).
+     */
     public function getPdo(): \PDO
     {
         return $this->pdo;
