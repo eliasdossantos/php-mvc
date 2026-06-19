@@ -126,7 +126,14 @@ class Application
     protected function resolveHttpCode(\Throwable $e): int
     {
         $code = $e->getCode();
-        if ($code >= 400 && $code < 600) return $code;
+
+        if (is_numeric($code)) {
+            $code = (int) $code;
+
+            if ($code >= 400 && $code < 600) {
+                return $code;
+            }
+        }
 
         $map = [
             'NotFoundException'     => 404,
