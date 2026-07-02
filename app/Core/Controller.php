@@ -16,44 +16,106 @@ namespace Core;
  */
 abstract class Controller
 {
+    /**
+     * Layout padrão usado quando nenhum é informado explicitamente.
+     * Pode ser sobrescrito por controller filho: protected string $defaultLayout = 'admin';
+     * Ou globalmente via constante DEFAULT_LAYOUT definida no bootstrap da app.
+     */
+    protected string $defaultLayout = 'app';
+
     // ── Views ─────────────────────────────────────────────────────────────────
 
     /**
-     * Renderiza uma view dentro de um layout.
+     * Renderiza uma view, opcionalmente dentro de um layout.
      *
-     * @param string $view   Caminho dot-notation: 'auth.login', 'dashboard.index'
-     * @param array  $data   Variáveis passadas para a view
-     * @param string $layout Nome do layout (sem .php). '' = sem layout
+     * @param string            $view   Caminho dot-notation: 'auth.login', 'admin.home.index'
+     * @param array             $data   Variáveis passadas para a view
+     * @param string|false|null $layout Nome do layout (sem .php).
+     *                                  - string  -> usa o layout informado (com fallback se não existir)
+     *                                  - null    -> usa o layout padrão ($this->defaultLayout)
+     *                                  - false | '' -> força renderização SEM layout
      */
-    protected function view(string $view, array $data = [], string $layout = 'app'): void
+    protected function view(string $view, array $data = [], string|false|null $layout = null): void
     {
         extract($data, EXTR_SKIP);
 
-        $viewPath = VIEW_PATH . '/' . str_replace('.', '/', $view) . '.php';
+        $viewPath = $this->resolveViewPath($view);
 
         if (!file_exists($viewPath)) {
             throw new \RuntimeException("View [{$view}] não encontrada em [{$viewPath}].");
         }
 
-        if ($layout) {
-            ob_start();
-            require $viewPath;
-            $content = ob_get_clean();
+        $layoutName = $this->resolveLayoutName($layout);
+        $layoutPath = $layoutName ? $this->resolveLayoutPath($layoutName) : null;
 
-            $layoutPath = VIEW_PATH . '/layouts/' . $layout . '.php';
-            if (!file_exists($layoutPath)) {
-                throw new \RuntimeException("Layout [{$layout}] não encontrado em [{$layoutPath}].");
-            }
-            require $layoutPath;
-        } else {
+        // Sem layout resolvido (explicitamente desativado ou nenhum disponível) -> renderiza só a view
+        if ($layoutPath === null) {
             require $viewPath;
+            return;
         }
+
+        ob_start();
+        require $viewPath;
+        $content = ob_get_clean();
+
+        require $layoutPath;
     }
 
     /** Renderiza view sem layout (componentes parciais, emails, etc.) */
     protected function viewOnly(string $view, array $data = []): void
     {
-        $this->view($view, $data, '');
+        $this->view($view, $data, false);
+    }
+
+    // ── Resolução de caminhos (helpers internos) ─────────────────────────────
+
+    protected function resolveViewPath(string $view): string
+    {
+        return VIEW_PATH . '/' . str_replace('.', '/', $view) . '.php';
+    }
+
+    protected function resolveLayoutPath(string $layout): string
+    {
+        return VIEW_PATH . '/layouts/' . str_replace('.', '/', $layout) . '.php';
+    }
+
+    /**
+     * Decide qual nome de layout deve ser efetivamente usado, com fallback seguro:
+     *  1. $layout === false | ''  -> nenhum layout (retorna null)
+     *  2. $layout === null        -> tenta o layout padrão
+     *  3. $layout informado       -> tenta esse; se não existir, cai pro padrão; se o padrão também não existir, sem layout
+     */
+    protected function resolveLayoutName(string|false|null $layout): ?string
+    {
+        // Desativado explicitamente
+        if ($layout === false || $layout === '') {
+            return null;
+        }
+
+        $default = defined('DEFAULT_LAYOUT') ? DEFAULT_LAYOUT : $this->defaultLayout;
+
+        // Nenhum informado -> usa o padrão, se existir
+        if ($layout === null) {
+            return $this->layoutExists($default) ? $default : null;
+        }
+
+        // Layout específico informado
+        if ($this->layoutExists($layout)) {
+            return $layout;
+        }
+
+        // Fallback: layout informado não existe -> tenta o padrão
+        if ($this->layoutExists($default)) {
+            return $default;
+        }
+
+        // Nada disponível -> renderiza sem layout, sem quebrar a aplicação
+        return null;
+    }
+
+    protected function layoutExists(string $layout): bool
+    {
+        return $layout !== '' && file_exists($this->resolveLayoutPath($layout));
     }
 
     // ── Redirecionamento ──────────────────────────────────────────────────────
