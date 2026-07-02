@@ -37,6 +37,8 @@ abstract class Controller
      */
     protected function view(string $view, array $data = [], string|false|null $layout = null): void
     {
+        View::resetSections();
+
         extract($data, EXTR_SKIP);
 
         $viewPath = $this->resolveViewPath($view);
@@ -48,7 +50,6 @@ abstract class Controller
         $layoutName = $this->resolveLayoutName($layout);
         $layoutPath = $layoutName ? $this->resolveLayoutPath($layoutName) : null;
 
-        // Sem layout resolvido (explicitamente desativado ou nenhum disponível) -> renderiza só a view
         if ($layoutPath === null) {
             require $viewPath;
             return;
