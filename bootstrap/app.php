@@ -28,21 +28,25 @@ if (!file_exists($autoload)) {
 
 require $autoload;
 
-// ── 3. Variáveis de ambiente (.env) ──────────────────────────────────────────
+// ── 3. Alias global para uso direto de View::... ─────────────────────────────────────
+// Nas views, sem precisar de "use Core\View;"
+class_alias(\Core\View::class, 'View');
+
+// ── 4. Variáveis de ambiente (.env) ──────────────────────────────────────────
 
 $dotenv = Dotenv\Dotenv::createImmutable(ROOT_PATH);
 $dotenv->safeLoad();
 
-// ── 4. Configuração da aplicação ──────────────────────────────────────────────
+// ── 5. Configuração da aplicação ──────────────────────────────────────────────
 
 require CONFIG_PATH . '/app.php';
 
-// ── 5. Sessão + old input aging ───────────────────────────────────────────────
+// ── 6. Sessão + old input aging ───────────────────────────────────────────────
 
 \Core\Session::start();
 \Core\Session::ageOldInput();
 
-// ── 6. Recuperação via cookie "lembrar de mim" ───────────────────────────────
+// ── 7. Recuperação via cookie "lembrar de mim" ───────────────────────────────
 // Tenta re-autenticar silenciosamente via cookie se a sessão estiver vazia.
 // Isso acontece quando o usuário fecha e reabre o navegador mas tinha marcado
 // "lembrar de mim". Só executa se houver o cookie e nenhuma sessão ativa.
@@ -50,7 +54,7 @@ if (!empty($_COOKIE['remember_me'])) {
     \Core\Auth::recoverFromCookie();
 }
 
-// ── 7. Limpeza periódica de cache de rate limit (1% das requisições) ─────────
+// ── 8. Limpeza periódica de cache de rate limit (1% das requisições) ─────────
 // Garante que arquivos de rate limit expirados não acumulem indefinidamente.
 if (rand(1, 100) === 1) {
     $rlDir = STORAGE_PATH . '/cache/ratelimit';
@@ -64,6 +68,6 @@ if (rand(1, 100) === 1) {
     }
 }
 
-// ── 8. Instancia e retorna a Application ─────────────────────────────────────
+// ── 9. Instancia e retorna a Application ─────────────────────────────────────
 
 return new \Core\Application();
