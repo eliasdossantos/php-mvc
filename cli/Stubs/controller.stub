@@ -20,6 +20,10 @@ class {{ ClassName }} extends Controller
 {
     public function __construct()
     {
+        // parent::__construct() já instancia o Request automaticamente,
+        // disponível em $this->request — não é necessário criá-lo manualmente
+        parent::__construct();
+
         // Inicialize dependências aqui
         // $this->repository = new {{ ModelName }}Repository();
     }

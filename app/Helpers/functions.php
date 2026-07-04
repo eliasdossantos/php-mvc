@@ -28,31 +28,6 @@ function storageUrl(string $path): string
     return url('storage/' . ltrim($path, '/'));
 }
 
-/**
- * ── BUG CORRIGIDO #14 ────────────────────────────────────────────────────────
- * Antes: route() dependia de `global $router`, que funciona apenas quando
- * $router é uma variável global no escopo onde a função é chamada.
- *
- * O problema: em routes/web.php, o arquivo é carregado via require dentro
- * de Application::run(), onde a variável local se chama $router. Porém,
- * quando route() é chamada dentro de uma view ou helper, `global $router`
- * busca $router no escopo global PHP — que pode não ter sido definido lá,
- * pois o require em Application::run() cria a variável apenas no escopo
- * do método, não no escopo global.
- *
- * Consequência: route() retornava url($name) como fallback silencioso,
- * gerando URLs incorretas sem nenhum aviso.
- *
- * Solução: usar um Registry estático simples para armazenar a instância do
- * router, eliminando a dependência de variável global.
- *
- * O Application::run() chama Router::setInstance($this->router) antes do
- * require de rotas, e route() passa a usar Router::getInstance().
- * 
- * NOTA: a variável global $router é MANTIDA em routes/web.php por
- * compatibilidade (o arquivo usa @var Router $router na docblock), mas
- * route() não depende mais dela.
- */
 function route(string $name, array $params = []): string
 {
     $router = \Core\Router::getInstance();

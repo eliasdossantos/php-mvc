@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use Core\Request;
+
 /**
  * Controller Base
  * ─────────────────────────────────────────────────────────────────────────────
@@ -16,6 +18,19 @@ namespace Core;
  */
 abstract class Controller
 {
+    /**
+     * Instância da requisição HTTP atual, disponível automaticamente
+     * em todo controller que estenda esta classe base.
+     * Não é necessário instanciar manualmente em controllers filhos,
+     * basta chamar parent::__construct().
+     */
+    protected Request $request;
+
+    public function __construct()
+    {
+        $this->request = new Request();
+    }
+
     /**
      * Layout padrão usado quando nenhum é informado explicitamente.
      * Pode ser sobrescrito por controller filho: protected string $defaultLayout = 'admin';
@@ -219,13 +234,17 @@ abstract class Controller
         throw new \RuntimeException($message ?: "HTTP {$code}", $code);
     }
 
-    protected function abortIf(bool $condition, int $code, string $message = ''): void
+    protected function abortIf(mixed $condition, int $code, string $message = ''): void
     {
-        if ($condition) $this->abort($code, $message);
+        if ($condition) {
+            $this->abort($code, $message);
+        }
     }
 
-    protected function abortUnless(bool $condition, int $code, string $message = ''): void
+    protected function abortUnless(mixed $condition, int $code, string $message = ''): void
     {
-        if (!$condition) $this->abort($code, $message);
+        if (!$condition) {
+            $this->abort($code, $message);
+        }
     }
 }
