@@ -227,6 +227,27 @@ abstract class Controller
         return $data;
     }
 
+    /**
+     * Valida um FormRequest e redireciona de volta se falhar.
+     * Evita repetir o bloco fails()/flash()/back() em todo controller.
+     */
+    protected function validateRequest(object $request, string $redirectBack = ''): array
+    {
+        if (!method_exists($request, 'fails')) {
+            throw new \InvalidArgumentException('Objeto informado não é um FormRequest válido.');
+        }
+
+        if ($request->fails()) {
+            Session::flash('error', $request->firstError());
+            Session::flashInput($request->all());
+
+            $back = $redirectBack ?: ($_SERVER['HTTP_REFERER'] ?? APP_URL);
+            $this->redirect($back);
+        }
+
+        return $request->validated();
+    }
+
     // ── Abort ─────────────────────────────────────────────────────────────────
 
     protected function abort(int $code, string $message = ''): never
