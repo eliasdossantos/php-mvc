@@ -9,19 +9,20 @@ namespace Core;
  * em helpers, emails, exports e qualquer lugar fora de um controller.
  *
  * Uso:
- *   View::render('components.sidebar');           // retorna string (componentes)
+ *   View::render('components.sidebar');            // retorna string (componentes)
  *   $html = View::capture('emails.welcome', ['user' => $user]);
- *   View::make('dashboard.index', $data, 'app');   // com layout
+ *   View::make('dashboard.index', $data, 'app');    // com layout
+ *   View::partial('admin.usuarios.form_fields');    // imprime direto (estilo require)
+ *   View::partialOnce('components.datepicker_js');  // imprime só uma vez por request
  *
  * Sections (estilo Blade @section/@yield):
- *   Na view filha:
- *     <?php View::start('styles'); ?>
+ *   Na view filha (chamadas dentro de tags PHP normais):
+ *     View::start('styles');
+ *         // <link rel="stylesheet" href="...">
+ *     View::end();
  *
-<link rel="stylesheet" href="...">
- * <?php View::end(); ?>
- *
- * No layout:
- * <?= View::section('styles') ?>
+ *   No layout (dentro de um bloco de eco, ex: echo View::section):
+ *     View::section('styles')
  */
 class View
 {
@@ -31,7 +32,10 @@ class View
     /** Pilha de sections abertas (suporta start() aninhado, se necessário) */
     protected static array $sectionStack = [];
 
-// ── Renderização ──────────────────────────────────────────────────────────
+    /** Registro de views já impressas via partialOnce(), indexado pelo nome da view */
+    protected static array $onceRendered = [];
+
+    // ── Renderização ──────────────────────────────────────────────────────────
 
     /**
      * Renderiza uma view e retorna o HTML como string.
@@ -70,6 +74,43 @@ class View
         }
     }
 
+    /**
+     * Renderiza uma view parcial diretamente no ponto de chamada.
+     *
+     * Funciona como um require com suporte a dot-notation e variáveis isoladas.
+     * Lança RuntimeException caso a view não exista.
+     *
+     * Ideal para reutilização de componentes e trechos de HTML.
+     *
+     * Exemplo:
+     * View::partial('components.card', ['item' => $item]);
+     */
+    public static function partial(string $view, array $data = []): void
+    {
+        echo static::render($view, $data);
+    }
+
+    /**
+     * Renderiza uma view parcial apenas uma vez por request.
+     *
+     * Funciona como require_once, evitando duplicação de conteúdo
+     * (scripts, modais, componentes globais etc.).
+     *
+     * Se a view já tiver sido renderizada, a chamada é ignorada.
+     *
+     * Exemplo:
+     * View::partialOnce('components.modal_confirmacao');
+     */
+    public static function partialOnce(string $view, array $data = []): void
+    {
+        if (isset(self::$onceRendered[$view])) {
+            return;
+        }
+
+        self::$onceRendered[$view] = true;
+        echo static::render($view, $data);
+    }
+
     public static function exists(string $view): bool
     {
         return file_exists(VIEW_PATH . '/' . str_replace('.', '/', $view) . '.php');
@@ -86,7 +127,7 @@ class View
         return $path;
     }
 
-// ── Sections ──────────────────────────────────────────────────────────────
+    // ── Sections ──────────────────────────────────────────────────────────────
 
     /** Inicia a captura de uma section nomeada */
     public static function start(string $name): void
@@ -118,10 +159,16 @@ class View
         return isset(self::$sections[$name]);
     }
 
-    /** Limpa todas as sections capturadas (chamado automaticamente por make()) */
+    /**
+     * Limpa todas as sections capturadas e o registro de partialOnce().
+     * Chamado automaticamente por make() no início de cada renderização
+     * de página, para não vazar estado entre requests (ex: CLI, testes,
+     * ou múltiplas chamadas a View::make() no mesmo processo).
+     */
     public static function resetSections(): void
     {
         self::$sections = [];
         self::$sectionStack = [];
+        self::$onceRendered = [];
     }
 }

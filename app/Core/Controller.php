@@ -15,6 +15,16 @@ use Core\Request;
  *  - Nenhuma lógica de negócio aqui
  *  - Apenas infraestrutura de resposta HTTP
  *  - Métodos protected para acesso exclusivo dos controllers filhos
+ *
+ * CSRF automático em forms:
+ *   Toda página renderizada via view() passa pela injeção automática de
+ *   csrf_field() em qualquer <form> com method="post" (ou put/patch/delete)
+ *   que ainda não tenha um campo _csrf_token. Funciona tanto para views que
+ *   usam sections (View::start/end) quanto para views que só imprimem HTML
+ *   direto, porque a injeção roda sobre a página inteira já renderizada
+ *   (view + layout), não sobre pedaços isolados.
+ *   Forms sem atributo "method" ou com method="get" são ignorados,
+ *   pois são tratados como GET (não alteram estado, não precisam de CSRF).
  */
 abstract class Controller
 {
@@ -65,22 +75,74 @@ abstract class Controller
         $layoutName = $this->resolveLayoutName($layout);
         $layoutPath = $layoutName ? $this->resolveLayoutPath($layoutName) : null;
 
+        // ── Captura a página inteira (view + layout) num único buffer ──────────
+        // Isso garante que a injeção de CSRF enxergue o HTML final completo,
+        // independente de a view usar sections (View::start/end) ou $content direto.
+        ob_start();
+
         if ($layoutPath === null) {
             require $viewPath;
-            return;
+        } else {
+            ob_start();
+            require $viewPath;
+            $content = ob_get_clean();
+
+            require $layoutPath;
         }
 
-        ob_start();
-        require $viewPath;
-        $content = ob_get_clean();
-
-        require $layoutPath;
+        echo $this->injectCsrfTokens(ob_get_clean());
     }
 
     /** Renderiza view sem layout (componentes parciais, emails, etc.) */
     protected function viewOnly(string $view, array $data = []): void
     {
         $this->view($view, $data, false);
+    }
+
+    /**
+     * Injeta automaticamente o csrf_field() em qualquer <form> presente no
+     * HTML final renderizado, para que ninguém esqueça de proteger o formulário.
+     *
+     * Regras:
+     *  - Forms SEM atributo "method" são tratados como GET implícito
+     *    (padrão do HTML) e são ignorados — GET não deve alterar estado
+     *    no servidor, então não precisa de CSRF.
+     *  - Forms com method="get" (case-insensitive) também são ignorados.
+     *  - Se o form já contém um campo "_csrf_token" (colocado manualmente
+     *    com csrf_field()), nada é duplicado.
+     *  - Caso contrário (method="post", "put", "patch", "delete" etc.),
+     *    o token é inserido logo após a tag de abertura do <form>.
+     *
+     * Uso: chamado automaticamente por view() — não precisa chamar direto.
+     */
+    protected function injectCsrfTokens(string|false $html): string
+    {
+        $html = $html ?: '';
+
+        return preg_replace_callback(
+            '/<form\b([^>]*)>(.*?)<\/form>/is',
+            function (array $m): string {
+                [$full, $attrs, $body] = $m;
+
+                // Sem atributo "method" -> GET implícito (padrão HTML), não precisa de CSRF
+                if (!preg_match('/method\s*=\s*["\']([^"\']*)["\']/i', $attrs, $methodMatch)) {
+                    return $full;
+                }
+
+                // method="get" explícito -> também não precisa de CSRF
+                if (strtolower($methodMatch[1]) === 'get') {
+                    return $full;
+                }
+
+                // Já tem token manual — não duplica
+                if (str_contains($body, '_csrf_token')) {
+                    return $full;
+                }
+
+                return "<form{$attrs}>" . \csrf_field() . $body . '</form>';
+            },
+            $html
+        ) ?? $html;
     }
 
     // ── Resolução de caminhos (helpers internos) ─────────────────────────────
