@@ -3,6 +3,7 @@
 namespace Cli\Commands;
 
 use Cli\Command;
+use Cli\Migrator;
 use Cli\Output;
 
 /**
@@ -16,13 +17,7 @@ class MigrateCommand extends Command
 {
     public function handle(): bool
     {
-        $fresh      = $this->hasOption('fresh');
-        $migrateFile = ROOT_PATH . '/database/migrate.php';
-
-        if (!file_exists($migrateFile)) {
-            Output::error('Arquivo database/migrate.php não encontrado.');
-            return false;
-        }
+        $fresh = $this->hasOption('fresh');
 
         if ($fresh) {
             Output::warn('--fresh: todas as tabelas serão removidas e recriadas!');
@@ -31,13 +26,13 @@ class MigrateCommand extends Command
         Output::info('Executando migrations…');
         Output::newline();
 
-        // Passa o flag --fresh para o script de migration
-        $args = $fresh ? ['mvc', '--fresh'] : ['mvc'];
+        $migrator = new Migrator();
+        $result   = $migrator->run($fresh, function (string $line) {
+            Output::line($line);
+        });
 
-        // Inclui o runner de migrations no contexto atual
-        // (mantém variáveis de ambiente já carregadas)
-        $argv = $args;
-        require $migrateFile;
+        Output::newline();
+        Output::success("{$result['ran']} migration(s) executada(s), {$result['skipped']} ignorada(s).");
 
         return true;
     }

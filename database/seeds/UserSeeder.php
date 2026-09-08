@@ -21,13 +21,11 @@ if (file_exists($envFile)) {
     }
 }
 
-$config = require CONFIG_PATH . '/database.php';
-$conn   = $config['connections'][$config['default']];
-$dsn    = "mysql:host={$conn['host']};port={$conn['port']};dbname={$conn['database']};charset={$conn['charset']}";
+require ROOT_PATH . '/vendor/autoload.php';
 
 try {
-    $pdo = new PDO($dsn, $conn['username'], $conn['password'], [PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION]);
-} catch (PDOException $e) {
+    $pdo = \Core\Database::getInstance()->getPdo();
+} catch (\Throwable $e) {
     die("❌  Conexão falhou: " . $e->getMessage() . "\n");
 }
 
@@ -39,8 +37,9 @@ $users = [
 echo "\n🌱  Seeding usuários…\n\n";
 
 foreach ($users as $u) {
-    $exists = $pdo->prepare("SELECT id FROM users WHERE email = ?")->execute([$u['email']]);
-    $row    = $pdo->query("SELECT id FROM users WHERE email = '{$u['email']}'")->fetch();
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE email = :email");
+    $stmt->execute([':email' => $u['email']]);
+    $row = $stmt->fetch();
 
     if ($row) {
         echo "  ! {$u['email']} já existe — ignorado.\n";

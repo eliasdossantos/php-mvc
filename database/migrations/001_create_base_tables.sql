@@ -1,6 +1,6 @@
 -- ─────────────────────────────────────────────────────────────────────────────
 -- Migration 001 — Tabelas base do boilerplate
--- Execute: php database/migrate.php
+-- Execute: php mvc migrate
 -- ─────────────────────────────────────────────────────────────────────────────
 -- ── Usuários ──────────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS users (
