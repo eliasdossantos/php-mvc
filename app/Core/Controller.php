@@ -249,7 +249,7 @@ abstract class Controller
 
     protected function auth(): bool
     {
-        return Session::has('user_id');
+        return Auth::check();
     }
 
     protected function user(): ?object
@@ -292,8 +292,13 @@ abstract class Controller
     /**
      * Valida um FormRequest e redireciona de volta se falhar.
      * Evita repetir o bloco fails()/flash()/back() em todo controller.
+     *
+     * @param array|null $flashOnly Campos a reenviar via flashInput() em caso de
+     * falha. null = reenvia tudo (padrão anterior).
+     * [] = não reenvia nada (ex.: formulário com senha).
+     * ['campo', ...] = reenvia só os campos listados.
      */
-    protected function validateRequest(object $request, string $redirectBack = ''): array
+    protected function validateRequest(object $request, string $redirectBack = '', ?array $flashOnly = null): array
     {
         if (!method_exists($request, 'fails')) {
             throw new \InvalidArgumentException('Objeto informado não é um FormRequest válido.');
@@ -301,7 +306,16 @@ abstract class Controller
 
         if ($request->fails()) {
             Session::flash('error', $request->firstError());
-            Session::flashInput($request->all());
+
+            if ($flashOnly === null) {
+                Session::flashInput($request->all());
+            } elseif ($flashOnly !== []) {
+                $old = [];
+                foreach ($flashOnly as $field) {
+                    $old[$field] = $request->old($field);
+                }
+                Session::flashInput($old);
+            }
 
             $back = $redirectBack ?: ($_SERVER['HTTP_REFERER'] ?? APP_URL);
             $this->redirect($back);

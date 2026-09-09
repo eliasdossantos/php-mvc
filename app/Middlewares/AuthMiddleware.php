@@ -3,6 +3,7 @@
 namespace App\Middlewares;
 
 use Core\Request;
+use Core\Auth;
 use Core\Session;
 
 /**
@@ -12,7 +13,7 @@ class AuthMiddleware
 {
     public function handle(Request $request): void
     {
-        if (!Session::has('user_id')) {
+        if (!Auth::check()) {
             Session::flash('error', 'Você precisa estar logado para acessar esta página.');
             redirect('auth/login');
         }

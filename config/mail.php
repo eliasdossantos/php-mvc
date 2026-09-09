@@ -2,9 +2,22 @@
 
 /**
  * Configuração de E-mail
- * driver = 'dev'  → não envia, retorna URL no payload JSON (testes)
- * driver = 'log'  → grava em storage/logs/mail.log
- * driver = 'smtp' → envia via SMTP (PHPMailer ou implementação nativa)
+ *
+ * Define o driver e as configurações utilizadas pelo sistema de envio
+ * de e-mails.
+ *
+ * Drivers disponíveis:
+ *
+ *   dev
+ *     Não envia o e-mail. Gera uma URL para visualização/teste
+ *     da mensagem.
+ *
+ *   log
+ *     Não envia o e-mail. Registra a mensagem em
+ *     storage/logs/mail.log.
+ *
+ *   smtp
+ *     Envia o e-mail através de um servidor SMTP.
  */
 return [
     'driver'     => strtolower((string)(env('MAIL_DRIVER', 'dev'))),

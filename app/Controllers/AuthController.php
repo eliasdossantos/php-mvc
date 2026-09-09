@@ -70,14 +70,8 @@ class AuthController extends Controller
     public function login(): void
     {
         $request = new LoginRequest();
+        $data    = $this->validateRequest($request, 'auth/login', ['email']);
 
-        if ($request->fails()) {
-            Session::flash('error', $request->firstError());
-            Session::flashInput(['email' => $request->old('email')]);
-            $this->redirect('auth/login');
-        }
-
-        $data     = $request->validated();
         $remember = isset($_POST['remember']) && $_POST['remember'] === '1';
         $result   = $this->authService->login($data['email'], $data['password'], $remember);
 
@@ -96,17 +90,9 @@ class AuthController extends Controller
     public function register(): void
     {
         $request = new RegisterRequest();
+        $data    = $this->validateRequest($request, 'auth/register', ['name', 'email']);
 
-        if ($request->fails()) {
-            Session::flash('error', $request->firstError());
-            Session::flashInput([
-                'name'  => $request->old('name'),
-                'email' => $request->old('email'),
-            ]);
-            $this->redirect('auth/register');
-        }
-
-        $result = $this->authService->register($request->validated());
+        $result = $this->authService->register($data);
 
         if (!$result['success']) {
             Session::flash('error', $result['message']);
@@ -137,12 +123,7 @@ class AuthController extends Controller
     public function forgotSend(): void
     {
         $request = new ForgotPasswordRequest();
-
-        if ($request->fails()) {
-            Session::flash('error', $request->firstError());
-            Session::flashInput(['email' => $request->old('email')]);
-            $this->redirect('auth/forgot-password');
-        }
+        $this->validateRequest($request, 'auth/forgot-password', ['email']);
 
         $email = $request->get('email');
         $user  = (new User())->findByEmail($email);
@@ -173,14 +154,13 @@ class AuthController extends Controller
     public function resetSave(): void
     {
         $request = new ResetPasswordRequest();
+        $token   = $request->old('token');
 
-        if ($request->fails()) {
-            $token = $request->old('token');
-            Session::flash('error', $request->firstError());
-            $this->redirect('auth/reset-password?token=' . urlencode($token));
-        }
-
-        $data       = $request->validated();
+        $data = $this->validateRequest(
+            $request,
+            'auth/reset-password?token=' . urlencode($token),
+            []   // nunca reenvia senha/token via flashInput
+        );
         $resetModel = new PasswordReset();
         $record     = $resetModel->findValid($data['token']);
 
