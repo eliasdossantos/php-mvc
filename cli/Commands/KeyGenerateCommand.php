@@ -4,6 +4,7 @@ namespace Cli\Commands;
 
 use Cli\Command;
 use Cli\Output;
+use Core\Session;
 
 /**
  * key:generate — Gera uma chave de aplicação segura
@@ -57,10 +58,8 @@ class KeyGenerateCommand extends Command
      */
     private function generateSecureKey(): string
     {
-        // random_bytes() retorna 16 bytes (256 bits)
-        // bin2hex() converte para 32 caracteres hexadecimais
-        $randomBytes = random_bytes(16);
-        return bin2hex($randomBytes);
+        // 16 bytes (128 bits) -> 32 caracteres hexadecimais
+        return Session::generateToken(16);
     }
 
     /**

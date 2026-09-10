@@ -136,7 +136,7 @@ class AuthController extends Controller
             (new Mailer())->send(
                 to: $email,
                 subject: 'Redefinição de senha',
-                body: "<p>Olá, {$user->name}!</p>"
+                body: "<p>Olá, " . e($user->name) . "!</p>"
                     . "<p>Clique no link abaixo para redefinir sua senha:</p>"
                     . "<p><a href=\"{$link}\">{$link}</a></p>"
                     . "<p>O link expira em 1 hora.</p>",

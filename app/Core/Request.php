@@ -50,10 +50,22 @@ class Request
         return $uri !== '/' ? rtrim($uri, '/') : '/';
     }
 
-    public function isGet(): bool    { return $this->method() === 'GET'; }
-    public function isPost(): bool   { return $this->method() === 'POST'; }
-    public function isPut(): bool    { return $this->method() === 'PUT'; }
-    public function isDelete(): bool { return $this->method() === 'DELETE'; }
+    public function isGet(): bool
+    {
+        return $this->method() === 'GET';
+    }
+    public function isPost(): bool
+    {
+        return $this->method() === 'POST';
+    }
+    public function isPut(): bool
+    {
+        return $this->method() === 'PUT';
+    }
+    public function isDelete(): bool
+    {
+        return $this->method() === 'DELETE';
+    }
     public function isAjax(): bool
     {
         return strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
@@ -68,19 +80,19 @@ class Request
     /** Valor sanitizado de $_GET */
     public function get(string $key, mixed $default = null): mixed
     {
-        return isset($_GET[$key]) ? $this->sanitize($_GET[$key]) : $default;
+        return isset($_GET[$key]) ? static::sanitizeValue($_GET[$key]) : $default;
     }
 
     /** Valor sanitizado de $_POST */
     public function post(string $key, mixed $default = null): mixed
     {
-        return isset($_POST[$key]) ? $this->sanitize($_POST[$key]) : $default;
+        return isset($_POST[$key]) ? static::sanitizeValue($_POST[$key]) : $default;
     }
 
     /** Todos os dados POST sanitizados */
     public function all(): array
     {
-        return array_map([$this, 'sanitize'], $_POST);
+        return array_map([self::class, 'sanitizeValue'], $_POST);
     }
 
     /** Valor bruto de $_POST (sem sanitização — use com cuidado) */
@@ -154,11 +166,21 @@ class Request
 
     // ── Sanitização ───────────────────────────────────────────────────────────
 
-    protected function sanitize(mixed $value): mixed
+    /**
+     * Sanitiza um valor (string, array recursivo, ou passa intacto se não for string).
+     * Público e estático para ser reutilizável por FormRequest e SecurityHelper,
+     * evitando três implementações independentes do mesmo algoritmo.
+     */
+    public static function sanitizeValue(mixed $value): mixed
     {
         if (is_array($value)) {
-            return array_map([$this, 'sanitize'], $value);
+            return array_map([self::class, 'sanitizeValue'], $value);
         }
-        return htmlspecialchars(strip_tags(trim((string) $value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+        if (is_string($value)) {
+            return htmlspecialchars(strip_tags(trim($value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        }
+
+        return $value;
     }
 }

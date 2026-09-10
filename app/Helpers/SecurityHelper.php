@@ -2,6 +2,9 @@
 
 namespace App\Helpers;
 
+use Core\Request;
+use Core\Session;
+
 /**
  * SecurityHelper — Utilitários de Segurança
  * ─────────────────────────────────────────────────────────────────────────────
@@ -12,7 +15,7 @@ class SecurityHelper
 {
     public static function generateToken(int $bytes = 32): string
     {
-        return bin2hex(random_bytes($bytes));
+        return Session::generateToken($bytes);
     }
 
     public static function hashPassword(string $password): string
@@ -27,12 +30,12 @@ class SecurityHelper
 
     public static function sanitize(string $input): string
     {
-        return htmlspecialchars(strip_tags(trim($input)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+        return Request::sanitizeValue($input);
     }
 
     public static function sanitizeArray(array $data): array
     {
-        return array_map(fn($v) => is_array($v) ? static::sanitizeArray($v) : static::sanitize((string)$v), $data);
+        return Request::sanitizeValue($data);
     }
 
     public static function isValidEmail(string $email): bool

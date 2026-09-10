@@ -2,6 +2,7 @@
 
 namespace App\Requests;
 
+use Core\Request;
 use Core\Session;
 use Core\Validator;
 
@@ -112,7 +113,7 @@ abstract class FormRequest
      */
     public function sanitize(): array
     {
-        return $this->sanitizeRecursive($this->input);
+        return Request::sanitizeValue($this->input);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -215,7 +216,7 @@ abstract class FormRequest
         if (!$this->authorize()) {
             http_response_code(403);
             $isJson = str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')
-                   || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+                || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
 
             if ($isJson) {
                 header('Content-Type: application/json');
@@ -275,25 +276,6 @@ abstract class FormRequest
         }
 
         return $data;
-    }
-
-    /**
-     * Sanitização recursiva padrão:
-     * strings → trim + strip_tags + htmlspecialchars
-     * arrays  → recursivo
-     * outros  → sem alteração
-     */
-    private function sanitizeRecursive(mixed $value): mixed
-    {
-        if (is_array($value)) {
-            return array_map([$this, 'sanitizeRecursive'], $value);
-        }
-
-        if (is_string($value)) {
-            return htmlspecialchars(strip_tags(trim($value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
-        }
-
-        return $value;
     }
 
     /**

@@ -75,7 +75,7 @@ class Auth
      */
     protected static function setRememberToken(object $user): void
     {
-        $token   = bin2hex(random_bytes(32)); // 64 chars hex
+        $token   = Session::generateToken(); // 64 chars hex
         $hashed  = hash('sha256', $token);
         $expires = date('Y-m-d H:i:s', time() + 2592000); // 30 dias
 

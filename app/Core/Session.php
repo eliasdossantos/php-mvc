@@ -170,7 +170,7 @@ class Session
     public static function csrfToken(): string
     {
         if (!isset($_SESSION['_csrf_token'])) {
-            $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+            $_SESSION['_csrf_token'] = static::generateToken();
         }
         return $_SESSION['_csrf_token'];
     }
@@ -182,6 +182,19 @@ class Session
 
     public static function regenerateCsrf(): void
     {
-        $_SESSION['_csrf_token'] = bin2hex(random_bytes(32));
+        $_SESSION['_csrf_token'] = static::generateToken();
+    }
+
+    // ── Tokens genéricos ──────────────────────────────────────────────────────
+
+    /**
+     * Gera um token hexadecimal criptograficamente seguro.
+     * Reutilizado por CSRF, remember-me token, token de reset de senha
+     * e geração de APP_KEY — evita reimplementar bin2hex(random_bytes()) em
+     * cada lugar que precisa de um token aleatório.
+     */
+    public static function generateToken(int $bytes = 32): string
+    {
+        return bin2hex(random_bytes($bytes));
     }
 }

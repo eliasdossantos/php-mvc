@@ -3,6 +3,7 @@
 namespace App\Requests\Auth;
 
 use App\Requests\FormRequest;
+use Core\Request;
 
 /**
  * RegisterRequest
@@ -50,14 +51,14 @@ class RegisterRequest extends FormRequest
 
     /**
      * Sanitização:
-     *   - name  → ucwords + trim
-     *   - email → lowercase + trim
+     *   - name   → remove tags/escapa HTML (Request::sanitizeValue) antes de ucwords + trim
+     *   - email  → lowercase + trim
      *   - senhas → trim apenas (preserva caracteres especiais)
      */
     public function sanitize(): array
     {
         return [
-            'name'                  => ucwords(mb_strtolower(trim($this->input['name']  ?? ''), 'UTF-8')),
+            'name'                  => ucwords(mb_strtolower(Request::sanitizeValue($this->input['name'] ?? ''), 'UTF-8')),
             'email'                 => strtolower(trim($this->input['email'] ?? '')),
             'password'              => trim($this->input['password']              ?? ''),
             'password_confirmation' => trim($this->input['password_confirmation'] ?? ''),

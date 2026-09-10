@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Core\Model;
+use Core\Session;
 
 /**
  * PasswordReset Model
@@ -20,7 +21,7 @@ class PasswordReset extends Model
         $this->db->query("UPDATE {$this->table} SET used = 1 WHERE email = :e")
             ->bind(':e', $email)->execute();
 
-        $token     = bin2hex(random_bytes(32));
+        $token     = Session::generateToken();
         $expiresAt = date('Y-m-d H:i:s', strtotime('+1 hour'));
         $this->create(['email' => $email, 'token' => $token, 'expires_at' => $expiresAt, 'used' => 0]);
         return $token;
