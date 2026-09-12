@@ -48,35 +48,16 @@ class {{ ClassName }} extends Repository
     }
 
     /**
-     * Busca paginada com filtro de texto.
+     * Busca paginada com filtro de texto por nome.
+     * Usa o query builder do Model — evite escrever SQL manual aqui.
      *
-     * @return array{data: array, total: int, page: int, per_page: int, last_page: int}
+     * @return array{data: array, total: int, page: int, per_page: int, last_page: int, from: int, to: int}
      */
     public function search(string $term = '', int $page = 1, int $perPage = 15): array
     {
-        $like   = '%' . $term . '%';
-        $offset = ($page - 1) * $perPage;
-
-        $data = $this->db()
-            ->query("SELECT * FROM {{ tableName }}
-                     WHERE name LIKE :t
-                     ORDER BY id DESC LIMIT :lim OFFSET :off")
-            ->bind(':t',   $like)
-            ->bind(':lim', $perPage, \PDO::PARAM_INT)
-            ->bind(':off', $offset,  \PDO::PARAM_INT)
-            ->fetchAll();
-
-        $total = (int)($this->db()
-            ->query("SELECT COUNT(*) AS n FROM {{ tableName }} WHERE name LIKE :t")
-            ->bind(':t', $like)
-            ->fetch()->n ?? 0);
-
-        return [
-            'data'      => $data,
-            'total'     => $total,
-            'page'      => $page,
-            'per_page'  => $perPage,
-            'last_page' => (int)ceil($total / max(1, $perPage)),
-        ];
+        return $this->model()
+            ->where('name', '%' . $term . '%', 'LIKE')
+            ->orderBy('id', 'DESC')
+            ->paginate($perPage, $page);
     }
 }

@@ -5,10 +5,17 @@ namespace App\Requests\Users;
 use App\Requests\FormRequest;
 use Core\Auth;
 use Core\Session;
+use Core\Request;
 
 /**
  * UpdateUserRequest
  * ─────────────────────────────────────────────────────────────────────────────
+ * EXEMPLO DE REFERÊNCIA — não há um UserController neste boilerplate que use
+ * esta classe. Ela demonstra o padrão de "admin edita qualquer um, usuário
+ * comum edita só a si próprio" (autorização condicional, unique ignorando o
+ * próprio ID, senha opcional) — copie e adapte para qualquer recurso do seu
+ * projeto que precise dessa mesma forma de validação.
+ *
  * Valida a atualização de dados de um usuário.
  *
  * Campos validados:
@@ -77,7 +84,7 @@ class UpdateUserRequest extends FormRequest
     {
         $data = [
             'user_id' => (int) ($this->input['user_id'] ?? 0),
-            'name'    => ucwords(mb_strtolower(trim($this->input['name']  ?? ''), 'UTF-8')),
+            'name'    => ucwords(mb_strtolower(Request::sanitizeValue($this->input['name'] ?? ''), 'UTF-8')),
             'email'   => strtolower(trim($this->input['email'] ?? '')),
         ];
 

@@ -53,33 +53,14 @@ class {{ ClassName }} extends Model
     }
 
     /**
-     * Exemplo: busca paginada com filtro.
+     * Exemplo: busca paginada com filtro por nome.
+     * Usa o query builder do próprio Model — evite escrever SQL manual aqui.
      */
     public function search(string $term = '', int $page = 1, int $perPage = 15): array
     {
-        $like = '%' . $term . '%';
-        $offset = ($page - 1) * $perPage;
-
-        $data = $this->db
-            ->query("SELECT * FROM {$this->table}
-                     WHERE name LIKE :term
-                     ORDER BY id DESC LIMIT :lim OFFSET :off")
-            ->bind(':term', $like)
-            ->bind(':lim',  $perPage, \PDO::PARAM_INT)
-            ->bind(':off',  $offset,  \PDO::PARAM_INT)
-            ->fetchAll();
-
-        $total = (int)($this->db
-            ->query("SELECT COUNT(*) AS n FROM {$this->table} WHERE name LIKE :term")
-            ->bind(':term', $like)
-            ->fetch()->n ?? 0);
-
-        return [
-            'data'      => $data,
-            'total'     => $total,
-            'page'      => $page,
-            'per_page'  => $perPage,
-            'last_page' => (int)ceil($total / max(1, $perPage)),
-        ];
+        return $this
+            ->where('name', '%' . $term . '%', 'LIKE')
+            ->orderBy('id', 'DESC')
+            ->paginate($perPage, $page);
     }
 }

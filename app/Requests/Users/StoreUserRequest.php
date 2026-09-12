@@ -4,10 +4,16 @@ namespace App\Requests\Users;
 
 use App\Requests\FormRequest;
 use Core\Auth;
+use Core\Request;
 
 /**
  * StoreUserRequest
  * ─────────────────────────────────────────────────────────────────────────────
+ * EXEMPLO DE REFERÊNCIA — não há um UserController neste boilerplate que use
+ * esta classe. Ela demonstra o padrão de FormRequest para telas de gestão
+ * (autorização restrita a admin, validação de role) — copie e adapte para
+ * qualquer recurso do seu projeto que precise dessa mesma forma de validação.
+ *
  * Valida a criação de um novo usuário (painel administrativo).
  *
  * Campos validados:
@@ -53,7 +59,7 @@ class StoreUserRequest extends FormRequest
     public function sanitize(): array
     {
         return [
-            'name'                  => ucwords(mb_strtolower(trim($this->input['name']  ?? ''), 'UTF-8')),
+            'name'                  => ucwords(mb_strtolower(Request::sanitizeValue($this->input['name'] ?? ''), 'UTF-8')),
             'email'                 => strtolower(trim($this->input['email'] ?? '')),
             'password'              => trim($this->input['password']              ?? ''),
             'password_confirmation' => trim($this->input['password_confirmation'] ?? ''),
