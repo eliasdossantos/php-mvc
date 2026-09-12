@@ -48,6 +48,18 @@ abstract class Command
         return isset($this->options[$key]);
     }
 
+    /**
+     * Pergunta algo ao usuário e lê a resposta do terminal (STDIN).
+     * Usado por comandos destrutivos que precisam de confirmação explícita
+     * antes de agir (ex.: migrate --fresh).
+     */
+    protected function ask(string $question): string
+    {
+        fwrite(STDOUT, "  {$question}");
+        $line = fgets(STDIN);
+        return $line === false ? '' : trim($line);
+    }
+
     // ── Geração de arquivos via Stubs ──────────────────────────────────────
 
     /**

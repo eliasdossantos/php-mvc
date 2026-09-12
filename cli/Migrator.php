@@ -106,7 +106,13 @@ class Migrator
     // Necessário porque o entry point `mvc` só define ROOT_PATH e o autoload —
     // não carrega dotenv nem config/app.php (mesmo motivo pelo qual os
     // seeders também fazem sua própria preparação de ambiente).
-    private function bootstrapEnvironment(): void
+    //
+    // Público (não mais private) porque MigrateCommand precisa chamá-lo
+    // ANTES de run(), para ter acesso a APP_ENV/config do banco na hora de
+    // decidir se pede confirmação para --fresh. Idempotente: pode ser chamado
+    // mais de uma vez na mesma requisição sem efeito colateral (require_once
+    // evita redefinir as constantes de config/app.php duas vezes).
+    public function bootstrapEnvironment(): void
     {
         if (!defined('CONFIG_PATH')) {
             define('CONFIG_PATH', ROOT_PATH . '/config');
@@ -121,7 +127,20 @@ class Migrator
         $dotenv = \Dotenv\Dotenv::createImmutable(ROOT_PATH);
         $dotenv->safeLoad();
 
-        require CONFIG_PATH . '/app.php';
+        require_once CONFIG_PATH . '/app.php';
+    }
+
+    /**
+     * Nome do banco de dados configurado atualmente (conexão padrão).
+     * Usado por MigrateCommand para a confirmação do --fresh.
+     * Chame bootstrapEnvironment() antes, se ainda não tiver sido chamado
+     * nesta requisição (precisa de CONFIG_PATH definido).
+     */
+    public function currentDatabaseName(): string
+    {
+        $config = require CONFIG_PATH . '/database.php';
+        $conn   = $config['connections'][$config['default']];
+        return $conn['database'];
     }
 
     // ── Provisionamento do banco ─────────────────────────────────────────────

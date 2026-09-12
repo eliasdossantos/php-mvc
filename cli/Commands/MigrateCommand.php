@@ -17,17 +17,37 @@ class MigrateCommand extends Command
 {
     public function handle(): bool
     {
-        $fresh = $this->hasOption('fresh');
+        $fresh    = $this->hasOption('fresh');
+        $migrator = new Migrator();
 
         if ($fresh) {
-            Output::warn('--fresh: todas as tabelas serão removidas e recriadas!');
+            // Precisa do bootstrap ANTES de decidir se pede confirmação,
+            // porque APP_ENV e a config do banco só existem depois dele rodar.
+            $migrator->bootstrapEnvironment();
+
+            if (APP_ENV === 'production' && !$this->hasOption('force')) {
+                Output::error('--fresh em produção requer a flag --force explícita.');
+                Output::line('  Isso existe para evitar apagar dados de produção por engano.');
+                return false;
+            }
+
+            if (!$this->hasOption('yes')) {
+                $dbName = $migrator->currentDatabaseName();
+
+                Output::warn("Isso vai APAGAR TODAS AS TABELAS do banco \"{$dbName}\"! Esta ação não pode ser desfeita.");
+                $confirm = $this->ask('Digite o nome do banco para confirmar: ');
+
+                if ($confirm !== $dbName) {
+                    Output::error('Confirmação não corresponde ao nome do banco. Operação cancelada.');
+                    return false;
+                }
+            }
         }
 
         Output::info('Executando migrations…');
         Output::newline();
 
-        $migrator = new Migrator();
-        $result   = $migrator->run($fresh, function (string $line) {
+        $result = $migrator->run($fresh, function (string $line) {
             Output::line($line);
         });
 
