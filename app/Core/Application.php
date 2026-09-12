@@ -2,6 +2,8 @@
 
 namespace Core;
 
+use App\Middlewares\SecurityHeadersMiddleware;
+
 /**
  * Kernel da Aplicação
  * ─────────────────────────────────────────────────────────────────────────────
@@ -43,6 +45,10 @@ class Application
 
         $this->configureErrorHandling();
         $this->setSecurityHeaders();
+
+        // CSP, Permissions-Policy e HSTS — aplicado globalmente, não só em
+        // rotas específicas, para cobrir também as páginas de autenticação.
+        (new SecurityHeadersMiddleware())->handle($this->request);
     }
 
     // ── Ciclo de vida principal ───────────────────────────────────────────────

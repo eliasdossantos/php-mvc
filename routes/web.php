@@ -27,7 +27,7 @@ $router->group(['prefix' => '/auth', 'middleware' => ['GuestMiddleware']], funct
 $router->get('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
 
 // ── Área protegida ────────────────────────────────────────────────────────────
-$router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware', 'SecurityHeadersMiddleware']], function (Router $r) {
+$router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], function (Router $r) {
     $r->get('', [DashboardController::class, 'index'])->name('dashboard');
 
     // ── Adicione suas rotas aqui ──────────────────────────────────────────────

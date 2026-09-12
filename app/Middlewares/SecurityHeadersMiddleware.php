@@ -10,11 +10,9 @@ use Core\Request;
  * Complementa os headers básicos já definidos em Application::setSecurityHeaders().
  * Adiciona Content-Security-Policy, Permissions-Policy e HSTS.
  *
- * Uso nas rotas (aplique em grupos protegidos ou globalmente no bootstrap):
- *   $router->group(['middleware' => ['SecurityHeadersMiddleware']], function ($r) { ... });
- *
- * Para aplicar globalmente, chame em bootstrap/app.php antes de Application::run():
- *   (new \App\Middlewares\SecurityHeadersMiddleware())->handle(new \Core\Request());
+ * Aplicado globalmente pelo próprio Core\Application (no construtor), para
+ * toda requisição — inclusive páginas públicas e de autenticação. Não é
+ * necessário (nem recomendado) adicioná-lo manualmente em grupos de rota.
  */
 class SecurityHeadersMiddleware
 {

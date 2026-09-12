@@ -46,7 +46,7 @@ abstract class Controller
      * Pode ser sobrescrito por controller filho: protected string $defaultLayout = 'admin';
      * Ou globalmente via constante DEFAULT_LAYOUT definida no bootstrap da app.
      */
-    protected string $defaultLayout = 'app';
+    protected string $defaultLayout = 'main';
 
     // ── Views ─────────────────────────────────────────────────────────────────
 

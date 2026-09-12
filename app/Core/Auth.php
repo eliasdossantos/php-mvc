@@ -231,7 +231,7 @@ class Auth
     }
 
     /** Garante que o usuário tem determinada role */
-    public static function requireRole(string $role, string $redirectTo = 'app/dashboard'): void
+    public static function requireRole(string $role, string $redirectTo = 'dashboard'): void
     {
         static::require();
         if (!static::is($role)) {
