@@ -35,9 +35,10 @@ class Migrator
 
         $this->ensureDatabaseExists($conn, $dbName, $fresh, $report);
 
-        $pdo = \Core\Database::getInstance()->getPdo();
+        $db  = \Core\Database::getInstance();
+        $pdo = $db->getPdo(); // ainda necessário para os prepare() abaixo
 
-        $pdo->exec("
+        $db->execMigration("
             CREATE TABLE IF NOT EXISTS `{$this->migrationsTable}` (
                 `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
                 `migration` VARCHAR(255) NOT NULL,
@@ -86,7 +87,7 @@ class Migrator
                 if (trim($statement) === '') {
                     continue;
                 }
-                $pdo->exec($statement);
+                $db->execMigration($statement);
             }
 
             $insert = $pdo->prepare("

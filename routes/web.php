@@ -19,7 +19,7 @@ $router->group(['prefix' => '/auth', 'middleware' => ['GuestMiddleware']], funct
 
     // POST com CSRF + Rate Limit
     $r->post('/login',           [AuthController::class, 'login'],       ['CsrfMiddleware', 'RateLimitMiddleware:login']);
-    $r->post('/register',        [AuthController::class, 'register'],    ['CsrfMiddleware']);
+    $r->post('/register',        [AuthController::class, 'register'],    ['CsrfMiddleware', 'RateLimitMiddleware:register']);
     $r->post('/forgot-password', [AuthController::class, 'forgotSend'],  ['CsrfMiddleware', 'RateLimitMiddleware:forgot']);
     $r->post('/reset-password',  [AuthController::class, 'resetSave'],   ['CsrfMiddleware']);
 });

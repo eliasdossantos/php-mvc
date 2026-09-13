@@ -16,18 +16,20 @@ use Core\Session;
  *   $router->post('/auth/forgot-password', [...], ['RateLimitMiddleware:forgot']);
  *
  * Perfis disponíveis (configurados em $profiles abaixo):
- *   login   → 5 tentativas por 15 min por IP+email
- *   forgot  → 3 tentativas por 60 min por IP
- *   api     → 60 requisições por 1 min por IP
- *   default → 30 requisições por 1 min por IP
+ *   login    → 5 tentativas por 15 min por IP+email
+ *   register → 5 tentativas por 60 min por IP
+ *   forgot   → 3 tentativas por 60 min por IP
+ *   api      → 60 requisições por 1 min por IP
+ *   default  → 30 requisições por 1 min por IP
  */
 class RateLimitMiddleware
 {
     protected array $profiles = [
-        'login'   => ['max' => 5,  'window' => 900,  'key' => 'ip_email'], // 15 min
-        'forgot'  => ['max' => 3,  'window' => 3600, 'key' => 'ip'],       // 60 min
-        'api'     => ['max' => 60, 'window' => 60,   'key' => 'ip'],       // 1 min
-        'default' => ['max' => 30, 'window' => 60,   'key' => 'ip'],       // 1 min
+        'login'    => ['max' => 5,  'window' => 900,  'key' => 'ip_email'], // 15 min
+        'register' => ['max' => 5,  'window' => 3600, 'key' => 'ip'],       // 60 min
+        'forgot'   => ['max' => 3,  'window' => 3600, 'key' => 'ip'],       // 60 min
+        'api'      => ['max' => 60, 'window' => 60,   'key' => 'ip'],       // 1 min
+        'default'  => ['max' => 30, 'window' => 60,   'key' => 'ip'],       // 1 min
     ];
 
     public function handle(Request $request, string $profile = 'default'): void

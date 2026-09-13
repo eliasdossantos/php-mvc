@@ -95,7 +95,7 @@ class Auth
         }
 
         // Envia cookie seguro com o token em texto claro
-        $secure = (env('SESSION_SECURE', 'false') === 'true');
+        $secure = Session::shouldUseSecureCookies(defined('APP_ENV') ? APP_ENV : 'production');
         setcookie(
             'remember_me',
             $token,

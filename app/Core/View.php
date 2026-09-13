@@ -11,7 +11,7 @@ namespace Core;
  * Uso:
  *   View::render('components.sidebar');            // retorna string (componentes)
  *   $html = View::capture('emails.welcome', ['user' => $user]);
- *   View::make('dashboard.index', $data, 'app');    // com layout
+ *   View::make('dashboard.index', $data, 'main');    // com layout
  *   View::partial('admin.usuarios.form_fields');    // imprime direto (estilo require)
  *   View::partialOnce('components.datepicker_js');  // imprime só uma vez por request
  *
@@ -57,7 +57,7 @@ class View
     }
 
     /** Renderiza view com layout (equivalente a Controller::view) */
-    public static function make(string $view, array $data = [], string|false|null $layout = 'app'): void
+    public static function make(string $view, array $data = [], string|false|null $layout = 'main'): void
     {
         static::resetSections();
 
@@ -127,7 +127,7 @@ class View
         return $path;
     }
 
-    // ── Sections ──────────────────────────────────────────────────────────────
+// ── Sections ──────────────────────────────────────────────────────────────
 
     /** Inicia a captura de uma section nomeada */
     public static function start(string $name): void

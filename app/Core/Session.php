@@ -36,7 +36,7 @@ class Session
             'lifetime' => (int)(env('SESSION_LIFETIME', 120)) * 60,
             'path'     => '/',
             'domain'   => '',
-            'secure'   => env('SESSION_SECURE', 'false') === 'true',
+            'secure'   => static::shouldUseSecureCookies(defined('APP_ENV') ? APP_ENV : 'production'),
             'httponly' => true,
             'samesite' => 'Lax',
         ]);
@@ -52,6 +52,23 @@ class Session
             session_regenerate_id(true);
             $_SESSION['_regen_at'] = $now;
         }
+    }
+
+    /**
+     * Decide se cookies (sessão, remember-me, etc.) devem usar a flag Secure.
+     * Verdadeiro se o ambiente for produção OU se SESSION_SECURE=true no .env.
+     * "Produção força Secure" existe para não depender de ninguém lembrar de
+     * configurar a variável corretamente antes de subir para produção.
+     *
+     * Único ponto de verdade — antes, config/app.php, Session::start() e
+     * Auth::setRememberToken() calculavam isso cada um à sua maneira, e o
+     * ini_set() de config/app.php era silenciosamente anulado pelo
+     * session_set_cookie_params() explícito de Session::start().
+     */
+    public static function shouldUseSecureCookies(string $env): bool
+    {
+        return $env === 'production'
+            || filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN);
     }
 
     // ── CRUD ─────────────────────────────────────────────────────────────────
@@ -184,7 +201,7 @@ class Session
     {
         $_SESSION['_csrf_token'] = static::generateToken();
     }
-
+    
     // ── Tokens genéricos ──────────────────────────────────────────────────────
 
     /**

@@ -286,6 +286,7 @@ abstract class Model
      */
     public function paginate(int $perPage = 15, int $page = 1): array
     {
+        $perPage  = max(1, $perPage); // evita divisão por zero se perPage <= 0
         $total    = $this->count();                              // estado preservado
         $lastPage = (int) ceil($total / $perPage);
         $page     = max(1, min($page, max(1, $lastPage)));

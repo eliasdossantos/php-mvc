@@ -38,9 +38,8 @@ if (!headers_sent()) {
     ini_set('session.gc_maxlifetime', (int)($_ENV['SESSION_LIFETIME'] ?? 120) * 60);
 
     // Força cookie seguro em produção mesmo que a variável esteja errada
-    $forceSecure = ($env === 'production') ||
-        filter_var($_ENV['SESSION_SECURE'] ?? false, FILTER_VALIDATE_BOOLEAN);
-    if ($forceSecure) {
+    // (regra centralizada em Core\Session::shouldUseSecureCookies())
+    if (\Core\Session::shouldUseSecureCookies($env)) {
         ini_set('session.cookie_secure', 1);
     }
 }
