@@ -1,42 +1,104 @@
-<!-- app/Views/{{ viewPath }}/create.php -->
-<div class="page-header">
-    <div>
-        <a href="<?= url('dashboard/{{ routePrefix }}') ?>" class="btn btn-outline btn-sm">
-            ← Voltar
-        </a>
-        <h1 style="margin-top:12px"><?= e($title ?? 'Novo {{ ModelName }}') ?></h1>
+<!-- Aqui enviamos para o template principal o título da página -->
+
+<?php View::start('title'); ?>
+
+<?= e($title ?? 'Novo {{ ModelName }}') ?> | Admin
+
+<?php View::end(); ?>
+
+
+<!-- Aqui enviamos para o template principal os estilos -->
+
+<?php View::start('styles'); ?>
+
+<?php View::end(); ?>
+
+
+<!-- Aqui enviamos para o template principal o conteúdo -->
+
+<?php View::start('content'); ?>
+
+<!-- Begin Page Content -->
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <div>
+            <a href="<?= url('dashboard/{{ routePrefix }}') ?>"
+               class="btn btn-outline btn-sm">
+                ← Voltar
+            </a>
+
+            <h1 class="h3 mb-4 text-gray-800" style="margin-top: 12px">
+                <?= e($title ?? 'Novo {{ ModelName }}') ?>
+            </h1>
+        </div>
     </div>
+
+    <?php \Core\View::render('components.alerts'); ?>
+
+    <div class="card">
+        <div class="card-body">
+
+            <form method="POST"
+                  action="<?= url('dashboard/{{ routePrefix }}') ?>">
+
+                <?= csrf_field() ?>
+
+                <!-- Campo: nome -->
+                <div class="form-group">
+                    <label for="name">
+                        Nome
+                        <span style="color:var(--color-danger)">*</span>
+                    </label>
+
+                    <input type="text"
+                           id="name"
+                           name="name"
+                           value="<?= e(old('name')) ?>"
+                           class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>"
+                           required
+                           autofocus>
+
+                    <?php if (hasError('name')): ?>
+                        <span class="form-error">
+                            <?= e(error('name')) ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+
+                <!-- Adicione mais campos conforme o Model -->
+
+                <div class="mt-2" style="display:flex;gap:10px">
+
+                    <button type="submit"
+                            class="btn btn-primary">
+                        Salvar
+                    </button>
+
+                    <a href="<?= url('dashboard/{{ routePrefix }}') ?>"
+                       class="btn btn-secondary">
+                        Cancelar
+                    </a>
+
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+
 </div>
 
-<?php \Core\View::render('components.alerts'); ?>
+<!-- /.container-fluid -->
 
-<div class="card">
-    <div class="card-body">
-        <form method="POST" action="<?= url('dashboard/{{ routePrefix }}') ?>">
-            <?= csrf_field() ?>
+<?php View::end(); ?>
 
-            <!-- Campo: nome -->
-            <div class="form-group">
-                <label for="name">Nome <span style="color:var(--color-danger)">*</span></label>
-                <input type="text"
-                       id="name"
-                       name="name"
-                       value="<?= old('name') ?>"
-                       class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>"
-                       required
-                       autofocus>
-                <?php if (hasError('name')): ?>
-                    <span class="form-error"><?= error('name') ?></span>
-                <?php endif; ?>
-            </div>
 
-            <!-- Adicione mais campos conforme o model -->
+<!-- Aqui enviamos para o template principal os scripts -->
 
-            <div class="mt-2" style="display:flex;gap:10px">
-                <button type="submit" class="btn btn-primary">Salvar</button>
-                <a href="<?= url('dashboard/{{ routePrefix }}') ?>"
-                   class="btn btn-secondary">Cancelar</a>
-            </div>
-        </form>
-    </div>
-</div>
+<?php View::start('scripts'); ?>
+
+<script src="<?= asset('js/demo.js') ?>"></script>
+
+<?php View::end(); ?>

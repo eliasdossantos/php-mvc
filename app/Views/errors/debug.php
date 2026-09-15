@@ -244,6 +244,26 @@ if (!defined('APP_DEBUG') || !APP_DEBUG) {
             background: #1e3a5f;
             color: #93c5fd
         }
+
+        .trace-item summary {
+            cursor: pointer;
+            list-style: none;
+        }
+
+        .trace-item summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .trace-item summary::before {
+            content: '▸';
+            color: #64748b;
+            margin-right: 8px;
+            display: inline-block;
+        }
+
+        .trace-item[open] summary::before {
+            content: '▾';
+        }
     </style>
 </head>
 
@@ -275,6 +295,14 @@ if (!defined('APP_DEBUG') || !APP_DEBUG) {
                     <div class="meta-item">
                         <div class="meta-label">HTTP Code</div>
                         <div class="meta-value"><span class="tag tag-red"><?= $httpCode ?></span></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Arquivo</div>
+                        <div class="meta-value"><?= e(str_replace(ROOT_PATH, '', $context['file'] ?? '-')) ?></div>
+                    </div>
+                    <div class="meta-item">
+                        <div class="meta-label">Linha</div>
+                        <div class="meta-value"><?= (int)($context['line'] ?? 0) ?></div>
                     </div>
                     <div class="meta-item">
                         <div class="meta-label">Method</div>
@@ -332,14 +360,29 @@ if (!defined('APP_DEBUG') || !APP_DEBUG) {
         <div class="card">
             <div class="card-header">🔍 Stack Trace</div>
             <div>
-                <?php foreach ($exception->getTrace() as $i => $frame): ?>
-                    <div class="trace-item">
-                        <span class="trace-num">#<?= $i ?></span>
-                        <span
-                            class="trace-file"><?= e(str_replace(ROOT_PATH, '', $frame['file'] ?? '[internal]')) ?>:<?= (int)($frame['line'] ?? 0) ?></span>
-                        <div class="trace-fn">→
-                            <?= e(($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? '')) ?>()</div>
-                    </div>
+                <?php foreach ($trace as $frame): ?>
+                    <details class="trace-item">
+                        <summary>
+                            <span class="trace-num">#<?= $frame['index'] ?></span>
+                            <span class="trace-file">
+                                <?= e($frame['file'] ? str_replace(ROOT_PATH, '', $frame['file']) . ':' . $frame['line'] : '[internal function]') ?>
+                            </span>
+                            <div class="trace-fn">→ <?= e($frame['function']) ?>()</div>
+                        </summary>
+
+                        <?php if (!empty($frame['source'])): ?>
+                            <div class="source-wrap" style="margin-top:10px">
+                                <table class="source">
+                                    <?php foreach ($frame['source'] as $ln => $code): ?>
+                                        <tr class="<?= $ln === $frame['line'] ? 'active' : '' ?>">
+                                            <td class="ln"><?= $ln ?></td>
+                                            <td class="code"><?= htmlspecialchars($code, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                </table>
+                            </div>
+                        <?php endif; ?>
+                    </details>
                 <?php endforeach; ?>
             </div>
         </div>

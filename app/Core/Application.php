@@ -186,6 +186,7 @@ class Application
             'httpCode'    => $httpCode,
             'httpMessage' => $this->httpMessages[$httpCode] ?? 'Error',
             'source'      => $this->extractSourceLines($e->getFile(), $e->getLine()),
+            'trace'       => $this->buildEnrichedTrace($e),
         ];
 
         extract($data);
@@ -224,6 +225,31 @@ class Application
             $result[$i + 1] = rtrim($lines[$i]);
         }
         return $result;
+    }
+
+    /**
+     * Enriquece cada frame do stack trace com o próprio trecho de código,
+     * igual ao card principal — permite expandir qualquer frame na view
+     * e ver o contexto daquela chamada, estilo Laravel/Ignition.
+     */
+    protected function buildEnrichedTrace(\Throwable $e): array
+    {
+        $frames = [];
+
+        foreach ($e->getTrace() as $i => $frame) {
+            $file = $frame['file'] ?? null;
+            $line = $frame['line'] ?? null;
+
+            $frames[] = [
+                'index'    => $i,
+                'file'     => $file,
+                'line'     => $line,
+                'function' => ($frame['class'] ?? '') . ($frame['type'] ?? '') . ($frame['function'] ?? ''),
+                'source'   => ($file && $line) ? $this->extractSourceLines($file, $line, 4) : [],
+            ];
+        }
+
+        return $frames;
     }
 
     protected function logDebugInfo(): void
