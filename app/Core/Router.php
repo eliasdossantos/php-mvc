@@ -316,6 +316,21 @@ class Router
 
         foreach ($reflection->getParameters() as $rParam) {
             $name = $rParam->getName();
+            $type = $rParam->getType();
+
+            // ── Injeção de FormRequest estilo Laravel ───────────────────────
+            // Se o parâmetro é tipado com uma classe (não escalar) que estende
+            // FormRequest, instancia automaticamente. O construtor do FormRequest
+            // já captura o input, valida e (se authorize() falhar ou a validação
+            // falhar) interrompe a requisição sozinho — então quando o controller
+            // recebe o objeto aqui, ele já está resolvido.
+            if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
+                $className = $type->getName();
+                if (is_subclass_of($className, \App\Requests\FormRequest::class)) {
+                    $args[] = new $className();
+                    continue;
+                }
+            }
 
             if (array_key_exists($name, $params) && $params[$name] !== null) {
                 // Converte para o tipo declarado no método (int, string…)

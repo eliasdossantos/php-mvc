@@ -43,6 +43,10 @@ class Session
 
         session_start();
 
+        // Erros de validação: duram somente uma requisição
+        $_SESSION['_errors'] = $_SESSION['_errors_next'] ?? [];
+        unset($_SESSION['_errors_next']);
+
         // Regenera ID periodicamente (a cada 5 min)
         $now = time();
         if (!isset($_SESSION['_regen_at'])) {
@@ -132,6 +136,12 @@ class Session
     {
         $_SESSION['_old_input'] = $data;
     }
+
+    public static function flashErrors(array $errors): void
+    {
+        $_SESSION['_errors_next'] = $errors;
+    }
+
 
     /**
      * ── BUG CORRIGIDO #9 ────────────────────────────────────────────────────

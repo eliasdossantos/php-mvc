@@ -76,8 +76,11 @@ class {{ ClassName }} extends Controller
         // $request = new Store{{ ModelName }}Request();
         // if ($request->fails()) {
         //     Session::flash('error', $request->firstError());
+        //     Session::flashErrors($request->errors());
         //     Session::flashInput($request->all());
+        //
         //     $this->back();
+        //     return;
         // }
         // $data = $request->validated();
 
@@ -105,18 +108,45 @@ class {{ ClassName }} extends Controller
         ]);
     }
 
-    /**
-     * Processa a atualização de um registro.
-     * PUT /{{ routePrefix }}/{id}
-     */
+    * Processa a atualização de um registro.
+    * PUT /{{ routePrefix }}/{id}
+    */
     public function update(int $id): void
     {
+        // Exemplo com FormRequest:
+        // $request = new Update{{ ModelName }}Request();
+        // if ($request->fails()) {
+        //     Session::flash('error', $request->firstError());
+        //     Session::flashErrors($request->errors());
+        //     Session::flashInput($request->all());
+        //
+        //     $this->back();
+        //     return;
+        // }
+        //
+        // $data = $request->validated();
+
+        // Exemplo com validate() inline:
         $this->validate($_POST, [
             'name' => 'required|min:2|max:100',
         ]);
 
-        // $this->repository->update($id, $_POST);
-        $this->redirectWith('{{ routePrefix }}', 'success', '{{ ModelName }} atualizado com sucesso!');
+        // $updated = $this->repository->update($id, $_POST);
+        //
+        // if (!$updated) {
+        //     $this->redirectWith(
+        //         '{{ routePrefix }}',
+        //         'error',
+        //         'Não foi possível atualizar {{ ModelName }}.'
+        //     );
+        //     return;
+        // }
+
+        $this->redirectWith(
+            '{{ routePrefix }}',
+            'success',
+            '{{ ModelName }} atualizado com sucesso!'
+        );
     }
 
     /**

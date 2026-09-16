@@ -91,6 +91,17 @@ class Validator
         // Se o campo for nullable e estiver vazio, skip
         if ($nullable && ($value === null || $value === '')) return;
 
+        // ── BUG CORRIGIDO #10 ────────────────────────────────────────────────
+        // Antes: min/max decidiam sozinhos, via is_numeric($value), se deviam
+        // comparar por valor numérico ou por comprimento de string. Qualquer
+        // campo de texto cujo valor digitado fosse só dígitos (ex: "numero" de
+        // endereço, CEP sem máscara) virava comparação de VALOR ("150 > 10"),
+        // não de comprimento — fazendo max:10 falhar pra um número de casa
+        // como 150, mesmo a mensagem dizendo "no máximo 10 caracteres".
+        // Agora: só compara por valor quando o campo também declara
+        // numeric/integer nas suas regras — do contrário sempre é comprimento.
+        $isNumericField = (bool) array_intersect(['numeric', 'integer'], $rules);
+
         foreach ($rules as $rule) {
             if ($rule === 'nullable') continue;
 
@@ -98,7 +109,7 @@ class Validator
                 ? explode(':', $rule, 2)
                 : [$rule, null];
 
-            $error = $this->applyRule($name, $field, $value, $param);
+            $error = $this->applyRule($name, $field, $value, $param, $isNumericField);
 
             if ($error) {
                 $this->errors[$field][] = $error;
@@ -107,7 +118,7 @@ class Validator
         }
     }
 
-    private function applyRule(string $rule, string $field, mixed $value, ?string $param): ?string
+    private function applyRule(string $rule, string $field, mixed $value, ?string $param, bool $isNumericField = false): ?string
     {
         $label = ucfirst(str_replace('_', ' ', $field));
 
@@ -115,15 +126,19 @@ class Validator
             'required'     => (empty($value) && $value !== '0')
                 ? "O campo {$label} é obrigatório." : null,
 
-            'min', 'min_length' => (!empty($value) && is_numeric($value)
+            'min', 'min_length' => (!empty($value) && $isNumericField
                 ? (float)$value < (float)$param
                 : mb_strlen((string)$value) < (int)$param)
-                ? "O campo {$label} deve ter no mínimo {$param} caracteres." : null,
+                ? ($isNumericField
+                    ? "O campo {$label} deve ser no mínimo {$param}."
+                    : "O campo {$label} deve ter no mínimo {$param} caracteres.") : null,
 
-            'max', 'max_length' => (!empty($value) && is_numeric($value)
+            'max', 'max_length' => (!empty($value) && $isNumericField
                 ? (float)$value > (float)$param
                 : mb_strlen((string)$value) > (int)$param)
-                ? "O campo {$label} deve ter no máximo {$param} caracteres." : null,
+                ? ($isNumericField
+                    ? "O campo {$label} deve ser no máximo {$param}."
+                    : "O campo {$label} deve ter no máximo {$param} caracteres.") : null,
 
             'email'        => (!empty($value) && !filter_var($value, FILTER_VALIDATE_EMAIL))
                 ? "O campo {$label} deve ser um e-mail válido." : null,
