@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use Core\Controller;
+use App\Controllers\BaseController;
 use Core\Session;
 use App\Models\User;
 use App\Models\PasswordReset;
@@ -22,7 +22,7 @@ use App\Requests\Auth\ResetPasswordRequest;
  *
  * Toda validação e sanitização foi centralizada nos FormRequests.
  */
-class AuthController extends Controller
+class AuthController extends BaseController
 {
     private AuthService $authService;
 

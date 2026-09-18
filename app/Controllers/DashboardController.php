@@ -2,13 +2,13 @@
 
 namespace App\Controllers;
 
-use Core\Controller;
+use App\Controllers\BaseController;
 
 /**
  * DashboardController
  * Substitua este conteúdo pela lógica do seu projeto.
  */
-class DashboardController extends Controller
+class DashboardController extends BaseController
 {
     public function index(): void
     {
