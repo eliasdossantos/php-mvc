@@ -151,8 +151,18 @@ class Router
         $last = end($this->routes);
         if ($last) {
             $key = count($this->routes) - 1;
-            $this->routes[$key]['name'] = $name;
-            $this->namedRoutes[$name]   = $last['path'];
+
+            // Acumula o 'as' de todos os grupos abertos no momento da chamada,
+            // igual já é feito com 'prefix' em addRoute().
+            $asPrefix = '';
+            foreach ($this->groupStack as $g) {
+                $asPrefix .= $g['as'] ?? '';
+            }
+
+            $fullName = $asPrefix . $name;
+
+            $this->routes[$key]['name']   = $fullName;
+            $this->namedRoutes[$fullName] = $last['path'];
         }
         return $this;
     }
@@ -406,3 +416,4 @@ class Router
         $this->controllerNamespace = $ns;
     }
 }
+

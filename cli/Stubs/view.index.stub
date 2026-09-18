@@ -37,7 +37,7 @@
         </a>
     </div>
 
-    <?php \Core\View::render('components.alerts'); ?>
+    <?= \Core\View::render('components.alerts'); ?>
 
     <div class="card">
         <div class="table-wrapper">
