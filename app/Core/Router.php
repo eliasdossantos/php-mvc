@@ -337,7 +337,7 @@ class Router
             if ($type instanceof \ReflectionNamedType && !$type->isBuiltin()) {
                 $className = $type->getName();
                 if (is_subclass_of($className, \App\Requests\FormRequest::class)) {
-                    $args[] = new $className();
+                    $args[] = new $className($params);
                     continue;
                 }
             }
@@ -416,4 +416,3 @@ class Router
         $this->controllerNamespace = $ns;
     }
 }
-

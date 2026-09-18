@@ -54,6 +54,9 @@ abstract class FormRequest
     /** Se a validação já foi executada */
     private bool $resolved = false;
 
+    /** Parâmetros vindos da URI da rota atual (ex: ['id' => '42']) */
+    protected array $routeParams = [];
+
     // ─────────────────────────────────────────────────────────────────────────
     // Métodos para implementar nas subclasses
     // ─────────────────────────────────────────────────────────────────────────
@@ -77,6 +80,15 @@ abstract class FormRequest
      *       'name'  => 'required|min:2|max:100',
      *       'email' => 'required|email|unique:users,email',
      *   ];
+     * Convenção de placeholders de rota em rules():
+     *   Use {nomeDoParam} igual ao nome declarado na rota (ex: /unidade/{id})
+     *   para referenciar o valor da URI diretamente na regra, sem precisar
+     *   declarar variável manual:
+     *
+     *     'nome' => 'required|unique:unidades,nome,{id}'
+     *
+     *   Placeholders não resolvidos lançam RuntimeException — é intencional,
+     *   pra pegar o erro no dev em vez de deixar passar em produção.
      */
     abstract public function rules(): array;
 
@@ -120,10 +132,17 @@ abstract class FormRequest
     // Constructor — captura e resolve na instanciação
     // ─────────────────────────────────────────────────────────────────────────
 
-    public function __construct()
+    public function __construct(array $routeParams = [])
     {
+        $this->routeParams = $routeParams;
         $this->input = $this->captureInput();
         $this->resolve();
+    }
+
+    /** Atalho para acessar um parâmetro da rota (ex: id da entidade sendo editada) */
+    protected function routeParam(string $name, mixed $default = null): mixed
+    {
+        return $this->routeParams[$name] ?? $default;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -234,7 +253,7 @@ abstract class FormRequest
 
         // 3. Valida
         $validator = new Validator($this->sanitized);
-        $validator->validate($this->rules());
+        $validator->validate($this->resolveRouteParamsInRules($this->rules()));
 
         // 4. Aplica mensagens customizadas sobrescrevendo as geradas
         if ($validator->fails()) {
@@ -250,6 +269,41 @@ abstract class FormRequest
             $this->sanitized,
             $this->rules()
         );
+    }
+
+    /**
+     * Substitui placeholders {param} nas regras pelos valores correspondentes
+     * capturados da URI da rota atual — ex: {id} → routeParams['id'].
+     *
+     * Convenção do projeto: toda regra que usa {algumNome} espera que a rota
+     * atual declare esse mesmo parâmetro (ex: /unidade/{id} → {id} na rule).
+     *
+     * Se sobrar algum {placeholder} não resolvido, é sinal de bug — ou o Router
+     * não repassou routeParams ao FormRequest, ou a rule referencia um parâmetro
+     * que a rota não tem. Preferimos quebrar aqui, com mensagem clara, a deixar
+     * passar silenciosamente (o que faria, por ex., a checagem de "unique"
+     * simplesmente não ignorar ninguém, sem avisar).
+     */
+    private function resolveRouteParamsInRules(array $rules): array
+    {
+        foreach ($rules as $field => $ruleString) {
+            foreach ($this->routeParams as $key => $value) {
+                $ruleString = str_replace('{' . $key . '}', (string)($value ?? ''), $ruleString);
+            }
+
+            if (preg_match('/\{([a-zA-Z_]+)\}/', $ruleString, $m)) {
+                throw new \RuntimeException(
+                    'FormRequest [' . static::class . "]: placeholder de rota \"{{$m[1]}}\" "
+                        . "não foi resolvido no campo \"{$field}\" (regra: \"{$ruleString}\"). "
+                        . "Verifique se o Router está passando \$params ao instanciar o FormRequest, "
+                        . "e se a rota atual realmente declara {{$m[1]}}."
+                );
+            }
+
+            $rules[$field] = $ruleString;
+        }
+
+        return $rules;
     }
 
     /**
