@@ -78,7 +78,7 @@ abstract class FormRequest
      * Exemplo:
      *   return [
      *       'name'  => 'required|min:2|max:100',
-     *       'email' => 'required|email|unique:users,email',
+     *       'email' => 'required|email|unique:usuarios,email',
      *   ];
      * Convenção de placeholders de rota em rules():
      *   Use {nomeDoParam} igual ao nome declarado na rota (ex: /unidade/{id})

@@ -21,17 +21,17 @@ namespace Core;
  *  - Soft delete (deleted_at)
  *
  * Uso básico:
- *   class User extends Model {
- *       protected string $table    = 'users';
+ *   class Usuario extends Model {
+ *       protected string $table    = 'Usuarios';
  *       protected array  $fillable = ['name', 'email', 'password'];
  *   }
  *
- *   $users = (new User)->all();
- *   $user  = (new User)->find(1);
- *   $id    = (new User)->create(['name' => 'João']);
- *   (new User)->update(1, ['name' => 'Maria']);
- *   (new User)->delete(1);
- *   (new User)->where('role', 'admin')->get();
+ *   $Usuarios = (new Usuario)->all();
+ *   $Usuario  = (new Usuario)->find(1);
+ *   $id    = (new Usuario)->create(['name' => 'João']);
+ *   (new Usuario)->update(1, ['name' => 'Maria']);
+ *   (new Usuario)->delete(1);
+ *   (new Usuario)->where('role', 'admin')->get();
  *
  * Uso avançado (busca "não normal"):
  *   (new Produto)->whereIn('categoria_id', [1, 2, 3])

@@ -3,16 +3,16 @@
 namespace App\Repositories;
 
 use Core\Repository;
-use App\Models\User;
+use App\Models\Usuario;
 
 /**
- * UserRepository
+ * UsuarioRepository
  * Encapsula o acesso a dados de usuários.
  * Estenda com métodos de busca específicos do seu projeto.
  */
-class UserRepository extends Repository
+class UsuarioRepository extends Repository
 {
-    protected string $modelClass = User::class;
+    protected string $modelClass = Usuario::class;
 
     public function findByEmail(string $email): object|false
     {
@@ -21,7 +21,7 @@ class UserRepository extends Repository
 
     public function getActive(): array
     {
-        return $this->model()->where('active', 1)->orderBy('name')->get();
+        return $this->model()->where('ativo', 1)->orderBy('nome')->get();
     }
 
     public function search(string $term, int $page = 1, int $perPage = 15): array
@@ -29,10 +29,10 @@ class UserRepository extends Repository
         $like = '%' . $term . '%';
 
         return $this->model()
-            ->select('id', 'name', 'email', 'role', 'active', 'created_at')
-            ->where('name', $like, 'LIKE')
+            ->select('id', 'nome', 'email', 'perfil', 'ativo', 'created_at')
+            ->where('nome', $like, 'LIKE')
             ->orWhere('email', $like, 'LIKE')
-            ->orderBy('name')
+            ->orderBy('nome')
             ->paginate($perPage, $page);
     }
 }

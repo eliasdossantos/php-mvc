@@ -243,7 +243,7 @@ abstract class Controller
         }
 
         echo '<script>window.location.href=' . json_encode($url) . ';</script>'
-           . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
+            . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
         exit;
     }
 
@@ -333,7 +333,7 @@ abstract class Controller
 
     protected function userRole(): string
     {
-        return Session::get('user')?->role ?? 'guest';
+        return Session::get('user')?->perfil ?? 'guest';
     }
 
     // ── Verificação de tipo de requisição ────────────────────────────────────
@@ -457,37 +457,6 @@ abstract class Controller
         }
 
         return $request->validated();
-    }
-
-    // ── Verificação de tipo de requisição ────────────────────────────────────
-
-    /**
-     * Valida se a requisição atual é do tipo esperado, respondendo com erro
-     * JSON 400 automaticamente se não for. Útil no início de endpoints que só
-     * devem aceitar um tipo específico de chamada (ex: uma rota AJAX chamada
-     * direto pelo navegador, ou um endpoint POST recebendo GET por engano).
-     *
-     * Uso: $this->checkMethod('post'); // primeira linha da action
-     *      $this->checkMethod('ajax');
-     *
-     * Tipos aceitos: ajax, json, get, post, put, delete. Qualquer outro valor
-     * não bloqueia a requisição (mesmo comportamento do default do match).
-     */
-    protected function checkMethod(string $tipo): void
-    {
-        $valido = match ($tipo) {
-            'ajax'   => $this->request->isAjax(),
-            'json'   => $this->request->isJson(),
-            'get'    => $this->request->isGet(),
-            'post'   => $this->request->isPost(),
-            'put'    => $this->request->isPut(),
-            'delete' => $this->request->isDelete(),
-            default  => true,
-        };
-
-        if (!$valido) {
-            $this->jsonError('Requisição inválida.', 400);
-        }
     }
 
     // ── Abort ─────────────────────────────────────────────────────────────────

@@ -10,7 +10,7 @@ namespace Core;
  *
  * Uso:
  *   View::render('components.sidebar');            // retorna string (componentes)
- *   $html = View::capture('emails.welcome', ['user' => $user]);
+ *   $html = View::capture('emails.welcome', ['usuario' => $usuario]);
  *   View::make('dashboard.index', $data, 'main');    // com layout
  *   View::partial('admin.usuarios.form_fields');    // imprime direto (estilo require)
  *   View::partialOnce('components.datepicker_js');  // imprime só uma vez por request

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Requests\Users;
+namespace App\Requests\Usuarios;
 
 use App\Requests\FormRequest;
 use Core\Auth;
@@ -8,7 +8,7 @@ use Core\Session;
 use Core\Request;
 
 /**
- * UpdateUserRequest
+ * UpdateUsuarioRequest
  * ─────────────────────────────────────────────────────────────────────────────
  * EXEMPLO DE REFERÊNCIA — não há um UserController neste boilerplate que use
  * esta classe. Ela demonstra o padrão de "admin edita qualquer um, usuário
@@ -28,7 +28,7 @@ use Core\Request;
  *   - Admin pode editar qualquer usuário
  *   - Usuário comum pode editar apenas a si próprio
  */
-class UpdateUserRequest extends FormRequest
+class UpdateUsuarioRequest extends FormRequest
 {
     public function authorize(): bool
     {

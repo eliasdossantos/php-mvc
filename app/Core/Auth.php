@@ -21,7 +21,7 @@ namespace Core;
 class Auth
 {
     /** Model de usuário a ser usado (pode ser sobrescrito) */
-    protected static string $userModel = \App\Models\User::class;
+    protected static string $userModel = \App\Models\Usuario::class;
 
     // ── Autenticação ──────────────────────────────────────────────────────────
 
@@ -46,7 +46,7 @@ class Auth
         session_regenerate_id(true);
 
         Session::set('user_id',   $user->id);
-        Session::set('user_role', $user->role ?? 'member');
+        Session::set('user_role', $user->perfil ?? 'member');
 
         $safeUser = static::buildSessionUser($user);
         Session::set('user', $safeUser);
@@ -83,14 +83,14 @@ class Auth
         try {
             $db = Database::getInstance();
             $db->query(
-                'UPDATE users SET remember_token = :token, remember_token_expires_at = :exp WHERE id = :id'
+                'UPDATE usuarios SET lembrar_token = :token, lembrar_token_expira_em = :exp WHERE id = :id'
             )
                 ->bind(':token', $hashed)
                 ->bind(':exp',   $expires)
                 ->bind(':id',    (int) $user->id)
                 ->execute();
         } catch (\Throwable $e) {
-            Logger::error('Falha ao salvar remember_token', ['user_id' => $user->id]);
+            Logger::error('Falha ao salvar lembrar_token', ['user_id' => $user->id]);
             return; // Falha silenciosa — login já foi feito via sessão
         }
 
@@ -126,10 +126,10 @@ class Auth
         try {
             $db   = Database::getInstance();
             $user = $db->query(
-                'SELECT * FROM users
-                  WHERE remember_token = :token
-                    AND remember_token_expires_at > NOW()
-                    AND active = 1
+                'SELECT * FROM usuarios
+                  WHERE lembrar_token = :token
+                    AND lembrar_token_expira_em > NOW()
+                    AND ativo = 1
                   LIMIT 1'
             )
                 ->bind(':token', $hashed)
@@ -157,7 +157,7 @@ class Auth
         if ($userId) {
             try {
                 Database::getInstance()
-                    ->query('UPDATE users SET remember_token = NULL, remember_token_expires_at = NULL WHERE id = :id')
+                    ->query('UPDATE usuarios SET lembrar_token = NULL, lembrar_token_expira_em = NULL WHERE id = :id')
                     ->bind(':id', $userId)
                     ->execute();
             } catch (\Throwable) {
@@ -265,11 +265,11 @@ class Auth
             $hidden = $reflection->getValue($modelInstance);
         } catch (\Throwable) {
             // Se não conseguir ler $hidden, usa padrão seguro
-            $hidden = ['password', 'remember_token', 'remember_token_expires_at'];
+            $hidden = ['password', 'lembrar_token', 'lembrar_token_expira_em'];
         }
 
-        // Garante que remember_token nunca vai para a sessão
-        $hidden = array_unique(array_merge($hidden, ['remember_token', 'remember_token_expires_at']));
+        // Garante que lembrar_token nunca vai para a sessão
+        $hidden = array_unique(array_merge($hidden, ['lembrar_token', 'lembrar_token_expira_em']));
 
         $data = (array) $user;
         foreach ($hidden as $field) {

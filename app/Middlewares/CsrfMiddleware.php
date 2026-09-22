@@ -9,13 +9,13 @@ use Core\Session;
  * CsrfMiddleware — Valida token CSRF em requisições POST/PUT/DELETE
  *
  * Uso:
- *   $router->post('/users', [UserController::class, 'store'], ['CsrfMiddleware']);
+ *   $router->post('/Usuarios', [UsuarioController::class, 'store'], ['CsrfMiddleware']);
  *
  * Para incluir o token em formulários:
  *   <?= csrf_field() ?>
  *
  * Para incluir via JS/AJAX:
- *   headers: { 'X-CSRF-Token': '<?= csrf_token() ?>' }
+ * headers: { 'X-CSRF-Token': '<?= csrf_token() ?>' }
  */
 class CsrfMiddleware
 {
@@ -27,7 +27,7 @@ class CsrfMiddleware
 
         // ── MELHORIA #1 (corrige bug real) ────────────────────────────────────
         // A versão anterior fazia:
-        //   $_POST['_csrf_token'] ?? $request->header('X-CSRF-Token') ?? $request->header('X-XSRF-Token') ?? '';
+        // $_POST['_csrf_token'] ?? $request->header('X-CSRF-Token') ?? $request->header('X-XSRF-Token') ?? '';
         // Request::header() nunca retorna null — o default é '' — então assim
         // que $_POST['_csrf_token'] estivesse ausente, a cadeia caía direto no
         // header('X-CSRF-Token'), e mesmo que ELE também estivesse ausente
@@ -73,7 +73,9 @@ class CsrfMiddleware
             if (!headers_sent()) {
                 header('Location: ' . $fallback);
             } else {
-                echo '<script>window.location.href=' . json_encode($fallback) . ';</script>';
+                echo '<script>
+window.location.href = ' . json_encode($fallback) . ';
+</script>';
             }
             exit;
         }

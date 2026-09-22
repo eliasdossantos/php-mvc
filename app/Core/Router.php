@@ -9,7 +9,7 @@ namespace Core;
  *
  * Funcionalidades:
  *  - Métodos HTTP: GET, POST, PUT, PATCH, DELETE
- *  - Parâmetros dinâmicos: /users/{id}
+ *  - Parâmetros dinâmicos: /Usuarios/{id}
  *  - Parâmetros opcionais: /posts/{slug?}
  *  - Grupos de rotas com prefixo e middlewares compartilhados
  *  - Sintaxe fluente (method chaining)
@@ -17,9 +17,9 @@ namespace Core;
  *  - Suporte a "Controller@method" e [Controller::class, 'method']
  *
  * Uso básico:
- *   $router->get('/users',       [UserController::class, 'index']);
- *   $router->post('/users',      [UserController::class, 'store'], ['CsrfMiddleware']);
- *   $router->get('/users/{id}',  [UserController::class, 'show']);
+ *   $router->get('/Usuarios',       [UsuarioController::class, 'index']);
+ *   $router->post('/Usuarios',      [UsuarioController::class, 'store'], ['CsrfMiddleware']);
+ *   $router->get('/Usuarios/{id}',  [UsuarioController::class, 'show']);
  *
  * Grupos:
  *   $router->group(['prefix' => '/admin', 'middleware' => ['AuthMiddleware']], function ($r) {
@@ -310,8 +310,8 @@ class Router
     {
         [$ctrl, $methodName] = $action;
 
-        // FQCN já fornecido (ex: App\Controllers\UserController)
-        // ou apenas o nome simples (ex: UserController)
+        // FQCN já fornecido (ex: App\Controllers\UsuarioController)
+        // ou apenas o nome simples (ex: UsuarioController)
         $fqcn = str_contains($ctrl, '\\')
             ? $ctrl
             : $this->controllerNamespace . $ctrl;

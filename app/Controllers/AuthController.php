@@ -4,7 +4,7 @@ namespace App\Controllers;
 
 use App\Controllers\BaseController;
 use Core\Session;
-use App\Models\User;
+use App\Models\Usuario;
 use App\Models\PasswordReset;
 use App\Services\AuthService;
 use App\Helpers\Mailer;
@@ -126,7 +126,7 @@ class AuthController extends BaseController
         $this->validateRequest($request, 'auth/forgot-password', ['email']);
 
         $email = $request->get('email');
-        $user  = (new User())->findByEmail($email);
+        $user  = (new Usuario())->findByEmail($email);
 
         // Envia e-mail apenas se existir — sempre exibe a mesma mensagem (anti user-enumeration)
         if ($user) {
@@ -136,11 +136,11 @@ class AuthController extends BaseController
             (new Mailer())->send(
                 to: $email,
                 subject: 'Redefinição de senha',
-                body: "<p>Olá, " . e($user->name) . "!</p>"
+                body: "<p>Olá, " . e($user->nome) . "!</p>"
                     . "<p>Clique no link abaixo para redefinir sua senha:</p>"
                     . "<p><a href=\"{$link}\">{$link}</a></p>"
                     . "<p>O link expira em 1 hora.</p>",
-                toName: $user->name
+                toName: $user->nome
             );
         }
 
@@ -164,14 +164,14 @@ class AuthController extends BaseController
         $resetModel = new PasswordReset();
         $record     = $resetModel->findValid($data['token']);
 
-        $user = (new User())->findByEmail($record->email);
+        $user = (new Usuario())->findByEmail($record->email);
 
         if (!$user) {
             Session::flash('error', 'Usuário não encontrado. Solicite um novo link.');
             $this->redirect('auth/forgot-password');
         }
 
-        (new User())->updatePassword((int) $user->id, $data['password']);
+        (new Usuario())->updatePassword((int) $user->id, $data['password']);
         $resetModel->consume($data['token']);
 
         Session::flash('success', 'Senha redefinida com sucesso! Faça o login.');

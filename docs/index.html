@@ -1132,7 +1132,7 @@ acessam o Model diretamente em projetos que adotam esta camada; usam o Repositor
 
 <div class="table-wrapper"><table class="doc-table"><thead><tr><th>Método</th><th>Assinatura</th><th>Descrição</th></tr></thead><tbody><tr><td><code>all</code></td><td><code>(): array</code></td><td>Delegado a <code>Model::all()</code>.</td></tr><tr><td><code>findById</code></td><td><code>(int $id): object|false</code></td><td>Delegado a <code>Model::find()</code>.</td></tr><tr><td><code>create</code></td><td><code>(array $data): string|false</code></td><td>Delegado a <code>Model::create()</code>.</td></tr><tr><td><code>update</code></td><td><code>(int $id, array $data): bool</code></td><td>Delegado a <code>Model::update()</code>.</td></tr><tr><td><code>delete</code></td><td><code>(int $id): bool</code></td><td>Delegado a <code>Model::delete()</code>.</td></tr><tr><td><code>paginate</code></td><td><code>(int $perPage = 15, int $page = 1): array</code></td><td>Delegado a <code>Model::paginate()</code>.</td></tr></tbody></table></div>
 
-<div class="code-block"><div class="code-header"><span class="code-file">app/Repositories/UserRepository.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div><pre><code class="language-php">namespace App\Repositories;
+<div class="code-block"><div class="code-header"><span class="code-file">app/Repositories/UsuarioRepository.php</span><button class="copy-btn" onclick="copyCode(this)">Copiar</button></div><pre><code class="language-php">namespace App\Repositories;
 use Core\Repository;
 use App\Models\User;
 

@@ -17,16 +17,16 @@ namespace Core;
  *  - Conhecem o protocolo HTTP
  *
  * Como criar:
- *   class UserService extends Service {
- *       private UserRepository $users;
+ *   class UsuarioService extends Service {
+ *       private usuarioRepository $usuarios;
  *
  *       public function __construct() {
- *           $this->users = new UserRepository();
+ *           $this->usuarios = new UsuarioRepository();
  *       }
  *
  *       public function register(array $data): array {
  *           // validação + criação + envio de email
- *           return ['success' => true, 'user_id' => $id];
+ *           return ['success' => true, 'usuario_id' => $id];
  *       }
  *   }
  */

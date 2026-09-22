@@ -14,7 +14,7 @@ return new class extends Migration {
 
             // Autenticação
             $table->string('email', 180);
-            $table->string('senha', 255);
+            $table->string('password', 255);
 
             // Controle de acesso
             $table->string('perfil', 40)->default('member');
