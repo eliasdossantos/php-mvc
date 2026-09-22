@@ -45,7 +45,7 @@ class Auth
     {
         session_regenerate_id(true);
 
-        Session::set('user_id',   $user->id);
+        Session::set('usuario_id',   $user->id);
         Session::set('user_role', $user->perfil ?? 'member');
 
         $safeUser = static::buildSessionUser($user);
@@ -55,7 +55,7 @@ class Auth
             static::setRememberToken($user);
         }
 
-        Logger::info('Login bem-sucedido', ['user_id' => $user->id, 'email' => $user->email]);
+        Logger::info('Login bem-sucedido', ['usuario_id' => $user->id, 'email' => $user->email]);
     }
 
     /**
@@ -90,7 +90,7 @@ class Auth
                 ->bind(':id',    (int) $user->id)
                 ->execute();
         } catch (\Throwable $e) {
-            Logger::error('Falha ao salvar lembrar_token', ['user_id' => $user->id]);
+            Logger::error('Falha ao salvar lembrar_token', ['usuario_id' => $user->id]);
             return; // Falha silenciosa — login já foi feito via sessão
         }
 
@@ -167,7 +167,7 @@ class Auth
         static::clearRememberCookie();
         Session::destroy();
 
-        if ($userId) Logger::info('Logout', ['user_id' => $userId]);
+        if ($userId) Logger::info('Logout', ['usuario_id' => $userId]);
     }
 
     protected static function clearRememberCookie(): void
@@ -187,7 +187,7 @@ class Auth
 
     public static function check(): bool
     {
-        return Session::has('user_id');
+        return Session::has('usuario_id');
     }
     public static function guest(): bool
     {
@@ -199,7 +199,7 @@ class Auth
     }
     public static function id(): ?int
     {
-        $id = Session::get('user_id');
+        $id = Session::get('usuario_id');
         return $id ? (int)$id : null;
     }
     public static function role(): string

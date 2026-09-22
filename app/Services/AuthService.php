@@ -53,7 +53,7 @@ class AuthService extends Service
         }
 
         Logger::info('Usuário registrado', ['id' => $id, 'email' => $data['email']]);
-        return ['success' => true, 'user_id' => $id];
+        return ['success' => true, 'usuario_id' => $id];
     }
 
     public function logout(): void

@@ -38,15 +38,15 @@ class UpdateUsuarioRequest extends FormRequest
         if (Auth::is('admin')) return true;
 
         // Usuário comum só pode editar a si próprio
-        // O ID do usuário sendo editado deve ser passado via input hidden 'user_id'
-        $targetId = (int) ($this->input['user_id'] ?? 0);
+        // O ID do usuário sendo editado deve ser passado via input hidden 'usuario_id'
+        $targetId = (int) ($this->input['usuario_id'] ?? 0);
         return $targetId === Auth::id();
     }
 
     public function rules(): array
     {
         // unique ignora o registro do próprio usuário
-        $userId = (int) ($this->input['user_id'] ?? Auth::id() ?? 0);
+        $userId = (int) ($this->input['usuario_id'] ?? Auth::id() ?? 0);
 
         $rules = [
             'name'  => 'required|min:2|max:100',
@@ -83,7 +83,7 @@ class UpdateUsuarioRequest extends FormRequest
     public function sanitize(): array
     {
         $data = [
-            'user_id' => (int) ($this->input['user_id'] ?? 0),
+            'usuario_id' => (int) ($this->input['usuario_id'] ?? 0),
             'name'    => ucwords(mb_strtolower(Request::sanitizeValue($this->input['name'] ?? ''), 'UTF-8')),
             'email'   => strtolower(trim($this->input['email'] ?? '')),
         ];

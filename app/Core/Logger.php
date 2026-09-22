@@ -11,7 +11,7 @@ namespace Core;
  * Níveis: DEBUG → INFO → WARNING → ERROR → CRITICAL
  *
  * Uso:
- *   Logger::info('Usuário logado', ['user_id' => 42]);
+ *   Logger::info('Usuário logado', ['usuario_id' => 42]);
  *   Logger::error('Falha na conexão', ['host' => 'db01']);
  *   Logger::debug('Query executada', ['sql' => $sql, 'time_ms' => 12]);
  */
@@ -53,11 +53,26 @@ class Logger
 
     // ── Interface Pública ─────────────────────────────────────────────────────
 
-    public static function debug(string $msg, array $ctx = []): void    { static::log(self::DEBUG,    $msg, $ctx); }
-    public static function info(string $msg, array $ctx = []): void     { static::log(self::INFO,     $msg, $ctx); }
-    public static function warning(string $msg, array $ctx = []): void  { static::log(self::WARNING,  $msg, $ctx); }
-    public static function error(string $msg, array $ctx = []): void    { static::log(self::ERROR,    $msg, $ctx); }
-    public static function critical(string $msg, array $ctx = []): void { static::log(self::CRITICAL, $msg, $ctx); }
+    public static function debug(string $msg, array $ctx = []): void
+    {
+        static::log(self::DEBUG,    $msg, $ctx);
+    }
+    public static function info(string $msg, array $ctx = []): void
+    {
+        static::log(self::INFO,     $msg, $ctx);
+    }
+    public static function warning(string $msg, array $ctx = []): void
+    {
+        static::log(self::WARNING,  $msg, $ctx);
+    }
+    public static function error(string $msg, array $ctx = []): void
+    {
+        static::log(self::ERROR,    $msg, $ctx);
+    }
+    public static function critical(string $msg, array $ctx = []): void
+    {
+        static::log(self::CRITICAL, $msg, $ctx);
+    }
 
     // ── Core ──────────────────────────────────────────────────────────────────
 

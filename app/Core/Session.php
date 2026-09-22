@@ -14,8 +14,8 @@ namespace Core;
  *
  * Uso:
  *   Session::start();
- *   Session::set('user_id', 42);
- *   Session::get('user_id');          // 42
+ *   Session::set('usuario_id', 42);
+ *   Session::get('usuario_id');          // 42
  *   Session::flash('success', 'OK!');
  *   Session::getFlash('success');     // 'OK!' (e remove)
  */

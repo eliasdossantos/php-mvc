@@ -328,7 +328,7 @@ abstract class Controller
 
     protected function userId(): int
     {
-        return (int) Session::get('user_id', 0);
+        return (int) Session::get('usuario_id', 0);
     }
 
     protected function userRole(): string

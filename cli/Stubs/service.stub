@@ -50,7 +50,7 @@ class {{ ClassName }} extends Service
         //     return ['success' => false, 'message' => 'Erro ao criar registro.'];
         // }
         //
-        // Logger::info('{{ ModelName }} criado', ['id' => $id, 'user_id' => $userId]);
+        // Logger::info('{{ ModelName }} criado', ['id' => $id, 'usuario_id' => $userId]);
         // return ['success' => true, 'id' => $id];
 
         return ['success' => true, 'message' => 'Implementar lógica de criação.'];
@@ -73,7 +73,7 @@ class {{ ClassName }} extends Service
         // }
         //
         // // Verificação de permissão (exemplo):
-        // if ((int)$record->user_id !== $userId) {
+        // if ((int)$record->usuario_id !== $userId) {
         //     return ['success' => false, 'message' => 'Sem permissão para editar.'];
         // }
         //
