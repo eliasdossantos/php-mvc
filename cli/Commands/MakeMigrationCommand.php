@@ -6,7 +6,7 @@ use Cli\Command;
 use Cli\Output;
 
 /**
- * make:migration — Gera um arquivo de migration SQL
+ * make:migration — Gera um arquivo de migration PHP (Core\Migration)
  *
  * Uso:
  *   php mvc make:migration CreatePostsTable
@@ -14,10 +14,12 @@ use Cli\Output;
  *   php mvc make:migration create_posts_table    ← snake_case é convertido
  *
  * Cria:
- *   database/migrations/002_create_posts_table.sql
- *   database/migrations/003_add_email_to_users.sql
+ *   database/migrations/2026_09_20_143000_create_posts_table.php
+ *   database/migrations/2026_09_20_143512_add_email_to_users.php
  *
- * O número é gerado automaticamente baseado nas migrations existentes.
+ * O prefixo é um timestamp (YYYY_MM_DD_HHMMSS), não mais um número
+ * sequencial — é ele quem garante a ordem de execução no Migrator, e evita
+ * conflito de numeração quando duas pessoas criam migrations em paralelo.
  */
 class MakeMigrationCommand extends Command
 {
@@ -35,27 +37,25 @@ class MakeMigrationCommand extends Command
         [$className] = $this->parseNameAndNamespace($input);
         $migrationName = $this->toSnakeCase($className);
 
-        // Encontra o próximo número de migration
-        $nextNumber = $this->getNextMigrationNumber();
-        $paddedNumber = str_pad($nextNumber, 3, '0', STR_PAD_LEFT);
-
-        // Gera o nome do arquivo: 002_create_posts_table.sql
-        $fileName = "{$paddedNumber}_{$migrationName}.sql";
+        // Gera o nome do arquivo: 2026_09_20_143000_create_posts_table.php
+        $timestamp = date('Y_m_d_His');
+        $fileName = "{$timestamp}_{$migrationName}.php";
         $destPath = ROOT_PATH . '/database/migrations/' . $fileName;
 
         // Descrição mais legível para o comentário (ex: "Create Posts Table")
         $description = $this->formatDescription($className);
-        
-        // Nome da tabela (simplificado: remove Create/Drop/Add prefixos)
+
+        // Nome da tabela (simplificado: remove Create/Drop/Add prefixos),
+        // convertido pra snake_case pra funcionar com nomes compostos
+        // (ex: OrderItems → order_items, não "orderitems").
         $tableName = $this->extractTableName($className);
+        $tableNameLower = $this->toSnakeCase($tableName);
 
         Output::info("Gerando migration <comment>{$fileName}</comment>…");
 
         $this->generateFile('migration', $destPath, [
-            '{{ Number }}'        => $paddedNumber,
-            '{{ Description }}'   => $description,
-            '{{ TableName }}'     => $tableName,
-            '{{ tableNameLower }}' => strtolower($tableName),
+            '{{ Description }}'    => $description,
+            '{{ tableNameLower }}' => $tableNameLower,
         ]);
 
         Output::success("Migration criada: <info>database/migrations/{$fileName}</info>");
@@ -64,36 +64,6 @@ class MakeMigrationCommand extends Command
         Output::dim("  php mvc migrate");
 
         return true;
-    }
-
-    /**
-     * Encontra o próximo número de migration disponível.
-     * Ex: se existe 001_*, 002_*, retorna 3
-     */
-    private function getNextMigrationNumber(): int
-    {
-        $migrationsDir = ROOT_PATH . '/database/migrations';
-
-        if (!is_dir($migrationsDir)) {
-            return 1;
-        }
-
-        $files = scandir($migrationsDir);
-        $maxNumber = 0;
-
-        foreach ($files as $file) {
-            if (!str_ends_with($file, '.sql')) {
-                continue;
-            }
-
-            // Extrai o número do início do arquivo: 001_xxx.sql → 1
-            if (preg_match('/^(\d+)_/', $file, $matches)) {
-                $number = (int) $matches[1];
-                $maxNumber = max($maxNumber, $number);
-            }
-        }
-
-        return $maxNumber + 1;
     }
 
     /**

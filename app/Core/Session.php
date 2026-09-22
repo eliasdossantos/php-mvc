@@ -27,9 +27,25 @@ class Session
 
         // Armazena sessões fora do public/
         $sessionPath = STORAGE_PATH . '/sessions';
-        if (!is_dir($sessionPath)) mkdir($sessionPath, 0755, true);
 
-        session_save_path($sessionPath);
+        // ── MELHORIA #1 ──────────────────────────────────────────────────────
+        // mkdir() sem checagem: se falhar (permissão, disco cheio), o código
+        // seguia em frente apontando session_save_path() pra um diretório que
+        // não existe — o PHP então falha silenciosamente ao persistir a
+        // sessão (ou emite warning "Failed to write session data"), e o
+        // usuário parece "deslogar sozinho" a cada requisição sem pista
+        // nenhuma do motivo. Agora, se não conseguir criar/usar o diretório
+        // dedicado, cai pro diretório padrão de sessões do PHP em vez de
+        // apontar pra um caminho quebrado — a sessão continua funcionando,
+        // só não fica isolada do resto do sistema.
+        if (!is_dir($sessionPath) && !@mkdir($sessionPath, 0755, true) && !is_dir($sessionPath)) {
+            if (class_exists(\Core\Logger::class)) {
+                \Core\Logger::error("Session: não foi possível criar {$sessionPath}, usando o session.save_path padrão do PHP.");
+            }
+        } else {
+            session_save_path($sessionPath);
+        }
+
         session_name(defined('APP_NAME') ? 'SESS_' . preg_replace('/[^a-zA-Z0-9]/', '', APP_NAME) : 'PHP_MVC_SESS');
 
         session_set_cookie_params([
@@ -41,11 +57,30 @@ class Session
             'samesite' => 'Lax',
         ]);
 
-        session_start();
+        // ── MELHORIA #2 ──────────────────────────────────────────────────────
+        // session_start() pode retornar false (ex: headers já enviados antes
+        // de chegar aqui). Antes isso passava batido — o código seguia usando
+        // $_SESSION normalmente, só que sem persistir nada entre requisições,
+        // e ninguém saberia o porquê. Agora loga o problema, se possível, mas
+        // não interrompe a execução: mesmo sem persistir, a aplicação ainda
+        // funciona dentro dessa única requisição.
+        if (!session_start() && class_exists(\Core\Logger::class)) {
+            \Core\Logger::error('Session: session_start() falhou.');
+        }
 
         // Erros de validação: duram somente uma requisição
         $_SESSION['_errors'] = $_SESSION['_errors_next'] ?? [];
         unset($_SESSION['_errors_next']);
+
+        // ── MELHORIA #3 (corrige bug real) ────────────────────────────────────
+        // Esta chamada estava faltando. O mecanismo de "aging" do old input
+        // (oldInput() marca _old_input_read; ageOldInput() descarta na
+        // requisição seguinte) só funciona se ageOldInput() rodar no início
+        // de cada requisição — e não rodava em lugar nenhum. Resultado: dados
+        // de old input ficavam na sessão indefinidamente após serem lidos uma
+        // vez, podendo reaparecer em formulários de páginas completamente
+        // diferentes depois.
+        static::ageOldInput();
 
         // Regenera ID periodicamente (a cada 5 min)
         $now = time();
@@ -135,6 +170,13 @@ class Session
     public static function flashInput(array $data): void
     {
         $_SESSION['_old_input'] = $data;
+
+        // ── MELHORIA #4 ──────────────────────────────────────────────────────
+        // Um novo flashInput() (novo erro de validação) precisa reiniciar o
+        // ciclo de aging — sem isso, se _old_input_read já estivesse setado
+        // de uma leitura anterior, o PRÓXIMO ageOldInput() descartaria esses
+        // dados recém-flashados antes mesmo de serem exibidos no formulário.
+        unset($_SESSION['_old_input_read']);
     }
 
     public static function flashErrors(array $errors): void
@@ -142,26 +184,12 @@ class Session
         $_SESSION['_errors_next'] = $errors;
     }
 
-
     /**
-     * ── BUG CORRIGIDO #9 ────────────────────────────────────────────────────
-     * Antes: oldInput() lia o valor mas NÃO limpava o _old_input da sessão.
-     * O comentário "Limpeza lazy: remove após ler todos os valores" indicava
-     * intenção, mas a implementação não executava essa limpeza — forgetOldInput()
-     * existia mas nunca era chamado automaticamente.
-     *
-     * Consequência: ao submeter um formulário com erro, os valores eram
-     * preservados corretamente na próxima requisição (comportamento desejado).
-     * Porém, ao navegar para outra página sem resubmeter o formulário, os
-     * valores antigos continuavam disponíveis indefinidamente na sessão,
-     * podendo vazar para formulários de outras páginas que usassem old().
-     *
-     * Solução: introduzir um mecanismo de "aging" via flag _old_input_consumed.
-     * Na primeira chamada a oldInput() após um flashInput(), os dados são lidos
-     * normalmente. Na próxima requisição, se oldInput() for chamado novamente
-     * sem um novo flashInput(), os dados são automaticamente descartados.
-     *
-     * Isso replica o comportamento do withOldInput() do Laravel.
+     * ── BUG CORRIGIDO #9 (herdado) ────────────────────────────────────────────
+     * Introduz o mecanismo de "aging" via flag _old_input_read, pra old input
+     * não vazar indefinidamente entre páginas — replica o withOldInput() do
+     * Laravel. Ver MELHORIA #3 acima: o pedaço que faltava era chamar
+     * ageOldInput() de fato no início de cada requisição.
      */
     public static function oldInput(string $key, mixed $default = ''): mixed
     {
@@ -174,10 +202,11 @@ class Session
     }
 
     /**
-     * Deve ser chamado no início de cada requisição (em Session::start())
-     * para limpar old_input que foi lido na requisição anterior.
+     * Deve ser chamado no início de cada requisição para limpar old_input
+     * que foi lido na requisição anterior.
      *
-     * Chamado internamente por start() — não precisa ser chamado manualmente.
+     * Chamado internamente por start() (ver MELHORIA #3) — não precisa ser
+     * chamado manualmente.
      */
     public static function ageOldInput(): void
     {
@@ -211,7 +240,7 @@ class Session
     {
         $_SESSION['_csrf_token'] = static::generateToken();
     }
-    
+
     // ── Tokens genéricos ──────────────────────────────────────────────────────
 
     /**

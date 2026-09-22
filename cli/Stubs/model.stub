@@ -12,7 +12,7 @@ use Core\Model;
  * Propriedades principais:
  *   $table      → nome da tabela no banco
  *   $fillable   → campos permitidos para INSERT/UPDATE (whitelist de segurança)
- *   $hidden     → campos excluídos da serialização (ex: password, tokens)
+ *   $hidden     → campos excluídos da serialização (ex: senha, tokens)
  *   $timestamps → gerencia created_at/updated_at automaticamente
  *   $softDelete → usa deleted_at ao invés de DELETE físico
  */
@@ -26,7 +26,7 @@ class {{ ClassName }} extends Model
      * Campos fora desta lista são ignorados silenciosamente.
      */
     protected array $fillable = [
-        'name',
+        'nome',
         // adicione os campos do seu model aqui
     ];
 
@@ -44,12 +44,12 @@ class {{ ClassName }} extends Model
     // ── Buscas customizadas ───────────────────────────────────────────────────
 
     /**
-     * Exemplo: busca por nome (case-insensitive).
+     * Exemplo: busca por nome (exato).
      * Adicione aqui métodos de busca específicos desta entidade.
      */
-    public function findByName(string $name): object|false
+    public function findByNome(string $nome): object|false
     {
-        return $this->findBy('name', $name);
+        return $this->findBy('nome', $nome);
     }
 
     /**
@@ -59,7 +59,7 @@ class {{ ClassName }} extends Model
     public function search(string $term = '', int $page = 1, int $perPage = 15): array
     {
         return $this
-            ->where('name', '%' . $term . '%', 'LIKE')
+            ->whereLike('nome', $term)
             ->orderBy('id', 'DESC')
             ->paginate($perPage, $page);
     }

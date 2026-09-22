@@ -49,6 +49,9 @@ class Application
         // CSP, Permissions-Policy e HSTS — aplicado globalmente, não só em
         // rotas específicas, para cobrir também as páginas de autenticação.
         (new SecurityHeadersMiddleware())->handle($this->request);
+
+        // Sempre roda, mesmo com exit()
+        register_shutdown_function([$this, 'logRequest']);
     }
 
     // ── Ciclo de vida principal ───────────────────────────────────────────────
@@ -72,14 +75,47 @@ class Application
         }
     }
 
+    /** APP_DEBUG lido com segurança — evita Fatal Error se a constante ainda não existir */
+    protected function isDebug(): bool
+    {
+        return defined('APP_DEBUG') && APP_DEBUG;
+    }
+
     // ── Configuração ─────────────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #1 (corrige bug real e grave) ────────────────────────────────
+     * register_shutdown_function([$this, 'handleShutdown']) estava dentro do
+     * bloco `if (APP_DEBUG)` — ou seja, só era registrado em desenvolvimento.
+     * handleShutdown() é quem intercepta erros FATAIS do PHP (E_ERROR, E_PARSE
+     * etc — os que não são capturáveis por try/catch, tipo chamar um método
+     * num null) e os transforma numa página de erro tratada.
+     *
+     * Em produção, isso nunca era registrado: um erro fatal de verdade não
+     * passava pelo handleException() de jeito nenhum. Como display_errors
+     * fica desligado em produção, o resultado era uma tela BRANCA — sem log
+     * bonito, sem página de erro, sem nada — exatamente o cenário que esta
+     * classe inteira existe para evitar. Agora handleShutdown() é registrado
+     * sempre, incondicionalmente; só o modo verboso (display_errors,
+     * set_error_handler pra warnings/notices) continua exclusivo do debug.
+     *
+     * Também passei a garantir que storage/logs exista antes de apontar
+     * ini_set('error_log', ...) pra lá — sem isso, se o diretório não
+     * existisse, os próprios erros do PHP (fora do fluxo desta classe)
+     * falhavam silenciosamente ao serem gravados.
+     */
     protected function configureErrorHandling(): void
     {
         ini_set('log_errors', 1);
-        ini_set('error_log', STORAGE_PATH . '/logs/php_errors.log');
 
-        if (!APP_DEBUG) {
+        $logDir = STORAGE_PATH . '/logs';
+        if (is_dir($logDir) || @mkdir($logDir, 0755, true) || is_dir($logDir)) {
+            ini_set('error_log', $logDir . '/php_errors.log');
+        }
+
+        register_shutdown_function([$this, 'handleShutdown']);
+
+        if (!$this->isDebug()) {
             error_reporting(0);
             ini_set('display_errors', 0);
             return;
@@ -88,7 +124,6 @@ class Application
         error_reporting(E_ALL);
         ini_set('display_errors', 1);
         set_error_handler([$this, 'handlePhpError']);
-        register_shutdown_function([$this, 'handleShutdown']);
     }
 
     protected function setSecurityHeaders(): void
@@ -102,26 +137,60 @@ class Application
 
     // ── Tratamento de Exceções ────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * Esta é a última linha de defesa da aplicação — chamada direto do catch
+     * em run(). Se ELA MESMA lançasse uma exceção (ex: um bug futuro nesta
+     * classe, ou a própria view de erro falhando — ver MELHORIA #3), nada
+     * mais captura isso, e o usuário veria o erro cru do PHP ou tela branca.
+     * Agora tem seu próprio try/catch como rede de segurança final: garante
+     * uma resposta mínima em vez de deixar qualquer exceção escapar sem
+     * controle nenhum desta classe.
+     */
     protected function handleException(\Throwable $e): void
     {
-        $httpCode = $this->resolveHttpCode($e);
+        try {
+            $httpCode = $this->resolveHttpCode($e);
 
-        $context = [
-            'type'       => get_class($e),
-            'file'       => $e->getFile(),
-            'line'       => $e->getLine(),
-            'uri'        => $_SERVER['REQUEST_URI']     ?? 'unknown',
-            'method'     => $_SERVER['REQUEST_METHOD']  ?? 'unknown',
-            'ip'         => $_SERVER['REMOTE_ADDR']     ?? 'unknown',
-            'memory'     => round(memory_get_peak_usage(true) / 1024 / 1024, 2) . ' MB',
-            'time_ms'    => round((microtime(true) - $this->startTime) * 1000, 2),
-        ];
+            $context = [
+                'type'    => get_class($e),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+                'uri'     => $_SERVER['REQUEST_URI']    ?? 'unknown',
+                'method'  => $_SERVER['REQUEST_METHOD'] ?? 'unknown',
+                'ip'      => $_SERVER['REMOTE_ADDR']    ?? 'unknown',
+                'memory'  => round(memory_get_peak_usage(true) / 1024 / 1024, 2) . ' MB',
+                'time_ms' => round((microtime(true) - $this->startTime) * 1000, 2),
+            ];
 
-        Logger::error($e->getMessage(), $context);
+            Logger::error($e->getMessage(), $context);
 
-        APP_DEBUG
-            ? $this->renderDebugPage($e, $context, $httpCode)
-            : $this->renderProductionError($httpCode);
+            // ── MELHORIA #4 (corrige bug real) ────────────────────────────────
+            // Removida a chamada explícita a logRequest($httpCode) que existia
+            // aqui. Dois problemas nela: (1) logRequest() não aceita nenhum
+            // parâmetro — o $httpCode passado era silenciosamente ignorado;
+            // (2) essa chamada rodava ANTES de http_response_code($httpCode)
+            // ser de fato definido (isso só acontece dentro de
+            // renderProductionError()/renderDebugPage(), logo abaixo), então
+            // o log de requisição registrava o status ERRADO (o anterior à
+            // resposta de erro, tipicamente 200). E como register_shutdown_
+            // function([$this, 'logRequest']) já roda automaticamente no fim
+            // do script — inclusive depois do exit(1) chamado pelas funções
+            // de render — cada erro gerava DUAS linhas no log de requisições:
+            // uma com o status errado (esta chamada) e outra com o status
+            // certo (a do shutdown). A do shutdown sozinha já é suficiente e
+            // sempre correta, porque roda depois do http_response_code() real.
+            $this->isDebug()
+                ? $this->renderDebugPage($e, $context, $httpCode)
+                : $this->renderProductionError($httpCode);
+        } catch (\Throwable $inner) {
+            while (ob_get_level()) { @ob_end_clean(); }
+            if (!headers_sent()) {
+                http_response_code(500);
+            }
+            echo '<h1>500 — Erro interno</h1>';
+            exit(1);
+        }
     }
 
     /** Converte o tipo/código da exceção para um HTTP status code */
@@ -159,16 +228,30 @@ class Application
 
     // ── Renderização de Erros ─────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * Se a própria view de erro (errors/{code}.php ou errors/generic.php)
+     * tivesse um bug, a exceção subia sem controle — durante o tratamento de
+     * erro, que é o pior momento possível pra isso acontecer. Agora cai pra
+     * um HTML mínimo se a view falhar, em vez de propagar.
+     */
     protected function renderProductionError(int $httpCode): void
     {
         while (ob_get_level()) ob_end_clean();
         http_response_code($httpCode);
 
-        $viewFile = VIEW_PATH . "/errors/{$httpCode}.php";
-        if (file_exists($viewFile)) {
-            require $viewFile;
-        } else {
-            require VIEW_PATH . '/errors/generic.php';
+        try {
+            $viewFile = VIEW_PATH . "/errors/{$httpCode}.php";
+            if (file_exists($viewFile)) {
+                require $viewFile;
+            } else {
+                require VIEW_PATH . '/errors/generic.php';
+            }
+        } catch (\Throwable $e) {
+            Logger::critical('Falha ao renderizar página de erro de produção', [
+                'message' => $e->getMessage(),
+            ]);
+            echo '<h1>Erro interno</h1>';
         }
 
         exit(1);
@@ -180,17 +263,27 @@ class Application
         http_response_code($httpCode);
         header('Content-Type: text/html; charset=utf-8');
 
-        $data = [
-            'exception'   => $e,
-            'context'     => $ctx,
-            'httpCode'    => $httpCode,
-            'httpMessage' => $this->httpMessages[$httpCode] ?? 'Error',
-            'source'      => $this->extractSourceLines($e->getFile(), $e->getLine()),
-            'trace'       => $this->buildEnrichedTrace($e),
-        ];
+        try {
+            $data = [
+                'exception'   => $e,
+                'context'     => $ctx,
+                'httpCode'    => $httpCode,
+                'httpMessage' => $this->httpMessages[$httpCode] ?? 'Error',
+                'source'      => $this->extractSourceLines($e->getFile(), $e->getLine()),
+                'trace'       => $this->buildEnrichedTrace($e),
+            ];
 
-        extract($data);
-        require VIEW_PATH . '/errors/debug.php';
+            extract($data);
+            require VIEW_PATH . '/errors/debug.php';
+        } catch (\Throwable $renderError) {
+            // A própria página de debug falhando não pode virar uma segunda
+            // exceção sem tratamento — cai pro essencial: pelo menos mostra
+            // a mensagem original do erro que estava sendo debugado.
+            echo '<h1>Erro ao renderizar página de debug</h1>';
+            echo '<p><strong>Exceção original:</strong> ' . htmlspecialchars($e->getMessage()) . '</p>';
+            echo '<p><strong>Falha ao renderizar debug:</strong> ' . htmlspecialchars($renderError->getMessage()) . '</p>';
+        }
+
         exit(1);
     }
 
@@ -205,7 +298,7 @@ class Application
     public function handleShutdown(): void
     {
         $error = error_get_last();
-        if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
             $this->handleException(
                 new \ErrorException($error['message'], 500, $error['type'], $error['file'], $error['line'])
             );
@@ -214,10 +307,20 @@ class Application
 
     // ── Utilidades ────────────────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #5 ──────────────────────────────────────────────────────────
+     * file() pode retornar false (arquivo sumiu entre o is_readable() e a
+     * leitura, permissão mudou, etc). Antes isso ia direto pro count()/loop
+     * seguinte, gerando warning e comportamento estranho. Agora trata como
+     * "sem código-fonte disponível" em vez de propagar o erro.
+     */
     protected function extractSourceLines(string $file, int $line, int $padding = 8): array
     {
         if (!is_readable($file)) return [];
-        $lines  = file($file);
+
+        $lines = @file($file);
+        if ($lines === false) return [];
+
         $start  = max(0, $line - $padding - 1);
         $end    = min(count($lines) - 1, $line + $padding - 1);
         $result = [];
@@ -254,12 +357,50 @@ class Application
 
     protected function logDebugInfo(): void
     {
-        if (!APP_DEBUG) return;
+        if (!$this->isDebug()) return;
         Logger::debug('Request OK', [
             'uri'     => $_SERVER['REQUEST_URI'] ?? '/',
             'method'  => $_SERVER['REQUEST_METHOD'] ?? 'GET',
             'time_ms' => round((microtime(true) - $this->startTime) * 1000, 2),
             'mem_mb'  => round(memory_get_peak_usage(true) / 1024 / 1024, 2),
         ]);
+    }
+
+    // ── Log de Requisições ────────────────────────────────────────────────────
+
+    /**
+     * Registra a requisição atual em storage/logs/requests-YYYY-MM-DD.log
+     * Roda em toda requisição, independente de APP_DEBUG (via
+     * register_shutdown_function no construtor — inclusive depois de exit()).
+     *
+     * ── MELHORIA #6 ──────────────────────────────────────────────────────────
+     * mkdir() sem checagem — se falhasse, o error_log() abaixo (que também já
+     * falha silenciosamente pra path inválido) resultava em log de requisição
+     * perdido sem nenhum aviso. Segue o mesmo padrão já aplicado no restante
+     * do projeto (Logger, Session): tenta, e se não der, não trava a resposta
+     * por causa disso — é só um log a menos, não motivo pra derrubar a request.
+     */
+    public function logRequest(): void
+    {
+        $dir = STORAGE_PATH . '/logs';
+        if (!is_dir($dir) && !@mkdir($dir, 0755, true) && !is_dir($dir)) {
+            return;
+        }
+
+        $statusCode = http_response_code() ?: 200;
+
+        $line = sprintf(
+            "[%s] %s %s | status=%d | ip=%s | %sms | %sMB%s",
+            date('Y-m-d H:i:s'),
+            $_SERVER['REQUEST_METHOD'] ?? 'GET',
+            $_SERVER['REQUEST_URI'] ?? '/',
+            $statusCode,
+            $_SERVER['REMOTE_ADDR'] ?? '-',
+            round((microtime(true) - $this->startTime) * 1000, 2),
+            round(memory_get_peak_usage(true) / 1024 / 1024, 2),
+            PHP_EOL
+        );
+
+        @error_log($line, 3, $dir . '/requests-' . date('Y-m-d') . '.log');
     }
 }

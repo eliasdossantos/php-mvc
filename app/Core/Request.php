@@ -10,6 +10,14 @@ namespace Core;
  *
  * Todos os getters de dados aplicam sanitização básica por padrão.
  * Para dados raw (ex: uploads, JSON), use os métodos específicos.
+ *
+ * ⚠  IMPORTANTE sobre sanitizeValue(): get()/post()/all() passam todo valor
+ * por htmlspecialchars()+strip_tags() automaticamente. Isso é ótimo pra
+ * exibir de volta em HTML sem se preocupar, mas significa que o valor NÃO é
+ * mais o dado original — para senhas (login/cadastro), tokens, ou qualquer
+ * campo onde o byte exato importa, use raw($campo) em vez de post($campo).
+ * Uma senha com "<" ou "&" sanitizada na entrada vira outro hash no cadastro
+ * e nunca mais bate no login — sempre use raw() pra campos de senha.
  */
 class Request
 {
@@ -19,15 +27,20 @@ class Request
 
     /**
      * Retorna o método HTTP.
-     * Suporta override via campo POST `_method` (para PUT/DELETE em forms HTML).
+     * Suporta override via campo POST `_method` (para PUT/PATCH/DELETE em forms HTML).
+     *
+     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * Se `_method` viesse como array (ex: campo de formulário mal montado,
+     * `_method[]=PUT`), strtoupper() de um array gera TypeError fatal. Agora
+     * só considera o override se for de fato uma string.
      */
     public function method(): string
     {
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
 
-        if ($method === 'POST' && isset($_POST['_method'])) {
+        if ($method === 'POST' && isset($_POST['_method']) && is_string($_POST['_method'])) {
             $override = strtoupper($_POST['_method']);
-            if (in_array($override, ['PUT', 'PATCH', 'DELETE'])) {
+            if (in_array($override, ['PUT', 'PATCH', 'DELETE'], true)) {
                 return $override;
             }
         }
@@ -35,12 +48,19 @@ class Request
         return $method;
     }
 
-    /** Retorna a URI limpa, sem query string e sem base path */
+    /**
+     * Retorna a URI limpa, sem query string e sem base path.
+     *
+     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * $_SERVER['SCRIPT_NAME'] pode não existir em alguns SAPIs/contextos de
+     * teste — acessá-lo direto gera "Undefined array key", e dirname(null)
+     * é deprecated em PHP 8.1+. Agora cai pra '/' nesse caso.
+     */
     public function uri(): string
     {
         $uri      = $_SERVER['REQUEST_URI'] ?? '/';
         $uri      = strtok($uri, '?');                   // Remove query string
-        $basePath = dirname($_SERVER['SCRIPT_NAME']);
+        $basePath = dirname($_SERVER['SCRIPT_NAME'] ?? '/');
 
         if ($basePath !== '/' && str_starts_with($uri, $basePath)) {
             $uri = substr($uri, strlen($basePath));
@@ -61,6 +81,11 @@ class Request
     public function isPut(): bool
     {
         return $this->method() === 'PUT';
+    }
+    /** ── NOVO ── faltava: Controller::checkMethod('patch') dependia disso */
+    public function isPatch(): bool
+    {
+        return $this->method() === 'PATCH';
     }
     public function isDelete(): bool
     {
@@ -95,7 +120,7 @@ class Request
         return array_map([self::class, 'sanitizeValue'], $_POST);
     }
 
-    /** Valor bruto de $_POST (sem sanitização — use com cuidado) */
+    /** Valor bruto de $_POST (sem sanitização) — use para senhas, tokens, e qualquer campo onde o byte exato importa */
     public function raw(string $key, mixed $default = null): mixed
     {
         return $_POST[$key] ?? $default;
@@ -115,12 +140,30 @@ class Request
 
     // ── JSON Body ─────────────────────────────────────────────────────────────
 
-    /** Decodifica o body JSON (para APIs REST) */
-    public function json(string $key = null, mixed $default = null): mixed
+    /**
+     * Decodifica o body JSON (para APIs REST).
+     *
+     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * (1) `?string $key = null` explícito — parâmetro implicitamente nullable
+     * é deprecated desde PHP 8.4. (2) file_get_contents() pode retornar false
+     * (stream já consumido, erro de leitura); antes isso ia direto pro
+     * json_decode(false, true), que na prática devolve null e cai no `?? []`
+     * — funcionava, mas por acidente. Agora é uma checagem explícita.
+     * (3) JSON malformado agora é tratado da mesma forma (corpo vazio),
+     * documentado no comentário em vez de deixar implícito no `?? []`.
+     */
+    public function json(?string $key = null, mixed $default = null): mixed
     {
         if ($this->jsonBody === null) {
             $raw = file_get_contents('php://input');
-            $this->jsonBody = json_decode($raw, true) ?? [];
+            $decoded = $raw === false ? null : json_decode($raw, true);
+
+            // json_decode retorna null tanto pra "" quanto pra JSON inválido
+            // quanto pro literal JSON "null" — nos três casos, tratamos como
+            // corpo vazio (array), que é o comportamento mais seguro pros
+            // consumidores deste método (evita "Trying to access array offset
+            // on null" espalhado pelo código que chama ->json('campo')).
+            $this->jsonBody = is_array($decoded) ? $decoded : [];
         }
 
         if ($key === null) return $this->jsonBody;
@@ -148,7 +191,16 @@ class Request
         return $_SERVER[$key] ?? $default;
     }
 
-    /** IP real do cliente (considera proxies reversos confiáveis) */
+    /**
+     * IP real do cliente (considera proxies reversos confiáveis).
+     *
+     * ⚠  Nota de segurança (não corrigida aqui, só documentada): os headers
+     * X-Forwarded-For e CF-Connecting-IP são enviados pelo CLIENTE e só são
+     * confiáveis se você tiver certeza que a requisição passa por um proxy
+     * que os sobrescreve (Cloudflare, seu load balancer). Se sua aplicação
+     * for exposta direto (sem proxy), qualquer um pode forjar esses headers
+     * e falsificar o IP — nesse cenário, use REMOTE_ADDR puro.
+     */
     public function ip(): string
     {
         foreach (['HTTP_CF_CONNECTING_IP', 'HTTP_X_FORWARDED_FOR', 'REMOTE_ADDR'] as $key) {

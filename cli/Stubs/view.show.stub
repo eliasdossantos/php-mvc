@@ -64,7 +64,7 @@
                             <strong>Nome</strong>
                         </td>
                         <td>
-                            <?= e($item->name ?? '—') ?>
+                            <?= e($item->nome ?? '—') ?>
                         </td>
                     </tr>
 

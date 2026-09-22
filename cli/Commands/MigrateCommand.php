@@ -7,7 +7,7 @@ use Cli\Migrator;
 use Cli\Output;
 
 /**
- * migrate — Executa as migrations SQL do projeto
+ * migrate — Executa as migrations do projeto
  *
  * Uso:
  *   php mvc migrate             ← executa migrations pendentes

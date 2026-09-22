@@ -12,6 +12,7 @@ use Cli\Commands\MakeRepositoryCommand;
 use Cli\Commands\MakeSeedCommand;
 use Cli\Commands\MakeViewCommand;
 use Cli\Commands\MigrateCommand;
+use Cli\Commands\MigrateRollbackCommand;
 use Cli\Commands\SeedRunCommand;
 use Cli\Commands\ServeCommand;
 
@@ -118,6 +119,7 @@ class Kernel
             // Utilitários
             'key:generate'     => KeyGenerateCommand::class,
             'migrate'          => MigrateCommand::class,
+            'migrate:rollback' => MigrateRollbackCommand::class,
             'serve'            => ServeCommand::class,
         ];
     }
@@ -180,9 +182,11 @@ class Kernel
                 'make:view {nome}'       => 'Cria as views index/show/create/edit',
             ],
             'Banco de dados' => [
-                'migrate'          => 'Executa todas as migrations pendentes',
-                'migrate --fresh'  => 'Recria o banco do zero (DROP + migrate)',
-                'seed:run {Nome}'   => 'Executa seeders PHP em database/seeds',
+                'migrate'                  => 'Executa todas as migrations pendentes',
+                'migrate --fresh'          => 'Recria o banco do zero (DROP + migrate)',
+                'migrate:rollback'         => 'Desfaz o último batch de migrations aplicado',
+                'migrate:rollback --step=N' => 'Desfaz os últimos N batches',
+                'seed:run {Nome}'          => 'Executa seeders PHP em database/seeds',
             ],
             'Configuração' => [
                 'key:generate'  => 'Gera chave de aplicação segura no .env',

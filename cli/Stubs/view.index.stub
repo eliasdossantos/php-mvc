@@ -72,7 +72,7 @@
                                 </td>
 
                                 <td>
-                                    <?= e($item->name) ?>
+                                    <?= e($item->nome) ?>
                                 </td>
 
                                 <td>
@@ -120,11 +120,14 @@
     </div>
 
     <?php
-    \Core\View::render(
-        'components.pagination',
-        ['data' => $items ?? []]
-    );
+    /**
+     * ── CORRIGIDO ──────────────────────────────────────────────────────────
+     * Antes esta chamada não tinha "<?=" na frente. \Core\View::render()
+     * RETORNA a string, não imprime sozinho — então a paginação nunca
+     * aparecia na tela, sem erro nenhum, sem aviso nenhum.
+     */
     ?>
+    <?= \Core\View::render('components.pagination', ['data' => $items ?? []]); ?>
 
 </div>
 
