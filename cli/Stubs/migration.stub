@@ -1,14 +1,25 @@
--- ─────────────────────────────────────────────────────────────────────────────
--- Migration {{ Number }} — {{ Description }}
--- Execute: php mvc migrate
--- ─────────────────────────────────────────────────────────────────────────────
+<?php
 
--- ── {{ TableName }} ────────────────────────────────────────────────────────────
--- TODO: Implemente sua migration aqui
+use Core\Migration;
+use Core\Schema;
+use Core\Blueprint;
 
--- CREATE TABLE IF NOT EXISTS {{ tableNameLower }} (
---     id         INT UNSIGNED  AUTO_INCREMENT PRIMARY KEY,
---     name       VARCHAR(100)  NOT NULL,
---     created_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP,
---     updated_at DATETIME      NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
--- ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/**
+ * Migration — {{ Description }}
+ */
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('{{ tableNameLower }}', function (Blueprint $table) {
+            $table->id();
+            // TODO: defina as colunas de {{ tableNameLower }} aqui
+            $table->string('nome', 100);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('{{ tableNameLower }}');
+    }
+};

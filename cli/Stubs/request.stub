@@ -67,14 +67,14 @@ class {{ ClassName }} extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'     => 'O nome é obrigatório.',
-            'name.min'          => 'O nome deve ter pelo menos 2 caracteres.',
-            'email.required'    => 'O e-mail é obrigatório.',
-            'email.email'       => 'Informe um e-mail válido.',
-            'email.unique'      => 'Este e-mail já está em uso.',
-            'password.required' => 'A senha é obrigatória.',
-            'password.min'      => 'A senha deve ter pelo menos 6 caracteres.',
-            'password.confirmed'=> 'A confirmação de senha não confere.',
+            'name.required'             => 'O nome é obrigatório.',
+            'name.min'                  => 'O nome deve ter pelo menos 2 caracteres.',
+            'email.required'            => 'O e-mail é obrigatório.',
+            'email.email'               => 'Informe um e-mail válido.',
+            'email.unique'              => 'Este e-mail já está em uso.',
+            'password.required'         => 'A senha é obrigatória.',
+            'password.min'              => 'A senha deve ter pelo menos 6 caracteres.',
+            'password.confirmed'       => 'A confirmação de senha não confere.',
         ];
     }
 
@@ -90,9 +90,9 @@ class {{ ClassName }} extends FormRequest
     public function sanitize(): array
     {
         return [
-            'name'                  => ucwords(mb_strtolower(trim($this->input['name']     ?? ''), 'UTF-8')),
-            'email'                 => strtolower(trim($this->input['email']    ?? '')),
-            'password'              => trim($this->input['password']              ?? ''),
+            'name'                  => ucwords(mb_strtolower(trim($this->input['name'] ?? ''), 'UTF-8')),
+            'email'                 => strtolower(trim($this->input['email'] ?? '')),
+            'password'              => trim($this->input['password'] ?? ''),
             'password_confirmation' => trim($this->input['password_confirmation'] ?? ''),
         ];
     }

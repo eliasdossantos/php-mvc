@@ -10,13 +10,6 @@
         "orm"
     ],
     "homepage": "https://github.com/eliasdossantos/php-mvc",
-    "bugs": {
-        "url": "https://github.com/eliasdossantos/php-mvc/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/eliasdossantos/php-mvc.git"
-    },
     "type": "project",
     "license": "Unlicense",
     "authors": [
@@ -46,6 +39,7 @@
             "App\\Middlewares\\": "app/Middlewares/",
             "App\\Helpers\\": "app/Helpers/",
             "App\\Requests\\": "app/Requests/",
+            "App\\Api\\": "app/Api/",
             "Cli\\": "cli/"
         },
         "files": [
@@ -71,5 +65,8 @@
         "sort-packages": true
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "support": {
+        "issues": "https://github.com/eliasdossantos/php-mvc/issues"
+    }
 }

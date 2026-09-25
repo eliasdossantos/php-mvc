@@ -7,7 +7,7 @@
     <div class="form-group">
         <label class="form-label" for="name">Nome completo</label>
         <input type="text" id="name" name="name" value="<?= old('name') ?>"
-            class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>" placeholder="Seu nome completo" required
+            class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>" placeholder="Seu name completo" required
             autofocus autocomplete="name">
         <?php if (hasError('name')): ?>
         <span class="form-error"><?= error('name') ?></span>

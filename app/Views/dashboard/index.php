@@ -90,9 +90,10 @@ $dashFirst = explode(' ', trim($dashName))[0];
                 Autenticado como <strong><?= e($dashUser->name ?? 'Usu&#225;rio') ?></strong>
                 &mdash; <code><?= e($dashUser->email ?? '') ?></code>
             </p>
-            <a href="<?= url('auth/logout') ?>" class="btn btn-secondary btn-sm" data-confirm="Deseja sair?">
-                Sair da conta
-            </a>
+            <form method="post" action="<?= url('auth/logout') ?>" class="logout-form" data-confirm="Deseja sair?">
+                <?= csrf_field() ?>
+                <button type="submit" class="btn btn-secondary btn-sm">Sair da conta</button>
+            </form>
         </div>
     </div>
 </div>

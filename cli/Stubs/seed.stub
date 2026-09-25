@@ -11,7 +11,7 @@
  *   php database/seeds/{{ ClassName }}.php
  */
 
-// Bootstrap mínimo (sem precisar do framework completo)
+// Bootstrap mínimo
 define('ROOT_PATH',    dirname(__DIR__, 2));
 define('CONFIG_PATH',  ROOT_PATH . '/config');
 define('STORAGE_PATH', ROOT_PATH . '/storage');
@@ -29,20 +29,14 @@ if (file_exists($envFile)) {
     }
 }
 
-$config = require CONFIG_PATH . '/database.php';
-$conn   = $config['connections'][$config['default']];
+require ROOT_PATH . '/vendor/autoload.php';
 
-$dsn = sprintf(
-    'mysql:host=%s;port=%s;dbname=%s;charset=%s',
-    $conn['host'], $conn['port'], $conn['database'], $conn['charset']
-);
-
+// Usa Core\Database (mesma conexão/DSN da aplicação) em vez de duplicar a
+// lógica de conexão aqui — evita os dois ficarem dessincronizados se a
+// configuração do banco mudar (charset, opções do PDO, etc).
 try {
-    $pdo = new PDO($dsn, $conn['username'], $conn['password'], [
-        PDO::ATTR_ERRMODE            => PDO::ERRMODE_EXCEPTION,
-        PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_OBJ,
-    ]);
-} catch (PDOException $e) {
+    $pdo = \Core\Database::getInstance()->getPdo();
+} catch (\Throwable $e) {
     die("❌  Conexão falhou: " . $e->getMessage() . "\n");
 }
 
@@ -50,12 +44,12 @@ try {
 
 $records = [
     [
-        'name'       => 'Exemplo 1',
+        'nome'       => 'Exemplo 1',
         'created_at' => date('Y-m-d H:i:s'),
         'updated_at' => date('Y-m-d H:i:s'),
     ],
     [
-        'name'       => 'Exemplo 2',
+        'nome'       => 'Exemplo 2',
         'created_at' => date('Y-m-d H:i:s'),
         'updated_at' => date('Y-m-d H:i:s'),
     ],
@@ -69,12 +63,12 @@ $inserted = 0;
 $skipped  = 0;
 
 foreach ($records as $record) {
-    // Evita duplicatas pelo campo 'name' (ajuste conforme sua tabela)
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM {{ tableName }} WHERE name = ?");
-    $stmt->execute([$record['name']]);
+    // Evita duplicatas pelo campo 'nome' (ajuste conforme sua tabela)
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM {{ tableName }} WHERE nome = ?");
+    $stmt->execute([$record['nome']]);
 
     if ((int)$stmt->fetchColumn() > 0) {
-        echo "  ⚠  \"{$record['name']}\" já existe — ignorado.\n";
+        echo "  ⚠  \"{$record['nome']}\" já existe — ignorado.\n";
         $skipped++;
         continue;
     }
@@ -88,7 +82,7 @@ foreach ($records as $record) {
     }
 
     $stmt->execute();
-    echo "  ✓  \"{$record['name']}\" inserido.\n";
+    echo "  ✓  \"{$record['nome']}\" inserido.\n";
     $inserted++;
 }
 

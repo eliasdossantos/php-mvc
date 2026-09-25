@@ -85,8 +85,7 @@ foreach ($alertTypes as $alertType):
                 <?= e(reset($messages)) ?>
             <?php endif; ?>
         </div>
-        <button type="button" class="alert-close mt-1"
-            onclick="var el=this.parentElement;el.style.transition='opacity .3s ease';el.style.opacity='0';setTimeout(function(){el.remove()},300)"
+        <button type="button" class="alert-close mt-1" data-dismiss-alert
             aria-label="Fechar">&#x2715;</button>
     </div>
 <?php endforeach; ?>

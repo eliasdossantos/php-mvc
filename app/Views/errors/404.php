@@ -499,7 +499,7 @@
             <a href="<?= url('/') ?>" class="btn btn-primary">
                 <i class="fas fa-arrow-left"></i> Ir para o início
             </a>
-            <button onclick="goBack()" class="btn btn-outline">
+            <button data-go-back class="btn btn-outline">
                 <i class="fas fa-undo-alt"></i> Voltar
             </button>
         </div>
@@ -509,7 +509,7 @@
         </div>
     </div>
 
-    <script>
+    <script nonce="<?= e(cspNonce()) ?>">
         // Função segura para voltar à página anterior
         function goBack() {
             try {
@@ -547,7 +547,7 @@
     </script>
 
     <?php if (function_exists('url')): ?>
-        <script>
+        <script nonce="<?= e(cspNonce()) ?>">
             // Configurar base URL se disponível
             window.baseUrl = '<?= rtrim(url('/'), '/') ?>';
         </script>

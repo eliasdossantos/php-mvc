@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use Core\Session;
 use App\Models\User;
-use App\Models\PasswordReset;
+use App\Models\RedefinicaoSenha;
 use App\Services\AuthService;
 use App\Helpers\Mailer;
 use App\Requests\Auth\LoginRequest;
@@ -51,7 +51,7 @@ class AuthController extends BaseController
     public function resetForm(): void
     {
         $token  = $_GET['token'] ?? '';
-        $record = (new PasswordReset())->findValid($token);
+        $record = (new RedefinicaoSenha())->findValid($token);
 
         if (!$record) {
             Session::flash('error', 'Link inválido ou expirado.');
@@ -108,7 +108,7 @@ class AuthController extends BaseController
     }
 
     /**
-     * GET /auth/logout
+     * POST /auth/logout — protegido por CsrfMiddleware
      */
     public function logout(): void
     {
@@ -130,7 +130,7 @@ class AuthController extends BaseController
 
         // Envia e-mail apenas se existir — sempre exibe a mesma mensagem (anti user-enumeration)
         if ($user) {
-            $token = (new PasswordReset())->createToken($email);
+            $token = (new RedefinicaoSenha())->createToken($email);
             $link  = url('auth/reset-password?token=' . urlencode($token));
 
             (new Mailer())->send(
@@ -154,14 +154,14 @@ class AuthController extends BaseController
     public function resetSave(): void
     {
         $request = new ResetPasswordRequest();
-        $token   = $request->old('token');
+        $token   = $request->get('token');
 
         $data = $this->validateRequest(
             $request,
             'auth/reset-password?token=' . urlencode($token),
             []   // nunca reenvia senha/token via flashInput
         );
-        $resetModel = new PasswordReset();
+        $resetModel = new RedefinicaoSenha();
         $record     = $resetModel->findValid($data['token']);
 
         $user = (new User())->findByEmail($record->email);

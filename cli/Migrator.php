@@ -3,12 +3,25 @@
 namespace Cli;
 
 /**
- * Migrator — Executa as migrations SQL do projeto
+ * Migrator — Executa as migrations do projeto
  * ─────────────────────────────────────────────────────────────────────────────
  * Responsável pela execução das migrations do framework.
  *
  * Não faz echo/exit diretamente: progresso é reportado por callback opcional,
  * e falhas são lançadas como exceção (capturadas pelo Cli\Kernel::run()).
+ *
+ * MUDANÇA: migrations deixaram de ser arquivos .sql soltos e passaram a ser
+ * classes PHP (Core\Migration) com up()/down(), no estilo Laravel. Cada
+ * execução é registrada com um número de "batch", permitindo desfazer
+ * (rollback()) o último lote aplicado — o que não era possível no formato
+ * anterior baseado só em nome de arquivo já rodado ou não.
+ *
+ * Aviso: no MySQL, comandos DDL (CREATE/ALTER/DROP TABLE) fazem commit
+ * implícito. Isso significa que, se uma migration com várias tabelas falhar
+ * na metade, as tabelas já criadas antes do erro NÃO são desfeitas
+ * automaticamente — é preciso corrigir manualmente ou rodar down() daquela
+ * migration antes de tentar de novo. Isso é uma limitação do MySQL, não
+ * deste Migrator (o Laravel tem a mesma limitação).
  */
 class Migrator
 {
@@ -36,71 +49,97 @@ class Migrator
         $this->ensureDatabaseExists($conn, $dbName, $fresh, $report);
 
         $db  = \Core\Database::getInstance();
-        $pdo = $db->getPdo(); // ainda necessário para os prepare() abaixo
+        $pdo = $db->getPdo();
 
-        $db->execMigration("
-            CREATE TABLE IF NOT EXISTS `{$this->migrationsTable}` (
-                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
-                `migration` VARCHAR(255) NOT NULL,
-                `ran_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-                PRIMARY KEY (`id`),
-                UNIQUE KEY `uniq_migration` (`migration`)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
-        ");
+        $this->ensureMigrationsTable($db, $pdo);
 
         $migrationsPath = ROOT_PATH . '/database/migrations';
-        $files = glob($migrationsPath . '/*.sql');
+        $files = $this->allMigrationFiles($migrationsPath);
 
         if (!$files) {
             $report('ℹ  Nenhuma migration encontrada.');
             return ['ran' => 0, 'skipped' => 0];
         }
 
-        natsort($files);
-        $files = array_values($files);
+        $ranNames = $this->ranMigrations($pdo);
+        $batch = $this->nextBatch($pdo);
 
         $ran = 0;
         $skipped = 0;
 
-        foreach ($files as $file) {
-            $name = basename($file);
-
-            if (!$fresh) {
-                $check = $pdo->prepare("SELECT COUNT(*) FROM `{$this->migrationsTable}` WHERE migration = :migration");
-                $check->execute([':migration' => $name]);
-
-                if ($check->fetchColumn()) {
-                    $report("  [SKIP] {$name} já executada");
-                    $skipped++;
-                    continue;
-                }
+        foreach ($files as $name => $path) {
+            if (in_array($name, $ranNames, true)) {
+                $report("  [SKIP] {$name} já executada");
+                $skipped++;
+                continue;
             }
 
             $report("  [RUN]  {$name}");
 
-            $sql = file_get_contents($file);
-            if ($sql === false) {
-                throw new \RuntimeException("Não foi possível ler a migration {$name}");
-            }
-
-            foreach ($this->splitSqlStatements($sql) as $statement) {
-                if (trim($statement) === '') {
-                    continue;
-                }
-                $db->execMigration($statement);
-            }
-
-            $insert = $pdo->prepare("
-                INSERT IGNORE INTO `{$this->migrationsTable}` (migration)
-                VALUES (:migration)
-            ");
-            $insert->execute([':migration' => $name]);
+            $migration = $this->loadMigration($path);
+            $migration->up();
+            $this->recordMigration($pdo, $name, $batch);
 
             $report("        ✓ executada com sucesso");
             $ran++;
         }
 
         return ['ran' => $ran, 'skipped' => $skipped];
+    }
+
+    /**
+     * Desfaz o(s) último(s) batch(es) aplicados, chamando down() na ordem inversa.
+     *
+     * @param int           $steps  Quantos batches desfazer (1 = só o último).
+     * @param callable|null $onLine function(string $message): void
+     * @return array{rolled_back:int}
+     */
+    public function rollback(int $steps = 1, ?callable $onLine = null): array
+    {
+        $report = function (string $msg) use ($onLine) {
+            if ($onLine !== null) {
+                $onLine($msg);
+            }
+        };
+
+        $this->bootstrapEnvironment();
+
+        $db  = \Core\Database::getInstance();
+        $pdo = $db->getPdo();
+
+        $this->ensureMigrationsTable($db, $pdo);
+
+        $migrationsPath = ROOT_PATH . '/database/migrations';
+        $files = $this->allMigrationFiles($migrationsPath);
+        $rows  = $this->lastBatches($pdo, $steps);
+
+        if (!$rows) {
+            $report('ℹ  Nada para desfazer.');
+            return ['rolled_back' => 0];
+        }
+
+        $rolledBack = 0;
+
+        foreach ($rows as $row) {
+            $name = $row['migration'];
+
+            if (!isset($files[$name])) {
+                $report("  [WARN] {$name} não encontrada em disco — removendo apenas o registro");
+                $this->removeMigrationRecord($pdo, $name);
+                continue;
+            }
+
+            $report("  [DOWN] {$name}");
+
+            $migration = $this->loadMigration($files[$name]);
+            $migration->down();
+            $this->removeMigrationRecord($pdo, $name);
+
+            $report("        ✓ desfeita com sucesso");
+            $rolledBack++;
+        }
+
+        return ['rolled_back' => $rolledBack];
     }
 
     // ── Bootstrap mínimo de ambiente ─────────────────────────────────────────
@@ -184,12 +223,97 @@ class Migrator
         return '`' . str_replace('`', '``', $name) . '`';
     }
 
-    private function splitSqlStatements(string $sql): array
-    {
-        $sql = preg_replace('/--.*$/m', '', $sql);
-        $sql = preg_replace('/#.*$/m', '', $sql);
-        $sql = preg_replace('/\/\*.*?\*\//s', '', $sql);
+    // ── Tabela de controle de migrations ─────────────────────────────────────
 
-        return array_filter(array_map('trim', explode(';', $sql)));
+    private function ensureMigrationsTable(\Core\Database $db, \PDO $pdo): void
+    {
+        $db->execMigration("
+            CREATE TABLE IF NOT EXISTS `{$this->migrationsTable}` (
+                `id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
+                `migration` VARCHAR(255) NOT NULL,
+                `batch` INT UNSIGNED NOT NULL DEFAULT 1,
+                `ran_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (`id`),
+                UNIQUE KEY `uniq_migration` (`migration`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        ");
+
+        // Compatibilidade com o formato anterior (tabela já existia sem a
+        // coluna batch): adiciona agora, com default 1 pras linhas existentes.
+        $hasBatch = $pdo->query("SHOW COLUMNS FROM `{$this->migrationsTable}` LIKE 'batch'")->fetch();
+        if (!$hasBatch) {
+            $pdo->exec("ALTER TABLE `{$this->migrationsTable}` ADD COLUMN `batch` INT UNSIGNED NOT NULL DEFAULT 1 AFTER `migration`");
+        }
+    }
+
+    // ── Descoberta de arquivos de migration ──────────────────────────────────
+
+    /** @return array<string,string> nome (sem .php) => caminho completo, em ordem cronológica */
+    private function allMigrationFiles(string $path): array
+    {
+        $files = glob($path . '/*.php') ?: [];
+        sort($files); // o prefixo YYYY_MM_DD_HHMMSS garante ordem cronológica
+
+        $map = [];
+        foreach ($files as $file) {
+            $map[basename($file, '.php')] = $file;
+        }
+        return $map;
+    }
+
+    private function loadMigration(string $path): \Core\Migration
+    {
+        $migration = require $path; // arquivo deve fazer: return new class extends Migration {...};
+        if (!$migration instanceof \Core\Migration) {
+            throw new \RuntimeException("Migration inválida: {$path} não retorna uma instância de Core\\Migration.");
+        }
+        return $migration;
+    }
+
+    // ── Bookkeeping (histórico de execução) ──────────────────────────────────
+
+    private function ranMigrations(\PDO $pdo): array
+    {
+        $stmt = $pdo->query("SELECT migration FROM `{$this->migrationsTable}`");
+        return array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'migration');
+    }
+
+    private function nextBatch(\PDO $pdo): int
+    {
+        $stmt = $pdo->query("SELECT MAX(batch) as max_batch FROM `{$this->migrationsTable}`");
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        return (int) ($row['max_batch'] ?? 0) + 1;
+    }
+
+    private function lastBatches(\PDO $pdo, int $steps): array
+    {
+        $stmt = $pdo->prepare("SELECT DISTINCT batch FROM `{$this->migrationsTable}` ORDER BY batch DESC LIMIT :steps");
+        $stmt->bindValue(':steps', $steps, \PDO::PARAM_INT);
+        $stmt->execute();
+        $batches = array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'batch');
+
+        if (!$batches) {
+            return [];
+        }
+
+        // valores já vieram do banco como inteiros; forçar de novo por segurança antes de concatenar
+        $placeholders = implode(',', array_map('intval', $batches));
+
+        $stmt = $pdo->query(
+            "SELECT migration, batch FROM `{$this->migrationsTable}` WHERE batch IN ({$placeholders}) ORDER BY id DESC"
+        );
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    private function recordMigration(\PDO $pdo, string $name, int $batch): void
+    {
+        $stmt = $pdo->prepare("INSERT INTO `{$this->migrationsTable}` (migration, batch) VALUES (:migration, :batch)");
+        $stmt->execute([':migration' => $name, ':batch' => $batch]);
+    }
+
+    private function removeMigrationRecord(\PDO $pdo, string $name): void
+    {
+        $stmt = $pdo->prepare("DELETE FROM `{$this->migrationsTable}` WHERE migration = :migration");
+        $stmt->execute([':migration' => $name]);
     }
 }

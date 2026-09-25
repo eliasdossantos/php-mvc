@@ -242,7 +242,7 @@ abstract class FormRequest
                 echo json_encode(['success' => false, 'message' => 'Ação não autorizada.']);
             } else {
                 Session::flash('error', 'Você não tem permissão para realizar esta ação.');
-                $back = $_SERVER['HTTP_REFERER'] ?? (defined('APP_URL') ? APP_URL : '/');
+                $back = safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', defined('APP_URL') ? APP_URL : '/');
                 header("Location: {$back}");
             }
             exit;

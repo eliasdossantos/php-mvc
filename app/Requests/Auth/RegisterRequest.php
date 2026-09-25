@@ -36,7 +36,7 @@ class RegisterRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.required'                  => 'Informe seu nome.',
+            'name.required'                  => 'Informe seu name.',
             'name.min'                       => 'O nome deve ter pelo menos 2 caracteres.',
             'name.max'                       => 'O nome deve ter no máximo 100 caracteres.',
             'email.required'                 => 'Informe seu e-mail.',

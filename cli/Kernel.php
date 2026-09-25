@@ -11,7 +11,11 @@ use Cli\Commands\MakeServiceCommand;
 use Cli\Commands\MakeRepositoryCommand;
 use Cli\Commands\MakeSeedCommand;
 use Cli\Commands\MakeViewCommand;
+use Cli\Commands\MakeApiControllerCommand;
+use Cli\Commands\MakeApiResourceCommand;
+use Cli\Commands\MakeApiRequestCommand;
 use Cli\Commands\MigrateCommand;
+use Cli\Commands\MigrateRollbackCommand;
 use Cli\Commands\SeedRunCommand;
 use Cli\Commands\ServeCommand;
 
@@ -113,11 +117,15 @@ class Kernel
             'make:repository'  => MakeRepositoryCommand::class,
             'make:seed'        => MakeSeedCommand::class,
             'make:view'        => MakeViewCommand::class,
+            'make:api-controller' => MakeApiControllerCommand::class,
+            'make:api-resource'   => MakeApiResourceCommand::class,
+            'make:api-request'    => MakeApiRequestCommand::class,
             'seed:run'         => SeedRunCommand::class,
 
             // Utilitários
             'key:generate'     => KeyGenerateCommand::class,
             'migrate'          => MigrateCommand::class,
+            'migrate:rollback' => MigrateRollbackCommand::class,
             'serve'            => ServeCommand::class,
         ];
     }
@@ -178,11 +186,16 @@ class Kernel
                 'make:repository {Nome}' => 'Cria um Repository com estrutura base',
                 'make:seed {Nome}'       => 'Cria um Seeder com exemplo funcional',
                 'make:view {nome}'       => 'Cria as views index/show/create/edit',
+                'make:api-controller {Nome}' => 'Cria um Controller REST em app/Api/Controllers',
+                'make:api-resource {Nome}'   => 'Cria uma transformação Model → JSON em app/Api/Resources',
+                'make:api-request {Nome}'    => 'Cria um FormRequest de API em app/Api/Requests',
             ],
             'Banco de dados' => [
-                'migrate'          => 'Executa todas as migrations pendentes',
-                'migrate --fresh'  => 'Recria o banco do zero (DROP + migrate)',
-                'seed:run {Nome}'   => 'Executa seeders PHP em database/seeds',
+                'migrate'                  => 'Executa todas as migrations pendentes',
+                'migrate --fresh'          => 'Recria o banco do zero (DROP + migrate)',
+                'migrate:rollback'         => 'Desfaz o último batch de migrations aplicado',
+                'migrate:rollback --step=N' => 'Desfaz os últimos N batches',
+                'seed:run {Nome}'          => 'Executa seeders PHP em database/seeds',
             ],
             'Configuração' => [
                 'key:generate'  => 'Gera chave de aplicação segura no .env',

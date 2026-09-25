@@ -31,19 +31,19 @@ class {{ ClassName }} extends Repository
     /**
      * Busca por nome exato.
      */
-    public function findByName(string $name): object|false
+    public function findByNome(string $nome): object|false
     {
-        return $this->model()->findBy('name', $name);
+        return $this->model()->findBy('nome', $nome);
     }
 
     /**
-     * Retorna registros ativos (se a tabela tiver campo 'active').
+     * Retorna registros ativos (se a tabela tiver campo 'ativo').
      */
     public function getActive(): array
     {
         return $this->model()
-            ->where('active', 1)
-            ->orderBy('name', 'ASC')
+            ->where('ativo', 1)
+            ->orderBy('nome', 'ASC')
             ->get();
     }
 
@@ -56,7 +56,7 @@ class {{ ClassName }} extends Repository
     public function search(string $term = '', int $page = 1, int $perPage = 15): array
     {
         return $this->model()
-            ->where('name', '%' . $term . '%', 'LIKE')
+            ->whereLike('nome', $term)
             ->orderBy('id', 'DESC')
             ->paginate($perPage, $page);
     }

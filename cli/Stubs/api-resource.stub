@@ -1,0 +1,20 @@
+<?php
+
+namespace App\Api\Resources;
+
+/**
+ * {{ ClassName }}
+ * Define explicitamente o que é exposto pela API para este recurso.
+ * NUNCA inclua campos sensíveis (password, tokens, dados internos).
+ */
+class {{ ClassName }} extends ApiResource
+{
+    public function toArray(): array
+    {
+        return [
+            'id'         => (int) $this->resource->id,
+            // 'nome'    => $this->resource->nome,
+            'created_at' => $this->resource->created_at ?? null,
+        ];
+    }
+}

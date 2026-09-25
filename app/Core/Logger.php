@@ -53,20 +53,56 @@ class Logger
 
     // ── Interface Pública ─────────────────────────────────────────────────────
 
-    public static function debug(string $msg, array $ctx = []): void    { static::log(self::DEBUG,    $msg, $ctx); }
-    public static function info(string $msg, array $ctx = []): void     { static::log(self::INFO,     $msg, $ctx); }
-    public static function warning(string $msg, array $ctx = []): void  { static::log(self::WARNING,  $msg, $ctx); }
-    public static function error(string $msg, array $ctx = []): void    { static::log(self::ERROR,    $msg, $ctx); }
-    public static function critical(string $msg, array $ctx = []): void { static::log(self::CRITICAL, $msg, $ctx); }
+    public static function debug(string $msg, array $ctx = []): void
+    {
+        static::log(self::DEBUG,    $msg, $ctx);
+    }
+    public static function info(string $msg, array $ctx = []): void
+    {
+        static::log(self::INFO,     $msg, $ctx);
+    }
+    public static function warning(string $msg, array $ctx = []): void
+    {
+        static::log(self::WARNING,  $msg, $ctx);
+    }
+    public static function error(string $msg, array $ctx = []): void
+    {
+        static::log(self::ERROR,    $msg, $ctx);
+    }
+    public static function critical(string $msg, array $ctx = []): void
+    {
+        static::log(self::CRITICAL, $msg, $ctx);
+    }
+
+    /** Registra telemetria HTTP no arquivo diário separado de requests. */
+    public static function request(string $level, string $message, array $context = []): void
+    {
+        $order    = static::$levelOrder[$level] ?? PHP_INT_MAX;
+        $minOrder = static::$levelOrder[static::$minLevel] ?? 0;
+        if ($order < $minOrder) return;
+
+        static::writeToFile($level, $message, $context, 'requests');
+    }
 
     // ── Core ──────────────────────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * Antes, um $level desconhecido (ex: chamada direta Logger::log('warn', ...)
+     * com typo) caía no `?? 0`, era tratado como DEBUG, e se minLevel fosse
+     * mais alto que DEBUG, a mensagem era descartada SEM nenhum registro —
+     * o pior cenário possível pra um logger: perder uma mensagem sem deixar
+     * rastro. Agora um nível desconhecido nunca é filtrado (assume prioridade
+     * máxima) — prefere logar a mais a arriscar perder algo importante.
+     */
     public static function log(string $level, string $message, array $context = []): void
     {
-        if ((static::$levelOrder[$level] ?? 0) < (static::$levelOrder[static::$minLevel] ?? 0)) return;
+        $order    = static::$levelOrder[$level] ?? PHP_INT_MAX;
+        $minOrder = static::$levelOrder[static::$minLevel] ?? 0;
+        if ($order < $minOrder) return;
 
         // Grava em arquivo
-        static::writeToFile($level, $message, $context);
+        static::writeToFile($level, $message, $context, 'app');
 
         // Exibe no terminal se CLI
         if (php_sapi_name() === 'cli') {
@@ -74,30 +110,79 @@ class Logger
         }
     }
 
-    protected static function writeToFile(string $level, string $message, array $context): void
+    /**
+     * Normaliza um valor de contexto pra algo seguro de logar.
+     *
+     * ── MELHORIA #2 (corrige bug real) ────────────────────────────────────────
+     * writeToFile() já tratava \Throwable especificamente, mas writeToTerminal()
+     * não — fazia (string)$v direto. Isso funciona por acidente com
+     * Exception/Error (têm __toString nativo, mas despeja o stack trace
+     * inteiro no terminal) e QUEBRA COM FATAL ERROR pra qualquer outro objeto
+     * sem __toString (ex: stdClass, ou qualquer objeto de domínio passado por
+     * engano no contexto) — "Object of class X could not be converted to
+     * string". Agora os dois caminhos (arquivo e terminal) usam a mesma
+     * normalização.
+     */
+    protected static function normalizeContextValue(mixed $v): mixed
     {
-        $logDir  = STORAGE_PATH . '/logs';
-        $logFile = $logDir . '/app-' . date('Y-m-d') . '.log';
+        if ($v instanceof \Throwable) {
+            return $v->getMessage() . ' in ' . $v->getFile() . ':' . $v->getLine();
+        }
+        if (is_object($v) && !method_exists($v, '__toString')) {
+            return '[objeto ' . get_class($v) . ']';
+        }
+        if (is_resource($v)) {
+            return '[resource]';
+        }
+        return $v;
+    }
 
-        if (!is_dir($logDir)) mkdir($logDir, 0755, true);
+    protected static function writeToFile(
+        string $level,
+        string $message,
+        array $context,
+        string $filePrefix = 'app'
+    ): void
+    {
+        $directories = [
+            'app'      => 'erros_aplicacao',
+            'requests' => 'requisicao',
+        ];
+        $subdirectory = $directories[$filePrefix] ?? 'erros_aplicacao';
+        $logDir  = STORAGE_PATH . '/logs/' . $subdirectory;
+        $logFile = $logDir . '/' . $filePrefix . '-' . date('Y-m-d') . '.log';
 
-        $date  = date('Y-m-d H:i:s');
-        $icon  = static::$icons[$level] ?? '📝';
-        $line  = "[{$date}] [{$level}] {$message}";
+        // ── MELHORIA #3 (corrige bug real) ────────────────────────────────────
+        // mkdir() sem checagem + file_put_contents() com @ (suprime warning):
+        // se o diretório de logs não pudesse ser criado (permissão, disco
+        // cheio), a mensagem desaparecia SEM NENHUM registro em lugar nenhum —
+        // justamente quando um problema de disco seria a informação mais
+        // importante de se ter. Agora cai pro error_log() nativo do PHP como
+        // último recurso, que vai pro log do servidor web/PHP-FPM/CLI e quase
+        // sempre existe independente da configuração da aplicação.
+        if (!is_dir($logDir) && !@mkdir($logDir, 0755, true) && !is_dir($logDir)) {
+            error_log("[Logger] não foi possível criar {$logDir} — mensagem original: [{$level}] {$message}");
+            return;
+        }
+
+        $date = date('Y-m-d H:i:s');
+        $line = "[{$date}] [{$level}] {$message}";
 
         if ($context) {
-            // Trata \Throwable no contexto
-            $ctx = [];
-            foreach ($context as $k => $v) {
-                $ctx[$k] = ($v instanceof \Throwable)
-                    ? $v->getMessage() . ' in ' . $v->getFile() . ':' . $v->getLine()
-                    : $v;
-            }
-            $line .= ' ' . json_encode($ctx, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            $ctx = array_map([static::class, 'normalizeContextValue'], $context);
+            $encoded = json_encode($ctx, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+            // json_encode pode falhar (false) com dados não serializáveis
+            // (ex: NAN, referência circular) — antes isso virava a string
+            // vazia de `false` concatenada, apagando o contexto em silêncio.
+            $line .= ' ' . ($encoded !== false ? $encoded : '[contexto não serializável: ' . json_last_error_msg() . ']');
         }
 
         $line .= PHP_EOL;
-        @file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+
+        $written = @file_put_contents($logFile, $line, FILE_APPEND | LOCK_EX);
+        if ($written === false) {
+            error_log("[Logger] falha ao escrever em {$logFile} — mensagem original: [{$level}] {$message}");
+        }
     }
 
     protected static function writeToTerminal(string $level, string $message, array $context): void
@@ -109,15 +194,34 @@ class Logger
         echo "{$color}{$icon} [" . date('H:i:s') . "] [{$level}] {$message}{$reset}" . PHP_EOL;
 
         foreach ($context as $k => $v) {
-            $val = is_array($v) ? json_encode($v) : (string)$v;
+            $v   = static::normalizeContextValue($v);
+            $val = is_array($v) ? json_encode($v) : (string) $v;
             echo "  \033[90m└─ {$k}: {$val}{$reset}" . PHP_EOL;
         }
     }
 
     // ── Configuração ─────────────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #4 (corrige bug real) ────────────────────────────────────────
+     * Um nível inválido (typo, ex: "WARNNIG") era aceito sem checagem. Como
+     * log() usa `$levelOrder[static::$minLevel] ?? 0`, um minLevel inexistente
+     * silenciosamente virava ordem 0 (equivalente a DEBUG) — ou seja, chamar
+     * setMinLevel('WARNNIG') achando que ia silenciar logs abaixo de WARNING
+     * na verdade fazia o OPOSTO: liberava geral, incluindo DEBUG. Agora
+     * ignora valores desconhecidos (mantém o nível anterior) e avisa via
+     * error_log em vez de mudar o comportamento de log da aplicação inteira
+     * sem ninguém perceber.
+     */
     public static function setMinLevel(string $level): void
     {
-        static::$minLevel = strtoupper($level);
+        $level = strtoupper($level);
+
+        if (!isset(static::$levelOrder[$level])) {
+            error_log("[Logger] nível de log desconhecido: \"{$level}\". Mantendo o nível atual (" . static::$minLevel . ').');
+            return;
+        }
+
+        static::$minLevel = $level;
     }
 }

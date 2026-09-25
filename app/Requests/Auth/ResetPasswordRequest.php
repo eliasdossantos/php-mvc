@@ -3,7 +3,7 @@
 namespace App\Requests\Auth;
 
 use App\Requests\FormRequest;
-use App\Models\PasswordReset;
+use App\Models\RedefinicaoSenha;
 
 /**
  * ResetPasswordRequest
@@ -30,7 +30,7 @@ class ResetPasswordRequest extends FormRequest
         $token = trim($this->input['token'] ?? '');
         if ($token === '') return false;
 
-        $record = (new PasswordReset())->findValid($token);
+        $record = (new RedefinicaoSenha())->findValid($token);
         return (bool) $record;
     }
 

@@ -29,11 +29,27 @@ abstract class Repository implements RepositoryInterface
     protected Model $model;
     protected string $modelClass = '';
 
+    /**
+     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * Se $modelClass apontasse pra uma classe que não existe (typo no nome,
+     * import esquecido), `new ($this->modelClass)()` já falhava — mas com um
+     * Error genérico do PHP ("Class \"X\" not found"), sem dizer QUAL
+     * Repository está mal configurado nem sugerir a causa provável. Agora
+     * verifica antes e lança uma mensagem que já aponta o problema.
+     */
     public function __construct()
     {
         if (empty($this->modelClass)) {
             throw new \RuntimeException(get_class($this) . ' deve definir $modelClass.');
         }
+
+        if (!class_exists($this->modelClass)) {
+            throw new \RuntimeException(
+                get_class($this) . ": a classe de model [{$this->modelClass}] não existe. "
+                . 'Verifique o namespace/import ou se o arquivo do Model foi criado.'
+            );
+        }
+
         $this->model = new ($this->modelClass)();
     }
 

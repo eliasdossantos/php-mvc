@@ -144,6 +144,27 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    document.querySelectorAll('[data-dismiss-alert]').forEach(button => {
+        button.addEventListener('click', () => {
+            const alert = button.parentElement;
+            if (!alert) return;
+            alert.style.transition = 'opacity .3s ease';
+            alert.style.opacity = '0';
+            setTimeout(() => alert.remove(), 300);
+        });
+    });
+
+    document.querySelectorAll('[data-go-back]').forEach(button => {
+        button.addEventListener('click', () => {
+            try {
+                if (document.referrer) window.history.back();
+                else window.location.href = '/';
+            } catch (_) {
+                window.location.href = '/';
+            }
+        });
+    });
+
     // ── Submit do form pai via data-submit-form ───────────────────────────────
     document.querySelectorAll('[data-submit-form]').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('form')?.submit());

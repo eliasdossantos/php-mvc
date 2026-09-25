@@ -1,0 +1,35 @@
+<?php
+
+namespace App\Api\Requests;
+
+use App\Requests\FormRequest;
+use Core\Api\ApiAuthContext;
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * FormRequest específico da API. Se as mesmas regras já existem em
+ * app/Requests/ para o formulário web equivalente, prefira reaproveitar
+ * aquela classe em vez de duplicar aqui.
+ *
+ * authorize() usa ApiAuthContext (Bearer Token), não Core\Auth (sessão).
+ */
+class {{ ClassName }} extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return ApiAuthContext::check();
+    }
+
+    public function rules(): array
+    {
+        return [
+            // 'nome' => 'required|min:2|max:100',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [];
+    }
+}

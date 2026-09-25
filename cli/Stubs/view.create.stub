@@ -47,22 +47,22 @@
 
                 <!-- Campo: nome -->
                 <div class="form-group">
-                    <label for="name">
+                    <label for="nome">
                         Nome
                         <span style="color:var(--color-danger)">*</span>
                     </label>
 
                     <input type="text"
-                           id="name"
-                           name="name"
-                           value="<?= e(old('name')) ?>"
-                           class="form-control <?= hasError('name') ? 'is-invalid' : '' ?>"
+                           id="nome"
+                           name="nome"
+                           value="<?= e(old('nome')) ?>"
+                           class="<?= inputClass('nome') ?>"
                            required
                            autofocus>
 
-                    <?php if (hasError('name')): ?>
+                    <?php if (hasError('nome')): ?>
                         <span class="form-error">
-                            <?= e(error('name')) ?>
+                            <?= e(error('nome')) ?>
                         </span>
                     <?php endif; ?>
                 </div>

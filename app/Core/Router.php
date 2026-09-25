@@ -9,7 +9,7 @@ namespace Core;
  *
  * Funcionalidades:
  *  - Métodos HTTP: GET, POST, PUT, PATCH, DELETE
- *  - Parâmetros dinâmicos: /users/{id}
+ *  - Parâmetros dinâmicos: /Users/{id}
  *  - Parâmetros opcionais: /posts/{slug?}
  *  - Grupos de rotas com prefixo e middlewares compartilhados
  *  - Sintaxe fluente (method chaining)
@@ -17,9 +17,9 @@ namespace Core;
  *  - Suporte a "Controller@method" e [Controller::class, 'method']
  *
  * Uso básico:
- *   $router->get('/users',       [UserController::class, 'index']);
- *   $router->post('/users',      [UserController::class, 'store'], ['CsrfMiddleware']);
- *   $router->get('/users/{id}',  [UserController::class, 'show']);
+ *   $router->get('/Users',       [UserController::class, 'index']);
+ *   $router->post('/Users',      [UserController::class, 'store'], ['CsrfMiddleware']);
+ *   $router->get('/Users/{id}',  [UserController::class, 'show']);
  *
  * Grupos:
  *   $router->group(['prefix' => '/admin', 'middleware' => ['AuthMiddleware']], function ($r) {
@@ -93,6 +93,16 @@ class Router
     public function delete(string $path, array|string $action, array $middlewares = []): static
     {
         return $this->addRoute('DELETE', $path, $action, $middlewares);
+    }
+
+    /**
+     * Registra uma rota OPTIONS — usada para responder preflight de CORS.
+     * O action normalmente nunca chega a rodar: CorsMiddleware já responde
+     * 204 e encerra a requisição antes de chegar no Controller.
+     */
+    public function options(string $path, array|string $action, array $middlewares = []): static
+    {
+        return $this->addRoute('OPTIONS', $path, $action, $middlewares);
     }
 
     /** Registra múltiplos métodos para a mesma rota */
@@ -174,13 +184,17 @@ class Router
             ?? throw new \InvalidArgumentException("Rota [{$name}] não encontrada.");
 
         foreach ($params as $key => $value) {
-            $path = preg_replace('/\{' . preg_quote($key, '/') . '\??\}/', $value, $path);
+            $encoded = rawurlencode((string) $value);
+            $path = preg_replace('/\{' . preg_quote($key, '/') . '\??\}/', $encoded, $path) ?? $path;
         }
 
-        // Remove parâmetros opcionais não fornecidos
-        $path = preg_replace('/\/\{[^}]+\?\}/', '', $path);
+        // Remove segmentos opcionais não fornecidos.
+        $path = preg_replace('/\/\{[a-zA-Z_][a-zA-Z0-9_]*\?\}/', '', $path) ?? $path;
+        if (preg_match('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', $path, $missing)) {
+            throw new \InvalidArgumentException("Parâmetro obrigatório [{$missing[1]}] não informado para a rota [{$name}].");
+        }
 
-        return APP_URL . '/' . ltrim($path, '/');
+        return rtrim(APP_URL, '/') . '/' . ltrim($path, '/');
     }
 
     // ── Dispatch ──────────────────────────────────────────────────────────────
@@ -190,22 +204,39 @@ class Router
         $method = $this->request->method();
         $uri    = $this->request->uri();
 
+        $allowedMethods = [];
         foreach ($this->routes as $route) {
-            if ($route['method'] !== $method) continue;
-
             $params = $this->matchUri($route['path'], $uri, $route['paramNames']);
             if ($params === false) continue;
-
-            // ── Executa middlewares ──────────────────────────────────────────
-            foreach ($route['middlewares'] as $middleware) {
-                $this->runMiddleware($middleware, $this->request);
+            if ($route['method'] !== $method) {
+                $allowedMethods[] = $route['method'];
+                continue;
             }
 
-            // ── Executa a action ─────────────────────────────────────────────
-            $this->callAction($route['action'], $params);
+            // ── MELHORIA #1 ────────────────────────────────────────────────────
+            // Antes, qualquer exceção lançada aqui dentro (middleware ausente,
+            // controller/método não encontrado, parâmetro obrigatório faltando,
+            // erro dentro da própria action) subia sem tratamento nenhum —
+            // dependendo da configuração do PHP, isso vira uma tela branca ou
+            // um stack trace cru exposto pro usuário final. Agora a rota já
+            // identificada (essa é a rota certa pra essa URI) tem sua execução
+            // isolada: se falhar, vira uma resposta 500 controlada, e o resto
+            // da aplicação continua de pé pra próxima requisição.
+            try {
+                foreach ($route['middlewares'] as $middleware) {
+                    $this->runMiddleware($middleware, $this->request);
+                }
+                $this->callAction($route['action'], $params);
+            } catch (\Throwable $e) {
+                $this->handleServerError($e);
+            }
             return;
         }
 
+        if ($allowedMethods) {
+            $this->handleMethodNotAllowed(array_values(array_unique($allowedMethods)));
+            return;
+        }
         $this->handleNotFound();
     }
 
@@ -229,15 +260,9 @@ class Router
             $action = [$cls, $methodName];
         }
 
-        // ── BUG CORRIGIDO #1 ─────────────────────────────────────────────────
+        // ── BUG CORRIGIDO #1 (herdado) ───────────────────────────────────────
         // Extrai os nomes dos parâmetros da rota para mapeamento posicional→nomeado.
-        // Antes: matchUri() retornava array posicional ([$val1, $val2])
-        // e callAction() passava esses valores sem os nomes para o método do controller,
-        // tornando impossível o acesso por nome e quebrando rotas com parâmetros opcionais
-        // ausentes (que geravam índices "pulados").
-        // Agora: os nomes são extraídos aqui e armazenados junto com a rota,
-        // permitindo montar um array associativo ['id' => '42'] no dispatch.
-        preg_match_all('/\{([a-zA-Z_]+)\??\}/', $fullPath, $matches);
+        preg_match_all('/\{([a-zA-Z_][a-zA-Z0-9_]*)\??\}/', $fullPath, $matches);
         $paramNames = $matches[1] ?? [];
 
         $this->routes[] = [
@@ -246,7 +271,7 @@ class Router
             'action'      => $action,
             'middlewares' => array_merge($groupMidds, $middlewares),
             'name'        => null,
-            'paramNames'  => $paramNames,   // ← novo campo
+            'paramNames'  => $paramNames,
         ];
 
         return $this;
@@ -255,23 +280,33 @@ class Router
     /**
      * Tenta casar a URI com o padrão da rota.
      *
-     * ── BUG CORRIGIDO #2 ────────────────────────────────────────────────────
-     * Antes: retornava array posicional de valores capturados.
-     * Agora: retorna array associativo ['nomeDoParm' => 'valor'] usando
-     * $paramNames extraídos em addRoute(). Parâmetros opcionais ausentes
-     * recebem null explicitamente, em vez de simplesmente não existirem no array,
-     * evitando deslocamento de índices quando um param opcional fica vazio.
+     * ── BUG CORRIGIDO #2 (herdado) ────────────────────────────────────────────
+     * Retorna array associativo ['nomeDoParam' => 'valor'] em vez de posicional.
+     *
+     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * Explicita a checagem de preg_match (=== 1) e trata preg_replace()
+     * retornando null (regex malformada) como "essa rota não bate", em vez de
+     * deixar passar null adiante e quebrar o preg_match seguinte.
      *
      * @return array<string,string|null>|false
      */
     protected function matchUri(string $pattern, string $uri, array $paramNames): array|false
     {
-        // {param}  → captura obrigatória, {param?} → opcional
-        $regex = preg_replace('/\{([a-zA-Z_]+)\?\}/', '([^/]*)',  $pattern);
-        $regex = preg_replace('/\{([a-zA-Z_]+)\}/',   '([^/]+)',  $regex);
+        // {param} → captura obrigatória; /{param?} → segmento opcional completo.
+        $regex = preg_replace('/\/\{([a-zA-Z_][a-zA-Z0-9_]*)\?\}/', '(?:/([^/]+))?', $pattern);
+        $regex = preg_replace('/\{([a-zA-Z_][a-zA-Z0-9_]*)\?\}/', '([^/]*)', $regex ?? $pattern);
+        $regex = preg_replace('/\{([a-zA-Z_][a-zA-Z0-9_]*)\}/', '([^/]+)', $regex ?? $pattern);
+
+        if ($regex === null) {
+            // preg_replace falhou (padrão de rota malformado) — trata como "não bate"
+            return false;
+        }
+
         $regex = '#^' . $regex . '$#';
 
-        if (!preg_match($regex, $uri, $matches)) return false;
+        if (preg_match($regex, $uri, $matches) !== 1) {
+            return false;
+        }
 
         array_shift($matches); // remove o match completo
 
@@ -289,16 +324,9 @@ class Router
     /**
      * Resolve e instancia o controller, chamando o método.
      *
-     * ── BUG CORRIGIDO #3 ────────────────────────────────────────────────────
-     * Antes: usava call_user_func_array() com array posicional de params,
-     * ignorando os nomes dos parâmetros do método do controller.
-     * Isso funcionava por acidente enquanto a ordem batia, mas quebrava
-     * silenciosamente em rotas com parâmetros opcionais ausentes.
-     *
-     * Agora: usa ReflectionMethod para injetar os parâmetros por nome,
-     * respeitando parâmetros opcionais com valor padrão definidos no método.
-     * Qualquer parâmetro não presente na URI usa o valor padrão do método,
-     * e parâmetros extras na URI são simplesmente ignorados.
+     * ── BUG CORRIGIDO #3 (herdado) ────────────────────────────────────────────
+     * Usa ReflectionMethod pra injetar parâmetros por nome, com fallback pro
+     * valor padrão do método quando não vierem na URI.
      */
     protected function callAction(array $action, array $params): void
     {
@@ -346,7 +374,16 @@ class Router
                 // Converte para o tipo declarado no método (int, string…)
                 $args[] = $this->castParam($params[$name], $rParam);
             } elseif ($rParam->isOptional()) {
-                $args[] = $rParam->getDefaultValue();
+                // ── MELHORIA #3 ────────────────────────────────────────────────
+                // getDefaultValue() pode lançar ReflectionException em casos raros
+                // (ex: parâmetro variádico marcado como opcional sem um default
+                // "de verdade"). Isso não deveria travar a requisição inteira só
+                // por causa disso — cai pra null.
+                try {
+                    $args[] = $rParam->getDefaultValue();
+                } catch (\ReflectionException) {
+                    $args[] = null;
+                }
             } else {
                 // Parâmetro obrigatório não presente na URI → erro claro
                 throw new \RuntimeException(
@@ -379,7 +416,18 @@ class Router
         };
     }
 
-    /** Resolve e executa um middleware */
+    /**
+     * Resolve e executa um middleware.
+     *
+     * ── MELHORIA #4 (corrige bug de segurança) ────────────────────────────────
+     * Antes, se a classe do middleware não existisse, o método simplesmente
+     * dava `return` — a rota seguia em frente SEM o middleware aplicado.
+     * Isso é perigoso quando o middleware ausente é de autenticação/autorização:
+     * um erro de digitação no nome (ex: "AuthMiddlware") liberava a rota
+     * silenciosamente para qualquer um. Agora lança uma exceção clara, que o
+     * dispatch() acima captura e transforma numa resposta 500 — a rota não é
+     * mais liberada por engano, e a aplicação ainda não trava por completo.
+     */
     protected function runMiddleware(string $middleware, Request $request): void
     {
         // Suporte a parâmetro: "RoleMiddleware:admin"
@@ -392,9 +440,16 @@ class Router
             ? $middleware
             : "App\\Middlewares\\{$middleware}";
 
-        if (!class_exists($fqcn)) return;
+        if (!class_exists($fqcn)) {
+            throw new \RuntimeException("Middleware [{$fqcn}] não encontrado.");
+        }
 
         $instance = new $fqcn();
+
+        if (!method_exists($instance, 'handle')) {
+            throw new \RuntimeException("Middleware [{$fqcn}] não possui o método handle().");
+        }
+
         $param ? $instance->handle($request, $param) : $instance->handle($request);
     }
 
@@ -403,6 +458,59 @@ class Router
         http_response_code(404);
         $view = VIEW_PATH . '/errors/404.php';
         file_exists($view) ? require $view : print('<h1>404 — Página não encontrada</h1>');
+    }
+
+    protected function handleMethodNotAllowed(array $allowedMethods): void
+    {
+        http_response_code(405);
+        if (!headers_sent()) header('Allow: ' . implode(', ', $allowedMethods));
+        $isJson = str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json')
+            || str_starts_with($this->request->uri(), '/api/');
+        if ($isJson) {
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode(['success' => false, 'message' => 'Método HTTP não permitido.']);
+            return;
+        }
+        echo '<h1>405 — Método não permitido</h1>';
+    }
+
+    /**
+     * ── MELHORIA #5 (novo) ───────────────────────────────────────────────────
+     * Handler central de erro pra qualquer exceção lançada durante a execução
+     * de uma rota já identificada (middleware ou action). Segue o mesmo padrão
+     * de handleNotFound(): tenta usar uma view de erro do projeto, com
+     * fallback simples se ela não existir. Loga via Core\Logger quando
+     * disponível, sem criar dependência rígida (funciona mesmo se a classe
+     * não existir no projeto).
+     */
+    protected function handleServerError(\Throwable $e): void
+    {
+        http_response_code(500);
+
+        if (class_exists(\Core\Logger::class)) {
+            \Core\Logger::error('Erro não tratado no dispatch da rota', [
+                'message' => $e->getMessage(),
+                'file'    => $e->getFile(),
+                'line'    => $e->getLine(),
+            ]);
+        }
+
+        $debug = isset($_ENV['APP_DEBUG']) && $_ENV['APP_DEBUG'] === 'true';
+
+        $view = defined('VIEW_PATH') ? VIEW_PATH . '/errors/500.php' : null;
+        if ($view !== null && file_exists($view)) {
+            require $view; // a view pode usar $e e $debug se quiser mostrar detalhes
+            return;
+        }
+
+        if ($debug) {
+            echo '<h1>500 — Erro interno</h1><pre>'
+                . htmlspecialchars($e->getMessage()) . "\n"
+                . htmlspecialchars($e->getTraceAsString())
+                . '</pre>';
+        } else {
+            echo '<h1>500 — Erro interno</h1>';
+        }
     }
 
     // ── Getters ───────────────────────────────────────────────────────────────

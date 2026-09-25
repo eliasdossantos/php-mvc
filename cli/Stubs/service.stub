@@ -40,7 +40,7 @@ class {{ ClassName }} extends Service
     public function create(array $data, int $userId = 0): array
     {
         // Exemplo de lógica de negócio:
-        // if ($this->repo->findBy('name', $data['name'])) {
+        // if ($this->repo->findBy('nome', $data['nome'])) {
         //     return ['success' => false, 'message' => 'Registro já existe.'];
         // }
         //

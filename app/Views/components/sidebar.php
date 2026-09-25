@@ -40,12 +40,15 @@ $sidebarInitials = count($nameParts) >= 2
             </div>
         </div>
         <?php endif; ?>
-        <a href="<?= url('auth/logout') ?>" class="sidebar-logout" data-confirm="Deseja sair?">
-            <span class="sidebar-icon">
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
-            </span>
-            Sair
-        </a>
+        <form method="post" action="<?= url('auth/logout') ?>" class="logout-form" data-confirm="Deseja sair?">
+            <?= csrf_field() ?>
+            <button type="submit" class="sidebar-logout">
+                <span class="sidebar-icon">
+                    <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9"/></svg>
+                </span>
+                Sair
+            </button>
+        </form>
     </div>
 
 </nav>

@@ -59,6 +59,16 @@ abstract class Controller
      *                                  - string  -> usa o layout informado (com fallback se não existir)
      *                                  - null    -> usa o layout padrão ($this->defaultLayout)
      *                                  - false | '' -> força renderização SEM layout
+     *
+     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * Se a view (ou o layout) lançasse uma exceção no meio do require, os
+     * ob_start() já abertos ficavam pendurados (um deles, ou os dois, quando
+     * havia layout). O buffer nunca era fechado, então a PRÓXIMA saída da
+     * aplicação (ex: a página de erro 500 do Router) saía misturada com o
+     * HTML parcial que já tinha sido bufferizado — uma página bagunçada em
+     * vez de um erro limpo. Agora qualquer buffer aberto por este método é
+     * fechado antes de repropagar a exceção, então o handler de erro (Router)
+     * recebe uma saída limpa pra trabalhar.
      */
     protected function view(string $view, array $data = [], string|false|null $layout = null): void
     {
@@ -75,19 +85,28 @@ abstract class Controller
         $layoutName = $this->resolveLayoutName($layout);
         $layoutPath = $layoutName ? $this->resolveLayoutPath($layoutName) : null;
 
+        $bufferLevelBefore = ob_get_level();
+
         // ── Captura a página inteira (view + layout) num único buffer ──────────
         // Isso garante que a injeção de CSRF enxergue o HTML final completo,
         // independente de a view usar sections (View::start/end) ou $content direto.
         ob_start();
 
-        if ($layoutPath === null) {
-            require $viewPath;
-        } else {
-            ob_start();
-            require $viewPath;
-            $content = ob_get_clean();
+        try {
+            if ($layoutPath === null) {
+                require $viewPath;
+            } else {
+                ob_start();
+                require $viewPath;
+                $content = ob_get_clean();
 
-            require $layoutPath;
+                require $layoutPath;
+            }
+        } catch (\Throwable $e) {
+            while (ob_get_level() > $bufferLevelBefore) {
+                ob_end_clean();
+            }
+            throw $e;
         }
 
         echo $this->injectCsrfTokens(ob_get_clean());
@@ -147,18 +166,27 @@ abstract class Controller
 
     // ── Resolução de caminhos (helpers internos) ─────────────────────────────
 
+    /**
+     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * Remove sequências ".." antes de montar o caminho — proteção básica
+     * contra directory traversal caso $view algum dia venha de um valor
+     * dinâmico (ex: name de view montado a partir de parâmetro de rota) em
+     * vez de sempre hardcoded pelo desenvolvedor.
+     */
     protected function resolveViewPath(string $view): string
     {
+        $view = str_replace(['..', '\\'], '', $view);
         return VIEW_PATH . '/' . str_replace('.', '/', $view) . '.php';
     }
 
     protected function resolveLayoutPath(string $layout): string
     {
+        $layout = str_replace(['..', '\\'], '', $layout);
         return VIEW_PATH . '/layouts/' . str_replace('.', '/', $layout) . '.php';
     }
 
     /**
-     * Decide qual nome de layout deve ser efetivamente usado, com fallback seguro:
+     * Decide qual name de layout deve ser efetivamente usado, com fallback seguro:
      *  1. $layout === false | ''  -> nenhum layout (retorna null)
      *  2. $layout === null        -> tenta o layout padrão
      *  3. $layout informado       -> tenta esse; se não existir, cai pro padrão; se o padrão também não existir, sem layout
@@ -198,17 +226,32 @@ abstract class Controller
 
     // ── Redirecionamento ──────────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * Duas correções: (1) usa appUrl() em vez de APP_URL direto, evitando
+     * Fatal Error se a constante não estiver definida; (2) cai pra um
+     * redirect via HTML/JS se os headers já tiverem sido enviados, em vez de
+     * só emitir um warning e não redirecionar de verdade.
+     */
     protected function redirect(string $url): never
     {
-        $url = str_starts_with($url, 'http') ? $url : APP_URL . '/' . ltrim($url, '/');
-        header("Location: {$url}");
+        $url = safeRedirectTarget($url, $this->appUrl() ?: '/');
+        if (!str_starts_with($url, 'http')) $url = rtrim($this->appUrl(), '/') . '/' . ltrim($url, '/');
+
+        if (!headers_sent()) {
+            header("Location: {$url}");
+            exit;
+        }
+
+        echo '<script>window.location.href=' . json_encode($url) . ';</script>'
+            . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
         exit;
     }
 
     /** Redireciona para a URL anterior (Referer) */
     protected function back(): never
     {
-        $this->redirect($_SERVER['HTTP_REFERER'] ?? APP_URL);
+        $this->redirect(safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', $this->appUrl() ?: '/'));
     }
 
     /** Redireciona com flash de sucesso */
@@ -218,13 +261,40 @@ abstract class Controller
         $this->redirect($url);
     }
 
+    /** Valor seguro de APP_URL, mesmo se a constante ainda não tiver sido definida */
+    protected function appUrl(): string
+    {
+        return defined('APP_URL') ? APP_URL : '';
+    }
+
     // ── Respostas JSON (APIs) ─────────────────────────────────────────────────
 
+    /**
+     * ── MELHORIA #4 ──────────────────────────────────────────────────────────
+     * json_encode() pode falhar (retorna false) — ex: dados com encoding
+     * inválido, NAN/INF numa struct, referência circular. Antes, isso fazia
+     * echo imprimir a string vazia de `false`, respondendo 200 com corpo
+     * vazio como se tivesse dado tudo certo. Agora detecta a falha, responde
+     * 500 e devolve uma mensagem de erro real em vez de um corpo vazio
+     * enganoso.
+     */
     protected function json(mixed $data, int $status = 200): never
     {
+        $encoded = json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if ($encoded === false) {
+            http_response_code(500);
+            header('Content-Type: application/json; charset=UTF-8');
+            echo json_encode([
+                'success' => false,
+                'message' => 'Erro ao gerar resposta JSON: ' . json_last_error_msg(),
+            ]);
+            exit;
+        }
+
         http_response_code($status);
         header('Content-Type: application/json; charset=UTF-8');
-        echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        echo $encoded;
         exit;
     }
 
@@ -267,6 +337,72 @@ abstract class Controller
         return Session::get('user')?->role ?? 'guest';
     }
 
+    // ── Verificação de tipo de requisição ────────────────────────────────────
+
+    /**
+     * Garante que a requisição atual é de um dos tipos esperados — útil no
+     * topo de métodos de API/AJAX pra rejeitar cedo requisições fora do
+     * formato certo, sem repetir if/jsonError em cada action.
+     *
+     * Aceita um tipo só ou vários (OR — basta um bater):
+     *   $this->checkMethod('post');               // só POST
+     *   $this->checkMethod(['post', 'put']);       // POST ou PUT
+     *   $this->checkMethod('ajax', 'Só via AJAX.'); // mensagem customizada
+     *
+     * Tipos válidos: ajax, json, get, post, put, patch, delete.
+     *
+     * Diferença importante em relação à primeira versão: um $tipo digitado
+     * errado (ex: 'pust') agora É um erro de verdade — lança exceção em vez
+     * de silenciosamente deixar passar sem validar nada. Faz sentido separar
+     * os dois casos: "o tipo que você pediu pra checar não existe" é bug de
+     * programação (quer barulho, não passe batido); "a requisição não bate
+     * com o tipo esperado" é o cliente errando o request (aí sim é 400/jsonError).
+     */
+    protected function checkMethod(string|array $tipos, string $mensagem = 'Requisição inválida.', int $status = 400): void
+    {
+        foreach ((array) $tipos as $tipo) {
+            if ($this->requestMatchesType($tipo)) {
+                return; // pelo menos um tipo bateu — segue o fluxo normal
+            }
+        }
+
+        $this->jsonError($mensagem, $status);
+    }
+
+    /**
+     * Confere um único tipo contra o Request atual.
+     * Lança exceção se $tipo não é reconhecido, ou se o Request não tiver o
+     * método correspondente — nos dois casos é erro de código, não de
+     * requisição do cliente, então não deve ser tratado como "requisição
+     * inválida" (400): deve travar e avisar quem programou o check errado.
+     */
+    private function requestMatchesType(string $tipo): bool
+    {
+        $checks = [
+            'ajax'   => 'isAjax',
+            'json'   => 'isJson',
+            'get'    => 'isGet',
+            'post'   => 'isPost',
+            'put'    => 'isPut',
+            'patch'  => 'isPatch',
+            'delete' => 'isDelete',
+        ];
+
+        if (!isset($checks[$tipo])) {
+            throw new \InvalidArgumentException(
+                "checkMethod(): tipo \"{$tipo}\" não existe. Tipos válidos: " . implode(', ', array_keys($checks)) . '.'
+            );
+        }
+
+        $method = $checks[$tipo];
+
+        if (!method_exists($this->request, $method)) {
+            throw new \RuntimeException("checkMethod(): Request não possui o método {$method}().");
+        }
+
+        return (bool) $this->request->{$method}();
+    }
+
     // ── Validação inline ──────────────────────────────────────────────────────
 
     /**
@@ -282,7 +418,7 @@ abstract class Controller
             Session::set('_errors',    $validator->errors());
             Session::set('_old_input', $data);
 
-            $back = $redirectBack ?: ($_SERVER['HTTP_REFERER'] ?? APP_URL);
+            $back = $redirectBack ?: safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', $this->appUrl() ?: '/');
             $this->redirect($back);
         }
 
@@ -317,7 +453,7 @@ abstract class Controller
                 Session::flashInput($old);
             }
 
-            $back = $redirectBack ?: ($_SERVER['HTTP_REFERER'] ?? APP_URL);
+            $back = $redirectBack ?: safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', $this->appUrl() ?: '/');
             $this->redirect($back);
         }
 

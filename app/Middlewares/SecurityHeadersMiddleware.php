@@ -21,10 +21,13 @@ class SecurityHeadersMiddleware
         if (headers_sent()) return;
 
         // ── Content-Security-Policy ───────────────────────────────────────────
-        // Ajuste as diretivas conforme as CDNs e scripts externos que você usa.
+        // Scripts inline permitidos somente com nonce por resposta. Styles inline
+        // ainda são mantidos por compatibilidade com os templates atuais.
+        $nonce = defined('CSP_NONCE') ? CSP_NONCE : base64_encode(random_bytes(16));
+        if (!defined('CSP_NONCE')) define('CSP_NONCE', $nonce);
         $csp = implode('; ', [
             "default-src 'self'",
-            "script-src 'self' 'unsafe-inline'",   // remova 'unsafe-inline' se usar nonces
+            "script-src 'self' 'nonce-{$nonce}'",
             "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
             "font-src 'self' https://fonts.gstatic.com",
             "img-src 'self' data: blob:",

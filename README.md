@@ -58,7 +58,7 @@ O objetivo é oferecer uma alternativa leve e flexível para quem deseja utiliza
 - Query Builder
 - Prepared Statements
 - Transações
-- Migrations
+- Migrations (schema definido em PHP, com rollback)
 - Seeders
 
 ### Upload de Arquivos
@@ -100,12 +100,12 @@ Comandos para geração rápida de código:
 
 O projeto possui mecanismos nativos para mitigação das vulnerabilidades mais comuns:
 
-- Proteção CSRF
+- Proteção CSRF, com validação reforçada de token (rejeita token malformado antes de chegar à sessão)
 - Prevenção contra SQL Injection
 - Escape automático contra XSS
 - Sessões seguras
 - Security Headers
-- Rate Limiting (proteção contra força bruta)
+- Rate Limiting (proteção contra força bruta), com trava contra condição de corrida em requisições concorrentes
 - Prepared Statements obrigatórios
 - Controle de acesso por middleware
 
@@ -118,6 +118,8 @@ A documentação completa está disponível em:
 ```text
 docs/index.html
 ```
+
+`docs/index.html` é a fonte central da documentação, incluindo a referência completa da API v1. O antigo `docs/API.md` foi mantido temporariamente durante a migração e não deve ser usado como fonte independente.
 
 Abra o arquivo em seu navegador para acessar:
 
@@ -172,27 +174,58 @@ DB_PASSWORD=
 
 ---
 
-## Banco de Dados Migrations (Criar e Aplicar)
+## Banco de Dados — Migrations (Criar e Aplicar)
 
-Crie uma nova migration SQL com o comando generator. O arquivo será criado em `database/migrations/` com prefixo numérico sequencial (`001_`, `002_`, ...).
+Migrations são classes PHP versionadas, ficam em `database/migrations/` e definem o schema do banco de forma fluente, através de `Schema` e `Blueprint` — nada de SQL cru para criar tabelas.
 
-Exemplos:
+Crie uma nova migration com o comando generator:
 
 ```bash
-php mvc make:migration CreatePostsTable
-php mvc make:migration AddEmailToUsers
-php mvc make:migration drop_comments_table
+php mvc make:migration create_posts_table
+php mvc make:migration add_email_to_users
 ```
 
-O comando converte o nome para snake_case e gera um arquivo como `002_create_posts_table.sql`. Dentro dele há um template comentado — descomente e ajuste o `CREATE TABLE` conforme sua necessidade. O nome da tabela gerado automaticamente é baseado no nome fornecido (`CreatePostsTable` → `posts`).
+O comando gera um arquivo com timestamp no nome (ex.: `2026_09_21_100000_create_posts_table.php`), já com a classe base pronta para você implementar `up()` (o que a migration faz) e `down()` (como desfazer):
 
-Depois de editar sua migration, aplique as migrations pendentes com:
+```php
+<?php
+
+use App\Core\Migration;
+use App\Core\Schema;
+use App\Core\Blueprint;
+
+class CreatePostsTable extends Migration
+{
+    public function up(): void
+    {
+        Schema::create('posts', function (Blueprint $table) {
+            $table->id();
+            $table->string('titulo');
+            $table->text('conteudo');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::drop('posts');
+    }
+}
+```
+
+Depois de editar sua migration, aplique as pendentes com:
 
 ```bash
 php mvc migrate
 ```
 
-Se quiser recriar tudo do zero (DROP + migrate):
+Para desfazer o último lote de migrations aplicado (chama `down()` na ordem inversa):
+
+```bash
+php mvc migrate:rollback
+```
+
+Se quiser recriar tudo do zero (desfaz todas as migrations e aplica novamente):
 
 ```bash
 php mvc migrate --fresh
@@ -200,12 +233,13 @@ php mvc migrate --fresh
 
 Dica rápida:
 
-- Os arquivos de migration ficam em `database/migrations/` e são executados em ordem crescente pelo prefixo numérico.
-- Verifique se o `CREATE TABLE` está com o nome da tabela correto (ex.: `posts`, `users`) e com os campos desejados.
+- Os arquivos de migration ficam em `database/migrations/` e são executados em ordem crescente pelo timestamp do nome.
+- Use `Schema::table('nome', function (Blueprint $table) { ... })` para alterar uma tabela existente, em vez de `Schema::create()`.
+- Prefira sempre implementar `down()` corretamente — é o que garante que `migrate:rollback` e `migrate --fresh` funcionem de verdade.
 
 ---
 
-## Banco de Dados Seeders
+## Banco de Dados — Seeders
 
 Os Seeders permitem popular o banco de dados com dados iniciais ou de teste de forma automatizada.
 
@@ -286,9 +320,21 @@ php mvc make:service UserService
 
 php mvc make:repository UserRepository
 
+php mvc make:migration create_posts_table
+
 php mvc make:seed UserSeeder
 
 php mvc make:view users
+```
+
+### Banco de Dados
+
+```bash
+php mvc migrate
+
+php mvc migrate:rollback
+
+php mvc migrate --fresh
 ```
 
 ### Configuração
@@ -313,50 +359,193 @@ php mvc help
 
 ```text
 php-mvc/
-│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
 ├── app/
-│   ├── Core/
 │   ├── Controllers/
-│   ├── Models/
-│   ├── Requests/
-│   ├── Services/
-│   ├── Repositories/
-│   ├── Middlewares/
+│   │   ├── AuthController.php
+│   │   ├── BaseController.php
+│   │   ├── DashboardController.php
+│   │   └── HomeController.php
+│   ├── Core/
+│   │   ├── Interfaces/
+│   │   │   └── RepositoryInterface.php
+│   │   ├── Application.php
+│   │   ├── Auth.php
+│   │   ├── Blueprint.php
+│   │   ├── Column.php
+│   │   ├── Controller.php
+│   │   ├── Database.php
+│   │   ├── Logger.php
+│   │   ├── Migration.php
+│   │   ├── Model.php
+│   │   ├── Repository.php
+│   │   ├── Request.php
+│   │   ├── Router.php
+│   │   ├── Schema.php
+│   │   ├── Service.php
+│   │   ├── Session.php
+│   │   ├── Upload.php
+│   │   ├── Validator.php
+│   │   └── View.php
 │   ├── Helpers/
+│   │   ├── Mailer.php
+│   │   ├── SecurityHelper.php
+│   │   ├── ViewHelper.php
+│   │   └── functions.php
+│   ├── Middlewares/
+│   │   ├── AuthMiddleware.php
+│   │   ├── CsrfMiddleware.php
+│   │   ├── DevelopmentMiddleware.php
+│   │   ├── GuestMiddleware.php
+│   │   ├── RateLimitMiddleware.php
+│   │   ├── RoleMiddleware.php
+│   │   └── SecurityHeadersMiddleware.php
+│   ├── Models/
+│   │   ├── RedefinicaoSenha.php
+│   │   └── User.php
+│   ├── Repositories/
+│   │   └── UserRepository.php
+│   ├── Requests/
+│   │   ├── Auth/
+│   │   │   ├── ForgotPasswordRequest.php
+│   │   │   ├── LoginRequest.php
+│   │   │   ├── RegisterRequest.php
+│   │   │   └── ResetPasswordRequest.php
+│   │   ├── Users/
+│   │   │   ├── StoreUserRequest.php
+│   │   │   └── UpdateUserRequest.php
+│   │   └── FormRequest.php
+│   ├── Services/
+│   │   └── AuthService.php
 │   └── Views/
-│
+│       ├── auth/
+│       │   ├── forgot.php
+│       │   ├── login.php
+│       │   ├── register.php
+│       │   └── reset.php
+│       ├── components/
+│       │   ├── alerts.php
+│       │   ├── footer.php
+│       │   ├── pagination.php
+│       │   ├── sidebar.php
+│       │   └── topbar.php
+│       ├── dashboard/
+│       │   └── index.php
+│       ├── errors/
+│       │   ├── 404.php
+│       │   ├── debug.php
+│       │   └── generic.php
+│       ├── home/
+│       │   └── index.php
+│       └── layouts/
+│           ├── auth.php
+│           ├── home.php
+│           └── main.php
 ├── bootstrap/
+│   └── app.php
+├── cli/
+│   ├── Commands/
+│   │   ├── KeyGenerateCommand.php
+│   │   ├── MakeControllerCommand.php
+│   │   ├── MakeMigrationCommand.php
+│   │   ├── MakeModelCommand.php
+│   │   ├── MakeRepositoryCommand.php
+│   │   ├── MakeRequestCommand.php
+│   │   ├── MakeSeedCommand.php
+│   │   ├── MakeServiceCommand.php
+│   │   ├── MakeViewCommand.php
+│   │   ├── MigrateCommand.php
+│   │   ├── MigrateRollbackCommand.php
+│   │   ├── SeedRunCommand.php
+│   │   └── ServeCommand.php
+│   ├── Stubs/
+│   │   ├── controller.stub
+│   │   ├── migration.stub
+│   │   ├── model.stub
+│   │   ├── repository.stub
+│   │   ├── request.stub
+│   │   ├── seed.stub
+│   │   ├── service.stub
+│   │   ├── view.create.stub
+│   │   ├── view.edit.stub
+│   │   ├── view.index.stub
+│   │   └── view.show.stub
+│   ├── Command.php
+│   ├── Kernel.php
+│   ├── Migrator.php
+│   └── Output.php
 ├── config/
+│   ├── app.php
+│   ├── database.php
+│   └── mail.php
 ├── database/
+│   ├── migrations/
+│   │   ├── 2026_09_21_100000_create_usuarios_table.php
+│   │   ├── 2026_09_25_140000_migrate_users_schema_to_english.php
+│   │   └── 2026_09_21_100001_create_redefinicoes_senha_table.php
+│   └── seeds/
+│       └── UserSeeder.php
 ├── docs/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── styles.css
+│   │   └── js/
+│   │       └── app.js
+│   └── index.html
 ├── public/
+│   ├── assets/
+│   │   ├── css/
+│   │   │   └── app.css
+│   │   └── js/
+│   │       └── app.js
+│   ├── .htaccess
+│   └── index.php
 ├── routes/
+│   └── web.php
 ├── storage/
-│
-├── composer.json
+│   ├── logs/
+│   ├── sessions/
+│   └── uploads/
+├── tests/
+│   ├── Feature/
+│   │   └── .gitkeep
+│   └── Unit/
+│       └── .gitkeep
 ├── .env.example
-└── README.md
+├── .gitignore
+├── CHANGELOG.md
+├── CONTRIBUTING.md
+├── LICENSE
+├── README.md
+├── composer.json
+├── mvc
+└── phpunit.xml
 ```
 
 ---
 
 ## Classes Principais
 
-| Classe      | Responsabilidade            |
-| ----------- | --------------------------- |
-| Application | Inicialização da aplicação  |
-| Router      | Gerenciamento de rotas      |
-| Controller  | Classe base dos controllers |
-| Model       | Classe base dos models      |
-| Database    | Conexão PDO                 |
-| Session     | Gerenciamento de sessões    |
-| Auth        | Autenticação                |
-| Validator   | Validação de dados          |
-| Upload      | Upload de arquivos          |
-| Logger      | Sistema de logs             |
-| Request     | Manipulação de requisições  |
-| Service     | Regras de negócio           |
-| Repository  | Camada de acesso a dados    |
+| Classe      | Responsabilidade                                 |
+| ----------- | ------------------------------------------------ |
+| Application | Inicialização da aplicação                       |
+| Router      | Gerenciamento de rotas                           |
+| Controller  | Classe base dos controllers                      |
+| Model       | Classe base dos models                           |
+| Database    | Conexão PDO                                      |
+| Schema      | Ponto de entrada para criar/alterar tabelas      |
+| Blueprint   | Definição fluente de colunas de uma tabela       |
+| Migrator    | Execução, versionamento e rollback de migrations |
+| Session     | Gerenciamento de sessões                         |
+| Auth        | Autenticação                                     |
+| Validator   | Validação de dados                               |
+| Upload      | Upload de arquivos                               |
+| Logger      | Sistema de logs                                  |
+| Request     | Manipulação de requisições                       |
+| Service     | Regras de negócio                                |
+| Repository  | Camada de acesso a dados                         |
 
 ---
 
@@ -452,3 +641,8 @@ https://www.gnu.org/licenses/gpl-3.0.html
 ---
 
 ⭐ Se este projeto foi útil para você, considere deixar uma estrela no GitHub.
+
+
+## Configuração de proxy e CORS
+
+Em produção, preencha `CORS_ALLOWED_ORIGINS` com origens exatas e nunca use `*`. Se a aplicação estiver atrás de proxy reverso, informe os IPs desse proxy em `TRUSTED_PROXIES`; sem essa configuração, o rate limit usa somente `REMOTE_ADDR`.

@@ -24,7 +24,7 @@ $router->group(['prefix' => '/auth', 'middleware' => ['GuestMiddleware']], funct
     $r->post('/reset-password',  [AuthController::class, 'resetSave'],   ['CsrfMiddleware']);
 });
 
-$router->get('/auth/logout', [AuthController::class, 'logout'])->name('auth.logout');
+$router->post('/auth/logout', [AuthController::class, 'logout'], ['CsrfMiddleware'])->name('auth.logout');
 
 // ── Área protegida ────────────────────────────────────────────────────────────
 $router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], function (Router $r) {
@@ -39,7 +39,5 @@ $router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], f
 });
 
 // ── API JSON ──────────────────────────────────────────────────────────────────
-$router->group(['prefix' => '/api', 'middleware' => ['AuthMiddleware']], function (Router $r) {
-    // $r->get('/users',  [UserApiController::class, 'index']);
-    // $r->post('/users', [UserApiController::class, 'store']);
-});
+// A API REST própria (versionada, autenticada por Bearer Token) vive em
+// routes/api.php — não neste arquivo. Ver docs/API.md.

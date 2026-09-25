@@ -1,24 +1,27 @@
 # ── Ambiente ──────────────────────────────────────────────────────────────────
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
 composer.lock
 
 # ── Dependências ──────────────────────────────────────────────────────────────
 /vendor/
 
 # ── Storage gerado em runtime ─────────────────────────────────────────────────
-/storage/logs/*
 /storage/cache/*
+/storage/logs/erros_aplicacao/*
+/storage/logs/requisicao/*
+/storage/logs/erros_nativos/*
 /storage/sessions/*
 /storage/uploads/*
 
 # Mantém as pastas no repositório
-!storage/logs/.gitkeep
-!storage/cache/.gitkeep
-!storage/cache/ratelimit/.gitkeep
-!storage/sessions/.gitkeep
-!storage/uploads/.gitkeep
+!/storage/cache/.gitkeep
+!/storage/logs/erros_aplicacao/.gitkeep
+!/storage/logs/requisicao/.gitkeep
+!/storage/logs/erros_nativos/.gitkeep
+!/storage/sessions/.gitkeep
+!/storage/uploads/.gitkeep
 
 # ── IDEs e SO ─────────────────────────────────────────────────────────────────
 .idea/
@@ -27,8 +30,10 @@ composer.lock
 *.swo
 .DS_Store
 Thumbs.db
+.phpunit.result.cache
 
 # ── Arquivos de debug que nunca devem ir ao repo ───────────────────────────────
 *.log
 npm-debug.log*
 yarn-debug.log*
+

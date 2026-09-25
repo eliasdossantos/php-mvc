@@ -22,6 +22,8 @@ class Auth
 {
     /** Model de usuário a ser usado (pode ser sobrescrito) */
     protected static string $userModel = \App\Models\User::class;
+    private static ?int $validatedSessionUserId = null;
+    private static ?bool $validatedSessionResult = null;
 
     // ── Autenticação ──────────────────────────────────────────────────────────
 
@@ -47,6 +49,8 @@ class Auth
 
         Session::set('user_id',   $user->id);
         Session::set('user_role', $user->role ?? 'member');
+        static::$validatedSessionUserId = (int) $user->id;
+        static::$validatedSessionResult = true;
 
         $safeUser = static::buildSessionUser($user);
         Session::set('user', $safeUser);
@@ -165,6 +169,8 @@ class Auth
         }
 
         static::clearRememberCookie();
+        static::$validatedSessionUserId = null;
+        static::$validatedSessionResult = null;
         Session::destroy();
 
         if ($userId) Logger::info('Logout', ['user_id' => $userId]);
@@ -187,7 +193,28 @@ class Auth
 
     public static function check(): bool
     {
-        return Session::has('user_id');
+        $id = Session::get('user_id');
+        if (!$id) return false;
+        $id = (int) $id;
+        if (static::$validatedSessionUserId === $id && static::$validatedSessionResult !== null) {
+            return static::$validatedSessionResult;
+        }
+
+        try {
+            $user = (new (static::$userModel)())->findById($id);
+            $valid = (bool) ($user && !empty($user->active));
+        } catch (\Throwable) {
+            $valid = false; // fail closed: não autoriza sem revalidar a conta
+        }
+
+        static::$validatedSessionUserId = $id;
+        static::$validatedSessionResult = $valid;
+        if (!$valid) {
+            Session::forget('user_id');
+            Session::forget('user_role');
+            Session::forget('user');
+        }
+        return $valid;
     }
     public static function guest(): bool
     {

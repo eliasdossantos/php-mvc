@@ -1,0 +1,79 @@
+<?php
+
+namespace App\Api\Controllers;
+
+use App\Repositories\{{ ModelName }}Repository;
+use App\Api\Resources\{{ ModelName }}Resource;
+
+/**
+ * {{ ClassName }}
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Endpoints REST de {{ ModelName }} sob /api/v1. Registre as rotas em
+ * routes/api.php com o middleware ApiAuthMiddleware.
+ */
+class {{ ClassName }} extends ApiController
+{
+    protected {{ ModelName }}Repository $repository;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this->repository = new {{ ModelName }}Repository();
+    }
+
+    /** GET /{{ routePrefix }} */
+    public function index(): void
+    {
+        $page    = max(1, (int) $this->request->get('page', 1));
+        $perPage = min(100, max(1, (int) $this->request->get('per_page', 15)));
+
+        $result = $this->repository->paginate($perPage, $page);
+        $result['data'] = {{ ModelName }}Resource::collection($result['data']);
+
+        $this->paginated($result);
+    }
+
+    /** GET /{{ routePrefix }}/{id} */
+    public function show(int $id): void
+    {
+        $item = $this->repository->findById($id);
+
+        if (!$item) {
+            $this->error('{{ ModelName }} não encontrado.', [], 404);
+        }
+
+        $this->success({{ ModelName }}Resource::make($item));
+    }
+
+    /** POST /{{ routePrefix }} */
+    public function store(): void
+    {
+        // $data = $this->validated(new Store{{ ModelName }}Request());
+        // $id   = $this->repository->create($data);
+        // $this->success({{ ModelName }}Resource::make($this->repository->findById((int) $id)), '{{ ModelName }} criado com sucesso.', 201);
+
+        $this->error('Não implementado.', [], 501);
+    }
+
+    /** PUT /{{ routePrefix }}/{id} */
+    public function update(int $id): void
+    {
+        // $data = $this->validated(new Update{{ ModelName }}Request());
+        // $this->repository->update($id, $data);
+        // $this->success({{ ModelName }}Resource::make($this->repository->findById($id)), '{{ ModelName }} atualizado com sucesso.');
+
+        $this->error('Não implementado.', [], 501);
+    }
+
+    /** DELETE /{{ routePrefix }}/{id} */
+    public function destroy(int $id): void
+    {
+        $item = $this->repository->findById($id);
+        if (!$item) {
+            $this->error('{{ ModelName }} não encontrado.', [], 404);
+        }
+
+        $this->repository->delete($id);
+        $this->success(null, '{{ ModelName }} removido com sucesso.');
+    }
+}

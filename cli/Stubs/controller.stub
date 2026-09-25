@@ -2,7 +2,7 @@
 
 namespace App\Controllers{{ SubNamespace }};
 
-use Core\Controller;
+use App\Controllers\BaseController;
 use Core\Session;
 {{ UseRepository }}
 {{ UseRequest }}
@@ -16,7 +16,7 @@ use Core\Session;
  * Regra: controllers devem ser finos.
  * Lógica de negócio → Service | Acesso a dados → Repository
  */
-class {{ ClassName }} extends Controller
+class {{ ClassName }} extends BaseController
 {
     public function __construct()
     {
@@ -36,7 +36,7 @@ class {{ ClassName }} extends Controller
     {
         $this->view('{{ viewPath }}.index', [
             'title' => '{{ ModelName }}',
-            // 'items' => $this->repository->paginate(15, (int)($_GET['page'] ?? 1)),
+            // 'items' => $this->repository->paginate(15, (int)($this->request->get('page', 1))),
         ]);
     }
 
@@ -84,12 +84,14 @@ class {{ ClassName }} extends Controller
         // }
         // $data = $request->validated();
 
-        // Exemplo com validate() inline:
-        $this->validate($_POST, [
-            'name' => 'required|min:2|max:100',
+        // Exemplo com validate() inline — usa $this->request->all() (dados já
+        // sanitizados) em vez de $_POST direto, mantendo a mesma camada de
+        // acesso a dados do resto do framework:
+        $this->validate($this->request->all(), [
+            'nome' => 'required|min:2|max:100',
         ]);
 
-        // $id = $this->repository->create($_POST);
+        // $id = $this->repository->create($this->request->all());
         $this->redirectWith('{{ routePrefix }}', 'success', '{{ ModelName }} criado com sucesso!');
     }
 
@@ -108,9 +110,10 @@ class {{ ClassName }} extends Controller
         ]);
     }
 
-    * Processa a atualização de um registro.
-    * PUT /{{ routePrefix }}/{id}
-    */
+    /**
+     * Processa a atualização de um registro.
+     * PUT /{{ routePrefix }}/{id}
+     */
     public function update(int $id): void
     {
         // Exemplo com FormRequest:
@@ -127,11 +130,11 @@ class {{ ClassName }} extends Controller
         // $data = $request->validated();
 
         // Exemplo com validate() inline:
-        $this->validate($_POST, [
-            'name' => 'required|min:2|max:100',
+        $this->validate($this->request->all(), [
+            'nome' => 'required|min:2|max:100',
         ]);
 
-        // $updated = $this->repository->update($id, $_POST);
+        // $updated = $this->repository->update($id, $this->request->all());
         //
         // if (!$updated) {
         //     $this->redirectWith(
