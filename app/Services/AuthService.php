@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use Core\Service;
-use Core\Auth;
-use Core\Logger;
+use Framework\Service;
+use Framework\Auth;
+use Framework\Logger;
 use App\Repositories\UserRepository;
 
 /**

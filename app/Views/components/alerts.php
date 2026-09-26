@@ -34,10 +34,10 @@ $bootstrapClass = [
 
 foreach ($alertTypes as $alertType):
     // Pega a mensagem simples do flash
-    $alertMsg = \Core\Session::getFlash($alertType);
+    $alertMsg = \Framework\Session::getFlash($alertType);
 
     // Se for tipo 'error', junta com os erros vindos do Validator ($_SESSION['_errors'])
-    $validationErrors = ($alertType === 'error') ? (\Core\Session::get('_errors', [])) : [];
+    $validationErrors = ($alertType === 'error') ? (\Framework\Session::get('_errors', [])) : [];
 
     // Se não tiver mensagem flash nem erros de validação, ignora
     if (!$alertMsg && empty($validationErrors)) {

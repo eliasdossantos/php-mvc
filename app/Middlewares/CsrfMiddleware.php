@@ -2,8 +2,8 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Session;
+use Framework\Request;
+use Framework\Session;
 
 /**
  * CsrfMiddleware — Valida token CSRF em requisições POST/PUT/DELETE

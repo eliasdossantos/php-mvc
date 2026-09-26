@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Interfaces;
+namespace Framework\Interfaces;
 
 /**
  * Interface base para Repositories

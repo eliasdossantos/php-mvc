@@ -2,7 +2,7 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
+use Framework\Request;
 
 /**
  * CorsMiddleware — Cross-Origin Resource Sharing para a API (/api/v1)

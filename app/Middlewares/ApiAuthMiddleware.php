@@ -2,9 +2,9 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Api\ApiResponse;
-use Core\Api\ApiAuthContext;
+use Framework\Request;
+use Framework\Api\ApiResponse;
+use Framework\Api\ApiAuthContext;
 use App\Repositories\ApiTokenRepository;
 use App\Repositories\UserRepository;
 

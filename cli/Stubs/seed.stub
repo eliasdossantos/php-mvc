@@ -31,11 +31,11 @@ if (file_exists($envFile)) {
 
 require ROOT_PATH . '/vendor/autoload.php';
 
-// Usa Core\Database (mesma conexão/DSN da aplicação) em vez de duplicar a
+// Usa Framework\Database (mesma conexão/DSN da aplicação) em vez de duplicar a
 // lógica de conexão aqui — evita os dois ficarem dessincronizados se a
 // configuração do banco mudar (charset, opções do PDO, etc).
 try {
-    $pdo = \Core\Database::getInstance()->getPdo();
+    $pdo = \Framework\Database::getInstance()->getPdo();
 } catch (\Throwable $e) {
     die("❌  Conexão falhou: " . $e->getMessage() . "\n");
 }

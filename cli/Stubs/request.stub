@@ -3,7 +3,7 @@
 namespace App\Requests{{ SubNamespace }};
 
 use App\Requests\FormRequest;
-use Core\Auth;
+use Framework\Auth;
 
 /**
  * {{ ClassName }}

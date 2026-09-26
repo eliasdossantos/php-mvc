@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Validator — Sistema de Validação

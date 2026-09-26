@@ -2,8 +2,8 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Session;
+use Framework\Request;
+use Framework\Session;
 
 /**
  * RateLimitMiddleware — Proteção contra força bruta e abuso de endpoints
@@ -82,8 +82,8 @@ class RateLimitMiddleware
             // Não conseguiu abrir/criar o arquivo de controle. O chamador
             // decide: perfis de autenticação falham fechado; API/default
             // preservam disponibilidade.
-            if (class_exists(\Core\Logger::class)) {
-                \Core\Logger::error("RateLimitMiddleware: não foi possível abrir {$path}");
+            if (class_exists(\Framework\Logger::class)) {
+                \Framework\Logger::error("RateLimitMiddleware: não foi possível abrir {$path}");
             }
             return null;
         }
@@ -152,8 +152,8 @@ class RateLimitMiddleware
             // O !is_dir($dir) checado de novo depois do mkdir cobre a corrida
             // entre dois processos tentando criar o mesmo diretório ao mesmo
             // tempo (um deles "falha" mas o diretório já existe de verdade).
-            if (class_exists(\Core\Logger::class)) {
-                \Core\Logger::error("RateLimitMiddleware: não foi possível criar o diretório {$dir}");
+            if (class_exists(\Framework\Logger::class)) {
+                \Framework\Logger::error("RateLimitMiddleware: não foi possível criar o diretório {$dir}");
             }
         }
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Blueprint — Definição fluente de colunas para migrations
  * ─────────────────────────────────────────────────────────────────────────────
- * Inspirado no Schema Builder do Laravel, adaptado ao Core\Database (PDO puro).
+ * Inspirado no Schema Builder do Laravel, adaptado ao Framework\Database (PDO puro).
  * Gera o SQL de CREATE TABLE / ALTER TABLE a partir das chamadas fluentes.
  *
  * Os tipos de coluna abaixo estão agrupados como no phpMyAdmin:

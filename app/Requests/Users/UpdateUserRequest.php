@@ -3,9 +3,9 @@
 namespace App\Requests\Users;
 
 use App\Requests\FormRequest;
-use Core\Auth;
-use Core\Session;
-use Core\Request;
+use Framework\Auth;
+use Framework\Session;
+use Framework\Request;
 
 /**
  * UpdateUserRequest

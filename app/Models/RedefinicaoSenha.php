@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Core\Model;
-use Core\Session;
+use Framework\Model;
+use Framework\Session;
 
 /**
  * RedefinicaoSenha Model

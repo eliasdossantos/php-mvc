@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use Core\Repository;
+use Framework\Repository;
 use App\Models\ApiToken;
 
 class ApiTokenRepository extends Repository

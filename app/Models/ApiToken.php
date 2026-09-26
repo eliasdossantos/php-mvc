@@ -2,8 +2,8 @@
 
 namespace App\Models;
 
-use Core\Model;
-use Core\Session;
+use Framework\Model;
+use Framework\Session;
 
 /**
  * ApiToken Model
@@ -13,7 +13,7 @@ use Core\Session;
  * database/migrations/2026_09_22_100000_create_api_tokens_table.php).
  *
  * O valor em texto puro do token NUNCA é persistido — apenas seu hash SHA-256
- * (mesmo padrão já usado por Core\Auth para o cookie "lembrar de mim").
+ * (mesmo padrão já usado por Framework\Auth para o cookie "lembrar de mim").
  */
 class ApiToken extends Model
 {

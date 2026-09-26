@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Database — Conexão Reutilizável com PDO

@@ -37,7 +37,7 @@
         </a>
     </div>
 
-    <?= \Core\View::render('components.alerts'); ?>
+    <?= \Framework\View::render('components.alerts'); ?>
 
     <div class="card">
         <div class="table-wrapper">
@@ -122,12 +122,12 @@
     <?php
     /**
      * ── Renderização da paginação ──────────────────────────────────────────────────────────
-     * Quando esta chamada não tinha "<?=" na frente. \Core\View::render()
+     * Quando esta chamada não tinha "<?=" na frente. \Framework\View::render()
      * RETORNA a string, não imprime sozinho — então a paginação nunca
      * aparecia na tela, sem erro nenhum, sem aviso nenhum.
      */
     ?>
-    <?= \Core\View::render('components.pagination', ['data' => $items ?? []]); ?>
+    <?= \Framework\View::render('components.pagination', ['data' => $items ?? []]); ?>
 
 </div>
 

@@ -3,7 +3,7 @@
 use App\Api\Controllers\AuthApiController;
 use App\Api\Controllers\UserApiController;
 use App\Api\Controllers\PreflightController;
-use Core\Router;
+use Framework\Router;
 
 /** @var Router $router */
 
@@ -45,5 +45,5 @@ $router->group(['prefix' => '/api/v1', 'middleware' => ['CorsMiddleware', 'RateL
 // ── API v2 (futuro) ────────────────────────────────────────────────────────────
 // Quando existir uma v2, crie routes/api_v2.php com:
 //   $router->group(['prefix' => '/api/v2', 'middleware' => [...]], function (Router $r) { ... });
-// Core\Application já carrega automaticamente qualquer routes/api*.php —
-// nenhuma alteração no Core é necessária.
+// Framework\Application já carrega automaticamente qualquer routes/api*.php —
+// nenhuma alteração no Framework é necessária.

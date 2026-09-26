@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Session — Gerenciador de Sessões Seguras
@@ -39,8 +39,8 @@ class Session
         // apontar pra um caminho quebrado — a sessão continua funcionando,
         // só não fica isolada do resto do sistema.
         if (!is_dir($sessionPath) && !@mkdir($sessionPath, 0755, true) && !is_dir($sessionPath)) {
-            if (class_exists(\Core\Logger::class)) {
-                \Core\Logger::error("Session: não foi possível criar {$sessionPath}, usando o session.save_path padrão do PHP.");
+            if (class_exists(\Framework\Logger::class)) {
+                \Framework\Logger::error("Session: não foi possível criar {$sessionPath}, usando o session.save_path padrão do PHP.");
             }
         } else {
             session_save_path($sessionPath);
@@ -64,8 +64,8 @@ class Session
         // e ninguém saberia o porquê. A implementação loga o problema, se possível, mas
         // não interrompe a execução: mesmo sem persistir, a aplicação ainda
         // funciona dentro dessa única requisição.
-        if (!session_start() && class_exists(\Core\Logger::class)) {
-            \Core\Logger::error('Session: session_start() falhou.');
+        if (!session_start() && class_exists(\Framework\Logger::class)) {
+            \Framework\Logger::error('Session: session_start() falhou.');
         }
 
         // Erros de validação: duram somente uma requisição

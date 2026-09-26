@@ -1,14 +1,14 @@
 <?php
 
-use Core\Migration;
-use Core\Schema;
-use Core\Blueprint;
+use Framework\Migration;
+use Framework\Schema;
+use Framework\Blueprint;
 
 return new class extends Migration {
     public function up(): void
     {
         Schema::table('users', function (Blueprint $table) {
-            // Permite expirar o token de lembrança usado por Core\Auth.
+            // Permite expirar o token de lembrança usado por Framework\Auth.
             $table->dateTime('remember_token_expires_at')->nullable();
         });
     }

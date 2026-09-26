@@ -3,7 +3,7 @@
 namespace App\Controllers{{ SubNamespace }};
 
 use App\Controllers\BaseController;
-use Core\Session;
+use Framework\Session;
 {{ UseRepository }}
 {{ UseRequest }}
 

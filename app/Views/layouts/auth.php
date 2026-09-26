@@ -60,7 +60,7 @@
                 <span class="auth-brand-name"><?= e(APP_NAME) ?></span>
             </a>
 
-            <?= \Core\View::render('components.alerts') ?>
+            <?= \Framework\View::render('components.alerts') ?>
 
             <?= $content ?>
 

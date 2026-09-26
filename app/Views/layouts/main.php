@@ -19,18 +19,18 @@
 
     <div class="layout">
 
-        <?= \Core\View::render('components.sidebar', ['title' => $title ?? '']) ?>
+        <?= \Framework\View::render('components.sidebar', ['title' => $title ?? '']) ?>
 
         <div class="layout-main">
 
-            <?= \Core\View::render('components.topbar', ['title' => $title ?? '']) ?>
+            <?= \Framework\View::render('components.topbar', ['title' => $title ?? '']) ?>
 
             <main class="layout-content">
-                <?= \Core\View::render('components.alerts') ?>
+                <?= \Framework\View::render('components.alerts') ?>
                 <?= $content ?>
             </main>
 
-            <?= \Core\View::render('components.footer') ?>
+            <?= \Framework\View::render('components.footer') ?>
         </div>
     </div>
 

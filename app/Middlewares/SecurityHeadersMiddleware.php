@@ -2,7 +2,7 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
+use Framework\Request;
 
 /**
  * SecurityHeadersMiddleware — Headers de segurança HTTP reforçados
@@ -10,7 +10,7 @@ use Core\Request;
  * Complementa os headers básicos já definidos em Application::setSecurityHeaders().
  * Adiciona Content-Security-Policy, Permissions-Policy e HSTS.
  *
- * Aplicado globalmente pelo próprio Core\Application (no construtor), para
+ * Aplicado globalmente pelo próprio Framework\Application (no construtor), para
  * toda requisição — inclusive páginas públicas e de autenticação. Não é
  * necessário (nem recomendado) adicioná-lo manualmente em grupos de rota.
  */

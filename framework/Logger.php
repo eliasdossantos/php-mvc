@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Logger — Sistema de Logs

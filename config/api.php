@@ -5,7 +5,7 @@
  * Todos os valores sensíveis/variáveis vêm do .env — nunca hardcoded aqui.
  */
 return [
-    // Timeout padrão (segundos) para chamadas feitas via Core\Api\ApiClient
+    // Timeout padrão (segundos) para chamadas feitas via Framework\Api\ApiClient
     'timeout' => (int) ($_ENV['API_TIMEOUT'] ?? 30),
 
     'cors' => [

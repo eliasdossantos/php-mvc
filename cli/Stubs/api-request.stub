@@ -3,7 +3,7 @@
 namespace App\Api\Requests;
 
 use App\Requests\FormRequest;
-use Core\Api\ApiAuthContext;
+use Framework\Api\ApiAuthContext;
 
 /**
  * {{ ClassName }}
@@ -12,7 +12,7 @@ use Core\Api\ApiAuthContext;
  * app/Requests/ para o formulário web equivalente, prefira reaproveitar
  * aquela classe em vez de duplicar aqui.
  *
- * authorize() usa ApiAuthContext (Bearer Token), não Core\Auth (sessão).
+ * authorize() usa ApiAuthContext (Bearer Token), não Framework\Auth (sessão).
  */
 class {{ ClassName }} extends FormRequest
 {

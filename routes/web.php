@@ -3,7 +3,7 @@
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
-use Core\Router;
+use Framework\Router;
 
 /** @var Router $router */
 

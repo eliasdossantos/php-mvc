@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Auth — Sistema de Autenticação Reutilizável

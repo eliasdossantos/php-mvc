@@ -86,7 +86,7 @@ class Mailer
             $mail->send();
             return ['success' => true, 'message' => 'E-mail enviado.'];
         } catch (\Exception $e) {
-            \Core\Logger::error('Falha ao enviar e-mail', ['to' => $to, 'error' => $e->getMessage()]);
+            \Framework\Logger::error('Falha ao enviar e-mail', ['to' => $to, 'error' => $e->getMessage()]);
             return ['success' => false, 'message' => $e->getMessage()];
         }
     }
@@ -108,7 +108,7 @@ class Mailer
 
     private function sendDev(string $to, string $subject, string $body): array
     {
-        \Core\Logger::debug('Mailer [dev] — e-mail não enviado', ['to' => $to, 'subject' => $subject]);
+        \Framework\Logger::debug('Mailer [dev] — e-mail não enviado', ['to' => $to, 'subject' => $subject]);
         return ['success' => true, 'message' => 'Dev mode: e-mail não enviado.', 'dev_body' => $body];
     }
 }

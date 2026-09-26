@@ -2,7 +2,7 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
+use Framework\Request;
 
 /**
  * DevelopmentMiddleware — Permite acesso a rotas exclusivas

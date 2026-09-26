@@ -44,7 +44,7 @@ function storageUrl(string $path): string
 
 function route(string $name, array $params = []): string
 {
-    $router = \Core\Router::getInstance();
+    $router = \Framework\Router::getInstance();
     if ($router === null) {
         // Fallback seguro: gera URL simples sem parâmetros nomeados
         return url($name);
@@ -59,8 +59,8 @@ function route(string $name, array $params = []): string
     try {
         return $router->route($name, $params);
     } catch (\Throwable $e) {
-        if (class_exists(\Core\Logger::class)) {
-            \Core\Logger::error("route() falhou para \"{$name}\": " . $e->getMessage());
+        if (class_exists(\Framework\Logger::class)) {
+            \Framework\Logger::error("route() falhou para \"{$name}\": " . $e->getMessage());
         }
         return url('/');
     }
@@ -122,16 +122,16 @@ function redirect(string $path): never
 
 function flash(string $key): ?string
 {
-    return \Core\Session::getFlash($key);
+    return \Framework\Session::getFlash($key);
 }
 function hasFlash(string $key): bool
 {
-    return \Core\Session::hasFlash($key);
+    return \Framework\Session::hasFlash($key);
 }
 
 function old(string $key, string $default = ''): string
 {
-    $value = \Core\Session::oldInput($key, $default);
+    $value = \Framework\Session::oldInput($key, $default);
 
     // ── Detalhes de implementação
     // Se o valor salvo como "old input" for um array (ex: checkboxes múltiplos,
@@ -148,7 +148,7 @@ function old(string $key, string $default = ''): string
 /** Garante que sempre devolve array, mesmo se algo tiver corrompido _errors na sessão */
 function errors(): array
 {
-    $errors = \Core\Session::get('_errors', []);
+    $errors = \Framework\Session::get('_errors', []);
     return is_array($errors) ? $errors : [];
 }
 function hasError(string $field): bool
@@ -164,13 +164,13 @@ function error(string $field): string
 
 function csrf_field(): string
 {
-    $t = \Core\Session::csrfToken();
+    $t = \Framework\Session::csrfToken();
     return "<input type=\"hidden\" name=\"_csrf_token\" value=\"{$t}\">";
 }
 
 function csrf_token(): string
 {
-    return \Core\Session::csrfToken();
+    return \Framework\Session::csrfToken();
 }
 
 function e(mixed $value): string
@@ -197,23 +197,23 @@ function method_field(string $method): string
 
 function auth(): bool
 {
-    return \Core\Auth::check();
+    return \Framework\Auth::check();
 }
 function user(): ?object
 {
-    return \Core\Auth::user();
+    return \Framework\Auth::user();
 }
 function userId(): int
 {
-    return \Core\Auth::id() ?? 0;
+    return \Framework\Auth::id() ?? 0;
 }
 function userRole(): string
 {
-    return \Core\Auth::role();
+    return \Framework\Auth::role();
 }
 function isRole(string $r): bool
 {
-    return \Core\Auth::is($r);
+    return \Framework\Auth::is($r);
 }
 
 // ── Ambiente ──────────────────────────────────────────────────────────────────

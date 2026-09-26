@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Api;
+namespace Framework\Api;
 
 /**
  * ApiException — Erro de comunicação com uma API externa

@@ -2,7 +2,7 @@
 
 namespace App\Services\Integrations\Cep;
 
-use Core\Service;
+use Framework\Service;
 use App\Services\Integrations\Cep\Gateways\ViaCepGateway;
 
 /**

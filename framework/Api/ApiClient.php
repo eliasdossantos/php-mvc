@@ -1,8 +1,8 @@
 <?php
 
-namespace Core\Api;
+namespace Framework\Api;
 
-use Core\Logger;
+use Framework\Logger;
 
 /**
  * ApiClient — Cliente HTTP centralizado para consumo de APIs externas

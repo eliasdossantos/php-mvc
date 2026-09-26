@@ -10,7 +10,7 @@ namespace App\Services\Integrations\Payment;
  * implementar uma nova classe e apontar PAYMENT_PROVIDER no .env.
  *
  * Cada gateway concreto vive em Gateways/ (ex: Gateways/MercadoPagoGateway.php)
- * e usa Core\Api\ApiClient internamente para as chamadas HTTP — nunca curl
+ * e usa Framework\Api\ApiClient internamente para as chamadas HTTP — nunca curl
  * direto.
  */
 interface PaymentGatewayInterface

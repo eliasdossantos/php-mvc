@@ -2,8 +2,8 @@
 
 namespace App\Services;
 
-use Core\Service;
-use Core\Logger;
+use Framework\Service;
+use Framework\Logger;
 // use App\Repositories\{{ ModelName }}Repository;
 
 /**

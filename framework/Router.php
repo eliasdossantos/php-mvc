@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Router Desacoplado
@@ -479,7 +479,7 @@ class Router
      * Handler central de erro pra qualquer exceção lançada durante a execução
      * de uma rota já identificada (middleware ou action). Segue o mesmo padrão
      * de handleNotFound(): tenta usar uma view de erro do projeto, com
-     * fallback simples se ela não existir. Loga via Core\Logger quando
+     * fallback simples se ela não existir. Loga via Framework\Logger quando
      * disponível, sem criar dependência rígida (funciona mesmo se a classe
      * não existir no projeto).
      */
@@ -487,8 +487,8 @@ class Router
     {
         http_response_code(500);
 
-        if (class_exists(\Core\Logger::class)) {
-            \Core\Logger::error('Erro não tratado no dispatch da rota', [
+        if (class_exists(\Framework\Logger::class)) {
+            \Framework\Logger::error('Erro não tratado no dispatch da rota', [
                 'message' => $e->getMessage(),
                 'file'    => $e->getFile(),
                 'line'    => $e->getLine(),

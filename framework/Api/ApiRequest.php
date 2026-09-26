@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Api;
+namespace Framework\Api;
 
 /**
  * ApiRequest — Descrição imutável de uma requisição HTTP de saída

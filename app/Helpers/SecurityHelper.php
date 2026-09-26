@@ -2,8 +2,8 @@
 
 namespace App\Helpers;
 
-use Core\Request;
-use Core\Session;
+use Framework\Request;
+use Framework\Session;
 
 /**
  * SecurityHelper — Utilitários de Segurança

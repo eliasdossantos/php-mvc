@@ -48,7 +48,7 @@
                 <a class="nav-link" href="#router"><span class="nav-icon">🛣</span>Router</a>
             </div>
             <div class="nav-section">
-                <div class="nav-section-title">Core</div>
+                <div class="nav-section-title">Framework</div>
                 <a class="nav-link" href="#application"><span class="nav-icon">🧠</span>Application</a>
                 <a class="nav-link" href="#controller"><span class="nav-icon">🎮</span>Controller</a>
                 <a class="nav-link" href="#model"><span class="nav-icon">🗄</span>Model</a>
@@ -131,7 +131,7 @@
                     arquitetura MVC
                     em camadas. Router desacoplado, ORM mínimo estilo Active Record, autenticação completa, CLI próprio
                     para
-                    scaffolding e um conjunto de classes <code>Core\*</code> genéricas e reutilizáveis em qualquer
+                    scaffolding e um conjunto de classes <code>Framework\*</code> genéricas e reutilizáveis em qualquer
                     projeto.</p>
 
                 <div class="cards-grid">
@@ -144,7 +144,7 @@
                     </div>
                     <div class="card">
                         <div class="card-icon">🔧</div>
-                        <div class="card-title">14 classes Core</div>
+                        <div class="card-title">Classes do Framework</div>
                         <div class="card-desc">Application, Router, Controller, Model, Database, Request, Session, Auth,
                             Validator, View, Upload, Logger, Service e Repository.</div>
                     </div>
@@ -177,7 +177,7 @@
                     </div>
                 </div>
 
-                <h3 class="subsection">Classes incluídas no Core</h3>
+                <h3 class="subsection">Classes incluídas no Framework</h3>
                 <div class="table-wrapper">
                     <table class="doc-table">
                         <thead>
@@ -189,74 +189,74 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td><code>Core\Application</code></td>
+                                <td><code>Framework\Application</code></td>
                                 <td>Kernel: boot, dispatch, tratamento centralizado de exceções</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Router</code></td>
+                                <td><code>Framework\Router</code></td>
                                 <td>Mapeia URIs para Controllers, grupos, rotas nomeadas</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Controller</code></td>
+                                <td><code>Framework\Controller</code></td>
                                 <td>Classe base abstrata para todos os controllers</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Model</code></td>
+                                <td><code>Framework\Model</code></td>
                                 <td>Active Record + query builder fluente sobre PDO</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Database</code></td>
+                                <td><code>Framework\Database</code></td>
                                 <td>Singleton PDO com interface fluente e transações</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Request</code></td>
+                                <td><code>Framework\Request</code></td>
                                 <td>Encapsula a requisição HTTP (GET/POST/JSON/arquivos)</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Session</code></td>
+                                <td><code>Framework\Session</code></td>
                                 <td>Sessões seguras, flash messages, old input, CSRF</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Auth</code></td>
+                                <td><code>Framework\Auth</code></td>
                                 <td>Autenticação, roles, "lembrar de mim"</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Validator</code></td>
+                                <td><code>Framework\Validator</code></td>
                                 <td>Validação declarativa de arrays de dados</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\View</code></td>
+                                <td><code>Framework\View</code></td>
                                 <td>Renderização de templates, layouts e sections</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Upload</code></td>
+                                <td><code>Framework\Upload</code></td>
                                 <td>Upload seguro de arquivos com validação de MIME real</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Logger</code></td>
+                                <td><code>Framework\Logger</code></td>
                                 <td>Log em arquivo (compatível PSR-3) + saída colorida em CLI</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Service</code></td>
+                                <td><code>Framework\Service</code></td>
                                 <td>Classe base para lógica de negócio (camada de serviço)</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                             <tr>
-                                <td><code>Core\Repository</code></td>
+                                <td><code>Framework\Repository</code></td>
                                 <td>Classe base para acesso a dados, abstrai o Model</td>
-                                <td><span class="badge badge-accent">Core</span></td>
+                                <td><span class="badge badge-accent">Framework</span></td>
                             </tr>
                         </tbody>
                     </table>
@@ -333,13 +333,13 @@ php mvc serve
                 <h1 class="section-title">Estrutura de Pastas</h1>
 
                 <p class="section-subtitle">Organização por responsabilidade, separando o núcleo genérico
-                    (<code>Core</code>) do
+                    (<code>Framework</code>) do
                     código específico da aplicação (<code>App</code>).</p>
 
                 <div class="ftree-root">
                     <div class="ftree-group">
                         <div class="ftree-group-header"><span class="ftree-group-icon">📁</span>
-                            <span class="ftree-group-name">app/Core</span><span
+                            <span class="ftree-group-name">framework</span><span
                                 class="ftree-group-badge badge-core">Genérico</span>
                         </div>
                         <div class="ftree-group-body">As 14 classes reutilizáveis descritas na Visão Geral. Nunca contêm
@@ -352,7 +352,7 @@ php mvc serve
                             <span class="ftree-group-name">app/Controllers</span><span
                                 class="ftree-group-badge badge-app">App</span>
                         </div>
-                        <div class="ftree-group-body">Controllers da aplicação, estendendo <code>Core\Controller</code>.
+                        <div class="ftree-group-body">Controllers da aplicação, estendendo <code>Framework\Controller</code>.
                             Inclui
                             <code>HomeController</code>, <code>AuthController</code> e <code>DashboardController</code>
                             prontos.
@@ -364,7 +364,7 @@ php mvc serve
                             <span class="ftree-group-name">app/Models</span><span
                                 class="ftree-group-badge badge-app">App</span>
                         </div>
-                        <div class="ftree-group-body">Models estendendo <code>Core\Model</code>. Inclui
+                        <div class="ftree-group-body">Models estendendo <code>Framework\Model</code>. Inclui
                             <code>User</code> e
                             <code>RedefinicaoSenha</code>.
                         </div>
@@ -452,7 +452,7 @@ php mvc serve
                             carrega o
                             Composer, o <code>.env</code>, <code>config/app.php</code>, inicia a sessão e devolve uma
                             instância de
-                            <code>Core\Application</code>.
+                            <code>Framework\Application</code>.
                         </div>
                     </div>
 
@@ -577,7 +577,7 @@ MAIL_FROM_NAME=&quot;Minha Aplicação&quot;</code></pre>
                         <tbody>
                             <tr>
                                 <td><code>APP_DEBUG</code></td>
-                                <td><code>config/app.php</code>, <code>Core\Application</code></td>
+                                <td><code>config/app.php</code>, <code>Framework\Application</code></td>
                                 <td>Quando <code>true</code> (e <code>APP_ENV != production</code>), exibe a página de
                                     debug estilo Laravel/Ignition com stack trace e trecho de código. Em produção é
                                     <strong>forçado</strong> para <code>false</code> independente do valor no
@@ -653,7 +653,7 @@ MAIL_FROM_NAME=&quot;Minha Aplicação&quot;</code></pre>
                                 <code>config/app.php</code>. Em seguida inicia a sessão (<code>Session::start()</code> +
                                 <code>ageOldInput()</code>), tenta reautenticar via cookie "lembrar de mim" e devolve
                                 uma instância de
-                                <code>Core\Application</code>.
+                                <code>Framework\Application</code>.
                             </p>
                         </div>
                     </div>
@@ -762,7 +762,7 @@ MAIL_FROM_NAME=&quot;Minha Aplicação&quot;</code></pre>
                     <div class="layer l4">
                         <div class="layer-name">Model</div>
                         <div class="layer-desc">Representa uma tabela. Fornece CRUD e query builder fluente sobre PDO
-                            (<code>Core\Model</code>).</div>
+                            (<code>Framework\Model</code>).</div>
                     </div>
                     <div class="layer l5">
                         <div class="layer-name">Database</div>
@@ -787,7 +787,7 @@ MAIL_FROM_NAME=&quot;Minha Aplicação&quot;</code></pre>
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">// app/Models/Product.php
 namespace App\Models;
-use Core\Model;
+use Framework\Model;
 
 class Product extends Model
 {
@@ -802,7 +802,7 @@ class Product extends Model
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">// app/Repositories/ProductRepository.php
 namespace App\Repositories;
-use Core\Repository;
+use Framework\Repository;
 use App\Models\Product;
 
 class ProductRepository extends Repository
@@ -821,7 +821,7 @@ class ProductRepository extends Repository
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">// app/Services/ProductService.php
 namespace App\Services;
-use Core\Service;
+use Framework\Service;
 use App\Repositories\ProductRepository;
 
 class ProductService extends Service
@@ -856,7 +856,7 @@ class ProductService extends Service
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">// app/Controllers/ProductController.php
 namespace App\Controllers;
-use Core\Controller;
+use Framework\Controller;
 use App\Services\ProductService;
 use App\Requests\Products\StoreProductRequest;
 
@@ -892,7 +892,7 @@ class ProductController extends Controller
                 <div class="section-label">Arquitetura</div>
                 <h1 class="section-title">Router</h1>
 
-                <p class="section-subtitle"><code>Core\Router</code> mapeia URIs para Controllers. Suporta parâmetros
+                <p class="section-subtitle"><code>Framework\Router</code> mapeia URIs para Controllers. Suporta parâmetros
                     dinâmicos, grupos com prefixo/middleware compartilhados, rotas nomeadas e injeção automática de
                     <code>FormRequest</code>.
                 </p>
@@ -956,7 +956,7 @@ class ProductController extends Controller
 use App\Controllers\HomeController;
 use App\Controllers\AuthController;
 use App\Controllers\DashboardController;
-use Core\Router;
+use Framework\Router;
 
 $router-&gt;get(&#x27;/&#x27;, [HomeController::class, &#x27;index&#x27;])-&gt;name(&#x27;home&#x27;);
 
@@ -1008,10 +1008,10 @@ public function show(int $id): void
 
             </section>
             <section class="doc-section" id="application">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Application</h1>
 
-                <p class="section-subtitle"><code>Core\Application</code> é o kernel: orquestra boot, dispatch e
+                <p class="section-subtitle"><code>Framework\Application</code> é o kernel: orquestra boot, dispatch e
                     tratamento
                     centralizado de exceções. É instanciada uma única vez por requisição, em
                     <code>bootstrap/app.php</code>, e não
@@ -1099,7 +1099,7 @@ throw new \RuntimeException(&#x27;Usuário não encontrado no sistema.&#x27;); /
 
             </section>
             <section class="doc-section" id="controller">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Controller</h1>
 
                 <p class="section-subtitle">Classe base abstrata de todos os controllers. Fornece renderização de views,
@@ -1348,10 +1348,10 @@ public function quickUpdate(int $id): void
 
             </section>
             <section class="doc-section" id="model">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Model</h1>
 
-                <p class="section-subtitle"><code>Core\Model</code> é um Active Record simplificado: CRUD básico + query
+                <p class="section-subtitle"><code>Framework\Model</code> é um Active Record simplificado: CRUD básico + query
                     builder
                     fluente sobre PDO, com whitelist de campos preenchíveis, timestamps automáticos, soft delete
                     opcional e
@@ -1361,7 +1361,7 @@ public function quickUpdate(int $id): void
                     <div class="code-header"><span class="code-file">app/Models/Product.php</span><button
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">namespace App\Models;
-use Core\Model;
+use Framework\Model;
 
 class Product extends Model
 {
@@ -1577,10 +1577,10 @@ echo &quot;Página {$result[&#x27;page&#x27;]} de {$result[&#x27;last_page&#x27;
 
             </section>
             <section class="doc-section" id="database">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Database</h1>
 
-                <p class="section-subtitle"><code>Core\Database</code> é um Singleton sobre PDO com interface fluente
+                <p class="section-subtitle"><code>Framework\Database</code> é um Singleton sobre PDO com interface fluente
                     para
                     queries seguras (sempre com prepared statements) e suporte a transações. Configurado via
                     <code>config/database.php</code> + <code>.env</code>.
@@ -1645,7 +1645,7 @@ echo &quot;Página {$result[&#x27;page&#x27;]} de {$result[&#x27;last_page&#x27;
                 <div class="code-block">
                     <div class="code-header"><span class="code-file">exemplo.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
-                    <pre><code class="language-php">$db = \Core\Database::getInstance();
+                    <pre><code class="language-php">$db = \Framework\Database::getInstance();
 
 // Leitura
 $user = $db-&gt;query(&#x27;SELECT * FROM users WHERE id = :id&#x27;)
@@ -1695,7 +1695,7 @@ try {
                 <div class="code-block">
                     <div class="code-header"><span class="code-file">exemplo.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
-                    <pre><code class="language-php">$db = \Core\Database::getInstance();
+                    <pre><code class="language-php">$db = \Framework\Database::getInstance();
 
 try {
     $orderId = $db-&gt;transaction(function ($db) use ($items) {
@@ -1734,12 +1734,12 @@ try {
 
             </section>
             <section class="doc-section" id="request">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Request</h1>
 
-                <p class="section-subtitle"><code>Core\Request</code> encapsula a requisição HTTP: método, URI,
+                <p class="section-subtitle"><code>Framework\Request</code> encapsula a requisição HTTP: método, URI,
                     GET/POST, JSON
-                    body, arquivos, headers e IP. Todo controller que estende <code>Core\Controller</code> já recebe uma
+                    body, arquivos, headers e IP. Todo controller que estende <code>Framework\Controller</code> já recebe uma
                     instância
                     em <code>$this-&gt;request</code>.</p>
 
@@ -1907,7 +1907,7 @@ public function apiStore(): void
                     <div class="code-header"><span class="code-file">exemplo.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">if ($this-&gt;request-&gt;hasFile(&#x27;avatar&#x27;)) {
-    $upload = new \Core\Upload($this-&gt;request-&gt;file(&#x27;avatar&#x27;));
+    $upload = new \Framework\Upload($this-&gt;request-&gt;file(&#x27;avatar&#x27;));
     $upload-&gt;forImages(maxMb: 2)-&gt;setUploadDir(STORAGE_PATH . &#x27;/uploads/avatars&#x27;);
 
     if (!$upload-&gt;process()) {
@@ -1929,10 +1929,10 @@ public function apiStore(): void
 
             </section>
             <section class="doc-section" id="session">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Session</h1>
 
-                <p class="section-subtitle"><code>Core\Session</code> encapsula sessões PHP com configuração segura por
+                <p class="section-subtitle"><code>Framework\Session</code> encapsula sessões PHP com configuração segura por
                     padrão
                     (httpOnly, SameSite, path fora de <code>public/</code>), regeneração periódica de ID, flash
                     messages, old input
@@ -2088,10 +2088,10 @@ $this-&gt;redirect(&#x27;dashboard/products&#x27;);
 
             </section>
             <section class="doc-section" id="auth">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Auth</h1>
 
-                <p class="section-subtitle"><code>Core\Auth</code> centraliza autenticação e sessão de usuário. É
+                <p class="section-subtitle"><code>Framework\Auth</code> centraliza autenticação e sessão de usuário. É
                     genérico:
                     funciona com qualquer Model que implemente um método
                     <code>authenticate(string $email, string $password)</code>
@@ -2169,7 +2169,7 @@ public function login(): void
     $email    = $this-&gt;request-&gt;post(&#x27;email&#x27;);
     $password = $this-&gt;request-&gt;raw(&#x27;password&#x27;); // raw - nunca sanitizar senha
 
-    if (\Core\Auth::attempt($email, $password, remember: $this-&gt;request-&gt;has(&#x27;remember&#x27;))) {
+    if (\Framework\Auth::attempt($email, $password, remember: $this-&gt;request-&gt;has(&#x27;remember&#x27;))) {
         $this-&gt;redirect(&#x27;dashboard&#x27;);
     }
 
@@ -2210,7 +2210,7 @@ public function login(): void
                     <pre><code class="language-php">// Uso dentro de um metodo de controller, sem depender de middleware de rota
 public function adminPanel(): void
 {
-    \Core\Auth::requireRole(&#x27;admin&#x27;);
+    \Framework\Auth::requireRole(&#x27;admin&#x27;);
     // ... a partir daqui, garantidamente e admin autenticado
 }</code></pre>
                 </div>
@@ -2229,10 +2229,10 @@ public function adminPanel(): void
 
             </section>
             <section class="doc-section" id="validator">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Validator</h1>
 
-                <p class="section-subtitle"><code>Core\Validator</code> valida arrays de dados contra um conjunto de
+                <p class="section-subtitle"><code>Framework\Validator</code> valida arrays de dados contra um conjunto de
                     regras
                     declarativas, no estilo <code>'campo' =&gt; 'regra1|regra2:param'</code>. É usado tanto diretamente
                     quanto por
@@ -2327,7 +2327,7 @@ public function adminPanel(): void
                 <div class="code-block">
                     <div class="code-header"><span class="code-file">exemplo.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
-                    <pre><code class="language-php">$v = new \Core\Validator($this-&gt;request-&gt;all());
+                    <pre><code class="language-php">$v = new \Framework\Validator($this-&gt;request-&gt;all());
 $v-&gt;validate([
     &#x27;name&#x27;     =&gt; &#x27;required|min:2|max:100&#x27;,
     &#x27;email&#x27;    =&gt; &#x27;required|email|unique:users,email&#x27;,
@@ -2351,7 +2351,7 @@ if ($v-&gt;fails()) {
                     <div class="code-header"><span class="code-file">exemplo.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">// Factory estatica - cria e valida em uma linha
-$v = \Core\Validator::make($data, [&#x27;email&#x27; =&gt; &#x27;required|email&#x27;]);
+$v = \Framework\Validator::make($data, [&#x27;email&#x27; =&gt; &#x27;required|email&#x27;]);
 
 if ($v-&gt;passes()) {
     // ...
@@ -2374,10 +2374,10 @@ $mensagem = $v-&gt;firstError(&#x27;email&#x27;) ?? $v-&gt;firstError();</code><
 
             </section>
             <section class="doc-section" id="view">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">View</h1>
 
-                <p class="section-subtitle"><code>Core\View</code> renderiza templates PHP puro. É usada por
+                <p class="section-subtitle"><code>Framework\View</code> renderiza templates PHP puro. É usada por
                     <code>Controller::view()</code>, mas também pode ser chamada diretamente em helpers, e-mails e
                     exports —
                     qualquer lugar fora de um controller.
@@ -2484,10 +2484,10 @@ View::start(&#x27;styles&#x27;); ?&gt;
 
             </section>
             <section class="doc-section" id="upload">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Upload</h1>
 
-                <p class="section-subtitle"><code>Core\Upload</code> valida, processa e armazena arquivos enviados via
+                <p class="section-subtitle"><code>Framework\Upload</code> valida, processa e armazena arquivos enviados via
                     formulário: tamanho, tipo MIME real (via <code>finfo</code>, não o MIME declarado pelo cliente) e
                     extensão.</p>
 
@@ -2562,7 +2562,7 @@ View::start(&#x27;styles&#x27;); ?&gt;
         $this-&gt;redirectWith(&#x27;back&#x27;, &#x27;error&#x27;, &#x27;Selecione um arquivo.&#x27;);
     }
 
-    $upload = new \Core\Upload($this-&gt;request-&gt;file(&#x27;avatar&#x27;));
+    $upload = new \Framework\Upload($this-&gt;request-&gt;file(&#x27;avatar&#x27;));
     $upload-&gt;forImages(maxMb: 2)
            -&gt;setUploadDir(STORAGE_PATH . &#x27;/uploads/avatars&#x27;)
            -&gt;setPrefix(&#x27;avatar_&#x27;);
@@ -2626,10 +2626,10 @@ View::start(&#x27;styles&#x27;); ?&gt;
 
             </section>
             <section class="doc-section" id="logger">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Logger</h1>
 
-                <p class="section-subtitle"><code>Core\Logger</code> é compatível com os nomes de método do PSR-3. Grava
+                <p class="section-subtitle"><code>Framework\Logger</code> é compatível com os nomes de método do PSR-3. Grava
                     em
                     arquivo diário (<code>storage/logs/app-YYYY-MM-DD.log</code>) e, quando rodando em CLI, também
                     imprime colorido
@@ -2702,10 +2702,10 @@ Logger::info(&#x27;Pedido criado&#x27;, [&#x27;pedido_id&#x27; =&gt; $pedido-&gt
 
             </section>
             <section class="doc-section" id="service">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Service</h1>
 
-                <p class="section-subtitle"><code>Core\Service</code> é a classe base para a camada de lógica de
+                <p class="section-subtitle"><code>Framework\Service</code> é a classe base para a camada de lógica de
                     negócio.
                     Orquestra operações usando Repositories/Models. Services <strong>não</strong> acessam
                     <code>$_POST</code>/<code>$_SESSION</code> diretamente, não fazem redirect e não conhecem o
@@ -2742,7 +2742,7 @@ Logger::info(&#x27;Pedido criado&#x27;, [&#x27;pedido_id&#x27; =&gt; $pedido-&gt
                     <div class="code-header"><span class="code-file">app/Services/OrderService.php</span><button
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">namespace App\Services;
-use Core\Service;
+use Framework\Service;
 use App\Repositories\OrderRepository;
 use App\Repositories\ProductRepository;
 
@@ -2794,12 +2794,12 @@ public function checkout(): void
 
             </section>
             <section class="doc-section" id="repository">
-                <div class="section-label">Core</div>
+                <div class="section-label">Framework</div>
                 <h1 class="section-title">Repository</h1>
 
-                <p class="section-subtitle"><code>Core\Repository</code> é a camada de acesso a dados — encapsula as
+                <p class="section-subtitle"><code>Framework\Repository</code> é a camada de acesso a dados — encapsula as
                     queries
-                    de um Model, implementando <code>Core\Interfaces\RepositoryInterface</code>. Controllers idealmente
+                    de um Model, implementando <code>Framework\Interfaces\RepositoryInterface</code>. Controllers idealmente
                     não
                     acessam o Model diretamente em projetos que adotam esta camada; usam o Repository.</p>
 
@@ -2852,7 +2852,7 @@ public function checkout(): void
                             class="code-file">app/Repositories/UserRepository.php</span><button class="copy-btn"
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">namespace App\Repositories;
-use Core\Repository;
+use Framework\Repository;
 use App\Models\User;
 
 class UserRepository extends Repository
@@ -2939,7 +2939,7 @@ class UserRepository extends Repository
                             <tr>
                                 <td><code>SecurityHeadersMiddleware</code></td>
                                 <td>—</td>
-                                <td>Aplicado globalmente pelo <code>Core\Application</code> — não precisa ser adicionado
+                                <td>Aplicado globalmente pelo <code>Framework\Application</code> — não precisa ser adicionado
                                     manualmente em rotas.</td>
                             </tr>
                             <tr>
@@ -2965,7 +2965,7 @@ $router-&gt;post(&#x27;/auth/login&#x27;, [AuthController::class, &#x27;login&#x
                     <div class="callout-icon">💡</div>
                     <div class="callout-body"><strong>Criando um middleware próprio</strong>
                         <p>Crie uma classe em <code>app/Middlewares/</code> com um método
-                            <code>handle(Core\Request $request, string $param = null): void</code>. O
+                            <code>handle(Framework\Request $request, string $param = null): void</code>. O
                             <code>Router::runMiddleware()</code> resolve o namespace <code>App\Middlewares\</code>
                             automaticamente a partir do nome curto usado na rota, e interrompe (via
                             <code>redirect()</code>/<code>exit</code>/exceção) se a requisição não puder prosseguir.</p>
@@ -3198,7 +3198,7 @@ $router-&gt;post(&#x27;/auth/forgot-password&#x27;, [AuthController::class, &#x2
                 <p class="section-subtitle">Adiciona <code>Content-Security-Policy</code>,
                     <code>Permissions-Policy</code> e
                     HSTS (em produção com HTTPS). Aplicado <strong>automaticamente</strong> pelo próprio
-                    <code>Core\Application</code> no construtor, para toda requisição — não deve ser adicionado
+                    <code>Framework\Application</code> no construtor, para toda requisição — não deve ser adicionado
                     manualmente em
                     grupos de rota.
                 </p>
@@ -3338,7 +3338,7 @@ $router-&gt;post(&#x27;/auth/forgot-password&#x27;, [AuthController::class, &#x2
                             <tr>
                                 <td><code>rules(): array</code></td>
                                 <td>Sim (abstract)</td>
-                                <td>Regras no formato do <code>Core\Validator</code>.</td>
+                                <td>Regras no formato do <code>Framework\Validator</code>.</td>
                             </tr>
                             <tr>
                                 <td><code>messages(): array</code></td>
@@ -3459,7 +3459,7 @@ public function login(\App\Requests\Auth\LoginRequest $request): void
 {
     $data = $this-&gt;validateRequest($request); // trata falha + redireciona de volta
 
-    if (\Core\Auth::attempt($data[&#x27;email&#x27;], $data[&#x27;password&#x27;])) {
+    if (\Framework\Auth::attempt($data[&#x27;email&#x27;], $data[&#x27;password&#x27;])) {
         $this-&gt;redirect(&#x27;dashboard&#x27;);
     }
 
@@ -3482,7 +3482,7 @@ public function login(\App\Requests\Auth\LoginRequest $request): void
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">namespace App\Requests\Users;
 use App\Requests\FormRequest;
-use Core\Auth;
+use Framework\Auth;
 
 class StoreUserRequest extends FormRequest
 {
@@ -3508,7 +3508,7 @@ class StoreUserRequest extends FormRequest
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-php">namespace App\Requests\Users;
 use App\Requests\FormRequest;
-use Core\Auth;
+use Framework\Auth;
 
 class UpdateUserRequest extends FormRequest
 {
@@ -3553,7 +3553,7 @@ class UpdateUserRequest extends FormRequest
                     <code>app/Helpers/ViewHelper.php</code>
                     (específico de views). Além delas, três classes auxiliares com namespace:
                     <code>SecurityHelper</code>,
-                    <code>Mailer</code> e o próprio <code>Core\Auth</code>/<code>Core\Session</code> reexportados via
+                    <code>Mailer</code> e o próprio <code>Framework\Auth</code>/<code>Framework\Session</code> reexportados via
                     funções
                     globais.
                 </p>
@@ -3851,27 +3851,27 @@ if (!Auth::check()) {
                             <tr>
                                 <td><code>auth</code></td>
                                 <td><code>(): bool</code></td>
-                                <td><code>Core\Auth::check()</code></td>
+                                <td><code>Framework\Auth::check()</code></td>
                             </tr>
                             <tr>
                                 <td><code>user</code></td>
                                 <td><code>(): ?object</code></td>
-                                <td><code>Core\Auth::user()</code></td>
+                                <td><code>Framework\Auth::user()</code></td>
                             </tr>
                             <tr>
                                 <td><code>userId</code></td>
                                 <td><code>(): int</code></td>
-                                <td><code>Core\Auth::id() ?? 0</code></td>
+                                <td><code>Framework\Auth::id() ?? 0</code></td>
                             </tr>
                             <tr>
                                 <td><code>userRole</code></td>
                                 <td><code>(): string</code></td>
-                                <td><code>Core\Auth::role()</code></td>
+                                <td><code>Framework\Auth::role()</code></td>
                             </tr>
                             <tr>
                                 <td><code>isRole</code></td>
                                 <td><code>(string $r): bool</code></td>
-                                <td><code>Core\Auth::is($r)</code></td>
+                                <td><code>Framework\Auth::is($r)</code></td>
                             </tr>
                         </tbody>
                     </table>
@@ -4729,7 +4729,7 @@ CREATE TABLE IF NOT EXISTS redefinicoes_senha (
                         <p><code>2026_09_21_100000_create_users_table.php</code> cria <code>users</code> e
                             <code>redefinicoes_senha</code>. <code>2026_09_21_100002_add_remember_token_expires_at_to_users_table.php</code> adiciona as colunas
                             <code>remember_token</code> / <code>remember_token_expires_at</code> em <code>users</code>
-                            (usadas por <code>Core\Auth</code>) e um índice em <code>redefinicoes_senha</code> — apesar do
+                            (usadas por <code>Framework\Auth</code>) e um índice em <code>redefinicoes_senha</code> — apesar do
                             nome do arquivo, ela não cria uma tabela nova de rate limit (o rate limiting atual é feito
                             em arquivo, ver <a href='#mw-ratelimit'>RateLimitMiddleware</a>), o nome reflete a intenção
                             original do arquivo.</p>
@@ -4905,7 +4905,7 @@ $router-&gt;group([&#x27;prefix&#x27; =&gt; &#x27;/dashboard/products&#x27;, &#x
                 <p>Todas as rotas do grupo recebem <code>CorsMiddleware</code> e
                     <code>RateLimitMiddleware:api</code>. Endpoints protegidos adicionam
                     <code>ApiAuthMiddleware</code>. As respostas usam o envelope de
-                    <code>Core\Api\ApiResponse</code>.</p>
+                    <code>Framework\Api\ApiResponse</code>.</p>
                 <div class="table-wrapper">
                     <table class="doc-table">
                         <thead><tr><th>Método</th><th>Endpoint</th><th>Autenticação</th><th>Finalidade</th></tr></thead>
@@ -5060,7 +5060,7 @@ php mvc make:api-request StoreProductRequest</code></pre>
                         como contrato disponível.</p></div></div>
 
                 <h3 class="subsection">APIs externas e integrações</h3>
-                <p>Use <code>Core\Api\ApiClient</code> para chamadas externas, com timeout configurável em
+                <p>Use <code>Framework\Api\ApiClient</code> para chamadas externas, com timeout configurável em
                     <code>API_TIMEOUT</code>. A integração de CEP existente usa o serviço ViaCEP. O gateway de
                     pagamento padrão é <code>NullPaymentGateway</code> quando <code>PAYMENT_PROVIDER=null</code>, evitando
                     cobranças acidentais.</p>
@@ -5120,8 +5120,8 @@ php mvc make:api-request StoreProductRequest</code></pre>
                         <tbody>
                             <tr>
                                 <td>SQL Injection</td>
-                                <td><code>Core\Database</code> exige prepared statements em
-                                    <code>query()-&gt;bind()</code>; <code>Core\Model</code> sanitiza identificadores
+                                <td><code>Framework\Database</code> exige prepared statements em
+                                    <code>query()-&gt;bind()</code>; <code>Framework\Model</code> sanitiza identificadores
                                     (coluna/tabela) contra whitelist de regex.</td>
                                 <td>Nunca usar <code>execMigration()</code>/<code>getPdo()</code> com input de usuário.
                                 </td>
@@ -5167,7 +5167,7 @@ php mvc make:api-request StoreProductRequest</code></pre>
                             </tr>
                             <tr>
                                 <td>Upload malicioso</td>
-                                <td><code>Core\Upload</code> valida MIME real via <code>finfo</code> (não confia no
+                                <td><code>Framework\Upload</code> valida MIME real via <code>finfo</code> (não confia no
                                     Content-Type do cliente) + extensão + tamanho.</td>
                                 <td>Servir arquivos enviados por usuário de um domínio/subpasta sem execução de PHP, ou
                                     usar <code>storage/uploads</code> (fora de <code>public/</code>, como já vem

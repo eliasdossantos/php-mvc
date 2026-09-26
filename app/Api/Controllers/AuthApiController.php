@@ -2,8 +2,8 @@
 
 namespace App\Api\Controllers;
 
-use Core\Logger;
-use Core\Api\ApiAuthContext;
+use Framework\Logger;
+use Framework\Api\ApiAuthContext;
 use App\Requests\Auth\LoginRequest;
 use App\Repositories\ApiTokenRepository;
 use App\Api\Resources\UserResource;

@@ -14,7 +14,7 @@ use App\Services\Integrations\Payment\PaymentGatewayInterface;
  *
  * Gateways reais (Mercado Pago, Asaas, Stripe, PagSeguro...) devem ser
  * adicionados aqui mesmo, implementando PaymentGatewayInterface e usando
- * Core\Api\ApiClient para a comunicação HTTP — nenhum deles está implementado
+ * Framework\Api\ApiClient para a comunicação HTTP — nenhum deles está implementado
  * ainda; esta arquitetura só prepara o terreno.
  */
 class NullPaymentGateway implements PaymentGatewayInterface

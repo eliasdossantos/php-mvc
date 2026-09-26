@@ -1,7 +1,7 @@
 <?php
 /**
  * Componente de Paginação
- * Uso: \Core\View::render('components.pagination', ['data' => $paginatedResult]);
+ * Uso: \Framework\View::render('components.pagination', ['data' => $paginatedResult]);
  * $data deve ter: page, last_page, total, from, to
  */
 if (empty($data) || ($data['last_page'] ?? 1) <= 1) return;

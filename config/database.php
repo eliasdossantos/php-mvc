@@ -24,7 +24,7 @@ return [
             ],
         ],
 
-        // Nota: o SQLite ainda não é suportado pelo Core\Database, pois o DSN é
+        // Nota: o SQLite ainda não é suportado pelo Framework\Database, pois o DSN é
         // montado assumindo host, porta, nome do banco e charset, formato que não
         // se aplica ao SQLite. Caso esse suporte seja implementado futuramente,
         // adicionarei a conexão novamente aqui, juntamente com o suporte adequado

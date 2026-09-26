@@ -2,9 +2,9 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Session;
-use Core\Auth;
+use Framework\Request;
+use Framework\Session;
+use Framework\Auth;
 
 /**
  * RoleMiddleware — Verifica a role (perfil) do usuário logado

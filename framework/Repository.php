@@ -1,8 +1,8 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
-use Core\Interfaces\RepositoryInterface;
+use Framework\Interfaces\RepositoryInterface;
 
 /**
  * Repository Base

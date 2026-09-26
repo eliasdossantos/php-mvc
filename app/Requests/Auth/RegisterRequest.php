@@ -3,7 +3,7 @@
 namespace App\Requests\Auth;
 
 use App\Requests\FormRequest;
-use Core\Request;
+use Framework\Request;
 
 /**
  * RegisterRequest

@@ -3,8 +3,8 @@
 namespace App\Requests\Users;
 
 use App\Requests\FormRequest;
-use Core\Auth;
-use Core\Request;
+use Framework\Auth;
+use Framework\Request;
 
 /**
  * StoreUserRequest

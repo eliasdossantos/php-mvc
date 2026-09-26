@@ -2,8 +2,8 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Auth;
+use Framework\Request;
+use Framework\Auth;
 
 /**
  * GuestMiddleware — Redireciona usuários já logados (ex: página de login)

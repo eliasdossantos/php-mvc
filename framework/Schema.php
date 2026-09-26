@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Schema — Facade estática para criação/alteração de tabelas via Blueprint

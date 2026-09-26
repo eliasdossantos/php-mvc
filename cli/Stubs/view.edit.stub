@@ -37,7 +37,7 @@
         </div>
     </div>
 
-    <?= \Core\View::render('components.alerts'); ?>
+    <?= \Framework\View::render('components.alerts'); ?>
 
     <div class="card">
         <div class="card-body">

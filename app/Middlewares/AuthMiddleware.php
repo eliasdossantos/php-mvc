@@ -2,9 +2,9 @@
 
 namespace App\Middlewares;
 
-use Core\Request;
-use Core\Auth;
-use Core\Session;
+use Framework\Request;
+use Framework\Auth;
+use Framework\Session;
 
 /**
  * AuthMiddleware — Protege rotas que requerem login

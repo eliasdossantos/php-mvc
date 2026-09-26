@@ -144,9 +144,9 @@ if (!function_exists('oldOr')) {
      */
     function oldOr(string $field, mixed $fallback = null): mixed
     {
-        $temOldInput = class_exists(\Core\Session::class)
-            && \Core\Session::has('_old_input')
-            && array_key_exists($field, (array) \Core\Session::get('_old_input', []));
+        $temOldInput = class_exists(\Framework\Session::class)
+            && \Framework\Session::has('_old_input')
+            && array_key_exists($field, (array) \Framework\Session::get('_old_input', []));
 
         return $temOldInput ? old($field) : $fallback;
     }

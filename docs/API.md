@@ -42,8 +42,8 @@ $router->group(['prefix' => '/api/v1', 'middleware' => ['CorsMiddleware', 'RateL
 });
 ```
 
-`Core\Application` carrega **automaticamente** qualquer arquivo
-`routes/api*.php` — não é preciso tocar em `Core\Application` para adicionar
+`Framework\Application` carrega **automaticamente** qualquer arquivo
+`routes/api*.php` — não é preciso tocar em `Framework\Application` para adicionar
 rotas novas, só editar `routes/api.php` (ou criar `routes/api_v2.php` no
 futuro — ver [seção 13](#13-como-utilizar-versionamento)).
 
@@ -55,7 +55,7 @@ php mvc make:api-controller ProdutoApiController
 
 Gera `app/Api/Controllers/ProdutoApiController.php` já estendendo
 `App\Api\Controllers\ApiController` (que por sua vez estende
-`Core\Controller` — o mesmo Controller base do MVC Web) com `index`, `show`,
+`Framework\Controller` — o mesmo Controller base do MVC Web) com `index`, `show`,
 `store`, `update`, `destroy` prontos para conectar a um Repository existente.
 
 Regra: Controllers de API são **finos**, igual aos da Web — nenhuma lógica de
@@ -107,7 +107,7 @@ php mvc make:api-request StoreProdutoRequest
 ```
 
 Isso cria a classe em `app/Api/Requests/` com `authorize()` já usando
-`Core\Api\ApiAuthContext::check()` (Bearer Token) em vez de `Core\Auth`
+`Framework\Api\ApiAuthContext::check()` (Bearer Token) em vez de `Framework\Auth`
 (sessão).
 
 No Controller, use o helper `validated()` de `ApiController` — ele já
@@ -143,10 +143,10 @@ Authorization: Bearer 8f2c9e1a4b7d...
 ```
 
 `App\Middlewares\ApiAuthMiddleware` valida o token a cada requisição
-(stateless — sem sessão/cookie) e popula `Core\Api\ApiAuthContext`:
+(stateless — sem sessão/cookie) e popula `Framework\Api\ApiAuthContext`:
 
 ```php
-use Core\Api\ApiAuthContext;
+use Framework\Api\ApiAuthContext;
 
 ApiAuthContext::check(); // bool
 ApiAuthContext::user();  // objeto do usuário autenticado
@@ -163,10 +163,10 @@ curl -X GET https://seusite.com/api/v1/users \
 
 ## 8. Como consumir APIs externas
 
-Nunca use `curl_*()` direto num Service — use `Core\Api\ApiClient`:
+Nunca use `curl_*()` direto num Service — use `Framework\Api\ApiClient`:
 
 ```php
-use Core\Api\ApiClient;
+use Framework\Api\ApiClient;
 
 $client = new ApiClient('https://api.exemplo.com', timeout: 10);
 
@@ -179,7 +179,7 @@ $res = $client->post('/recursos', ['json' => ['nome' => 'Teste'], 'token' => $ac
 ```
 
 Por padrão, status HTTP de erro (4xx/5xx) ou falha de conexão lançam
-`Core\Api\ApiException` — capture no Service, nunca deixe subir crua até o
+`Framework\Api\ApiException` — capture no Service, nunca deixe subir crua até o
 Controller. Passe `'throw_on_error' => false` para tratar manualmente via
 `$res['ok']`.
 
@@ -188,7 +188,7 @@ Controller. Passe `'throw_on_error' => false` para tratar manualmente via
 Padrão de referência real, já implementado: `Services/Integrations/Cep/`.
 
 ```
-Service  →  Integration (Gateway)  →  Core\Api\ApiClient  →  API externa
+Service  →  Integration (Gateway)  →  Framework\Api\ApiClient  →  API externa
 ```
 
 1. Defina o contrato: `app/Services/Integrations/Nome/NomeGatewayInterface.php`
@@ -266,7 +266,7 @@ Todo erro da API responde no mesmo envelope (ver
 | 500 | Erro interno — nunca expõe stack trace em produção (`APP_DEBUG=false`) |
 
 Em produção, mensagens internas nunca vazam para o cliente — o
-`Core\Logger` registra o detalhe, a resposta ao cliente é sempre uma
+`Framework\Logger` registra o detalhe, a resposta ao cliente é sempre uma
 mensagem segura e genérica quando aplicável.
 
 ## 13. Como utilizar versionamento
@@ -275,7 +275,7 @@ A v1 vive inteira em `routes/api.php`, sob o prefixo `/api/v1`. Quando for
 necessária uma v2 **sem quebrar a v1**:
 
 1. Crie `routes/api_v2.php` com seu próprio `$router->group(['prefix' => '/api/v2', ...], ...)`.
-2. Nada mais — `Core\Application::run()` já carrega qualquer
+2. Nada mais — `Framework\Application::run()` já carrega qualquer
    `routes/api*.php` automaticamente via `glob()`.
 
 Controllers/Resources da v2 podem viver em `app/Api/V2/...` se divergirem

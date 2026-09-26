@@ -1,6 +1,6 @@
 <?php
 
-namespace Core\Api;
+namespace Framework\Api;
 
 /**
  * ApiResponse — Envelope JSON padronizado para a API própria (/api/v1)
@@ -67,7 +67,7 @@ class ApiResponse
 
     /**
      * Serializa e envia o payload. Mesma proteção contra falha de
-     * json_encode() já usada em Core\Controller::json() — evita responder
+     * json_encode() já usada em Framework\Controller::json() — evita responder
      * 200 com corpo vazio quando o encode falha.
      */
     protected static function send(array $payload, int $status): never

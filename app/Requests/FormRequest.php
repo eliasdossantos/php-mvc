@@ -2,9 +2,9 @@
 
 namespace App\Requests;
 
-use Core\Request;
-use Core\Session;
-use Core\Validator;
+use Framework\Request;
+use Framework\Session;
+use Framework\Validator;
 
 /**
  * FormRequest — Classe Base de Requisições
@@ -73,7 +73,7 @@ abstract class FormRequest
     abstract public function authorize(): bool;
 
     /**
-     * Regras de validação no formato do Core\Validator.
+     * Regras de validação no formato do Framework\Validator.
      *
      * Exemplo:
      *   return [

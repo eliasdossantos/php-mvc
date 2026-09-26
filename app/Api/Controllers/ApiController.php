@@ -2,15 +2,15 @@
 
 namespace App\Api\Controllers;
 
-use Core\Controller;
-use Core\Api\ApiResponse;
+use Framework\Controller;
+use Framework\Api\ApiResponse;
 use App\Requests\FormRequest;
 
 /**
  * ApiController — Controller base para todos os endpoints de /api/v1
  * ─────────────────────────────────────────────────────────────────────────────
- * Estende Core\Controller (reaproveita Request, checkMethod, abort, etc.) e
- * adiciona os helpers de resposta padronizada via Core\Api\ApiResponse.
+ * Estende Framework\Controller (reaproveita Request, checkMethod, abort, etc.) e
+ * adiciona os helpers de resposta padronizada via Framework\Api\ApiResponse.
  *
  * Controllers de API devem permanecer finos — a mesma regra do MVC web:
  * nenhuma lógica de negócio aqui, apenas orquestração de

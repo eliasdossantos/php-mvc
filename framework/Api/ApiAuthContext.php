@@ -1,11 +1,11 @@
 <?php
 
-namespace Core\Api;
+namespace Framework\Api;
 
 /**
  * ApiAuthContext — Usuário autenticado da requisição de API atual
  * ─────────────────────────────────────────────────────────────────────────────
- * A autenticação web (Core\Auth) é baseada em sessão/cookie — não serve para
+ * A autenticação web (Framework\Auth) é baseada em sessão/cookie — não serve para
  * a API, que é stateless e autentica por Bearer Token a CADA requisição.
  *
  * Este é um holder estático simples (válido apenas durante o processo/

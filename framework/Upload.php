@@ -1,6 +1,6 @@
 <?php
 
-namespace Core;
+namespace Framework;
 
 /**
  * Upload — Sistema de Upload de Arquivos Reutilizável

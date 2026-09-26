@@ -3,7 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use Core\Session;
+use Framework\Session;
 use App\Models\User;
 use App\Models\RedefinicaoSenha;
 use App\Services\AuthService;
