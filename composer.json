@@ -31,15 +31,8 @@
     ],
     "autoload": {
         "psr-4": {
-            "Core\\": "app/Core/",
-            "App\\Controllers\\": "app/Controllers/",
-            "App\\Models\\": "app/Models/",
-            "App\\Services\\": "app/Services/",
-            "App\\Repositories\\": "app/Repositories/",
-            "App\\Middlewares\\": "app/Middlewares/",
-            "App\\Helpers\\": "app/Helpers/",
-            "App\\Requests\\": "app/Requests/",
-            "App\\Api\\": "app/Api/",
+            "Framework\\": "framework/",
+            "App\\": "app/",
             "Cli\\": "cli/"
         },
         "files": [

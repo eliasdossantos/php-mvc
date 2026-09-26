@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= e($title ?? 'Autenticação') ?> — <?= e(APP_NAME) ?></title>
+    <title><?= e(\Framework\View::title($title ?? 'Autenticação')) ?> — <?= e(APP_NAME) ?></title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
@@ -46,6 +46,7 @@
             text-decoration: underline;
         }
     </style>
+    <?= \Framework\View::section('styles') ?>
 
 </head>
 
@@ -62,7 +63,7 @@
 
             <?= \Framework\View::render('components.alerts') ?>
 
-            <?= $content ?>
+            <?= \Framework\View::content($content ?? '') ?>
 
         </div>
     </div>
@@ -116,6 +117,7 @@
     </div>
 
     <script src="<?= asset('js/app.js') ?>"></script>
+    <?= \Framework\View::section('scripts') ?>
 </body>
 
 </html>

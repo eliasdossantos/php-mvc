@@ -218,6 +218,33 @@ class View
     }
 
     /**
+     * Resolve o conteúdo principal da página, aceitando os dois estilos de
+     * view suportados pelo framework, para que o autor da view não precise
+     * seguir um padrão fixo:
+     *   - View::start('content') / View::end() na view      → usa a section
+     *   - HTML solto na view (sem sections), capturado como  → usa $fallback
+     *     $content por Controller::view()/View::make()
+     *
+     * Uso no layout: <?= \Framework\View::content($content ?? '') ?>
+     */
+    public static function content(string $fallback = ''): string
+    {
+        return self::hasSection('content') ? self::section('content') : $fallback;
+    }
+
+    /**
+     * Mesma ideia de content(), mas para o título da página: usa a section
+     * 'title' se a view a definiu, senão cai para $fallback (normalmente a
+     * variável $title recebida em $data).
+     *
+     * Uso no layout: <?= e(\Framework\View::title($title ?? 'Minha App')) ?>
+     */
+    public static function title(string $fallback = ''): string
+    {
+        return self::hasSection('title') ? trim(self::section('title')) : $fallback;
+    }
+
+    /**
      * Limpa todas as sections capturadas e o registro de partialOnce().
      * Chamado automaticamente por make() no início de cada renderização
      * de página, para não vazar estado entre requests (ex: CLI, testes,

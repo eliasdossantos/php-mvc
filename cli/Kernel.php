@@ -4,6 +4,7 @@ namespace Cli;
 
 use Cli\Commands\KeyGenerateCommand;
 use Cli\Commands\MakeControllerCommand;
+use Cli\Commands\MakeLayoutCommand;
 use Cli\Commands\MakeMigrationCommand;
 use Cli\Commands\MakeModelCommand;
 use Cli\Commands\MakeRequestCommand;
@@ -117,6 +118,7 @@ class Kernel
             'make:repository'  => MakeRepositoryCommand::class,
             'make:seed'        => MakeSeedCommand::class,
             'make:view'        => MakeViewCommand::class,
+            'make:layout'      => MakeLayoutCommand::class,
             'make:api-controller' => MakeApiControllerCommand::class,
             'make:api-resource'   => MakeApiResourceCommand::class,
             'make:api-request'    => MakeApiRequestCommand::class,
@@ -186,6 +188,7 @@ class Kernel
                 'make:repository {Nome}' => 'Cria um Repository com estrutura base',
                 'make:seed {Nome}'       => 'Cria um Seeder com exemplo funcional',
                 'make:view {nome}'       => 'Cria as views index/show/create/edit',
+                'make:layout {nome}'     => 'Cria um layout compatível com sections e HTML solto',
                 'make:api-controller {Nome}' => 'Cria um Controller REST em app/Api/Controllers',
                 'make:api-resource {Nome}'   => 'Cria uma transformação Model → JSON em app/Api/Resources',
                 'make:api-request {Nome}'    => 'Cria um FormRequest de API em app/Api/Requests',
