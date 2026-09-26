@@ -4549,8 +4549,8 @@ php mvc make:request Products/StoreProductRequest
                             onclick="copyCode(this)">Copiar</button></div>
                     <pre><code class="language-bash">php mvc migrate
 #   Executando migrations...
-#   2026_09_21_100000_create_usuarios_table.php ... OK
-#   2026_09_21_100002_create_add_lembrar_token_expira_em_to_usuarios_table.php ... OK
+#   2026_09_21_100000_create_users_table.php ... OK
+#   2026_09_21_100002_add_remember_token_expires_at_to_users_table.php ... OK
 #   ✔ 2 migration(s) executada(s), 0 ignorada(s).
 
 php mvc migrate --fresh
@@ -4695,9 +4695,9 @@ php mvc serve --port=8080
                 </div>
 
                 <div class="code-block">
-                    <div class="code-header"><span class="code-file">2026_09_21_100000_create_usuarios_table.php</span><button
+                    <div class="code-header"><span class="code-file">2026_09_21_100000_create_users_table.php</span><button
                             class="copy-btn" onclick="copyCode(this)">Copiar</button></div>
-                    <pre><code class="language-sql">-- database/migrations/2026_09_21_100000_create_usuarios_table.php
+                    <pre><code class="language-sql">-- database/migrations/2026_09_21_100000_create_users_table.php
 CREATE TABLE IF NOT EXISTS users (
     id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -4726,8 +4726,8 @@ CREATE TABLE IF NOT EXISTS redefinicoes_senha (
                 <div class="callout callout-info">
                     <div class="callout-icon">ℹ</div>
                     <div class="callout-body"><strong>Migrations já existentes no projeto</strong>
-                        <p><code>2026_09_21_100000_create_usuarios_table.php</code> cria <code>users</code> e
-                            <code>redefinicoes_senha</code>. <code>2026_09_21_100002_create_add_lembrar_token_expira_em_to_usuarios_table.php</code> adiciona as colunas
+                        <p><code>2026_09_21_100000_create_users_table.php</code> cria <code>users</code> e
+                            <code>redefinicoes_senha</code>. <code>2026_09_21_100002_add_remember_token_expires_at_to_users_table.php</code> adiciona as colunas
                             <code>remember_token</code> / <code>remember_token_expires_at</code> em <code>users</code>
                             (usadas por <code>Core\Auth</code>) e um índice em <code>redefinicoes_senha</code> — apesar do
                             nome do arquivo, ela não cria uma tabela nova de rate limit (o rate limiting atual é feito

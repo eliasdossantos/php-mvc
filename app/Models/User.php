@@ -8,7 +8,7 @@ use Core\Model;
  * User Model
  * ─────────────────────────────────────────────────────────────────────────────
  * Modelo de usuário. Mapeado para a tabela `users`
- * (ver database/migrations/2026_09_21_100000_create_usuarios_table.php).
+ * (ver database/migrations/2026_09_21_100000_create_users_table.php).
  *
  * Expanda o $fillable e adicione métodos conforme as necessidades do projeto.
  */

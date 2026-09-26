@@ -9,15 +9,15 @@ return new class extends Migration {
     {
         Schema::create('api_tokens', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('usuario_id')->constrained('usuarios')->onDelete('CASCADE');
+            $table->foreignId('user_id')->constrained('users')->onDelete('CASCADE');
             $table->string('token_hash', 64); // SHA-256 hex — nunca o token em texto puro
-            $table->string('nome', 100)->default('api');
+            $table->string('name', 100)->default('api');
             $table->dateTime('last_used_at')->nullable();
             $table->dateTime('expires_at')->nullable();
             $table->timestamps();
 
             $table->unique('token_hash');
-            $table->index('usuario_id');
+            $table->index('user_id');
         });
     }
 

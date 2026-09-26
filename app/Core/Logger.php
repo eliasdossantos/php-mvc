@@ -87,12 +87,12 @@ class Logger
     // ── Core ──────────────────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
-     * Antes, um $level desconhecido (ex: chamada direta Logger::log('warn', ...)
+     * ── Detalhes de implementação
+     * Um $level desconhecido (ex: chamada direta Logger::log('warn', ...)
      * com typo) caía no `?? 0`, era tratado como DEBUG, e se minLevel fosse
      * mais alto que DEBUG, a mensagem era descartada SEM nenhum registro —
      * o pior cenário possível pra um logger: perder uma mensagem sem deixar
-     * rastro. Agora um nível desconhecido nunca é filtrado (assume prioridade
+     * rastro. A implementação um nível desconhecido nunca é filtrado (assume prioridade
      * máxima) — prefere logar a mais a arriscar perder algo importante.
      */
     public static function log(string $level, string $message, array $context = []): void
@@ -113,14 +113,14 @@ class Logger
     /**
      * Normaliza um valor de contexto pra algo seguro de logar.
      *
-     * ── MELHORIA #2 (corrige bug real) ────────────────────────────────────────
+     * ── Tratamento de erros
      * writeToFile() já tratava \Throwable especificamente, mas writeToTerminal()
      * não — fazia (string)$v direto. Isso funciona por acidente com
      * Exception/Error (têm __toString nativo, mas despeja o stack trace
      * inteiro no terminal) e QUEBRA COM FATAL ERROR pra qualquer outro objeto
      * sem __toString (ex: stdClass, ou qualquer objeto de domínio passado por
      * engano no contexto) — "Object of class X could not be converted to
-     * string". Agora os dois caminhos (arquivo e terminal) usam a mesma
+     * string". A implementação os dois caminhos (arquivo e terminal) usam a mesma
      * normalização.
      */
     protected static function normalizeContextValue(mixed $v): mixed
@@ -152,12 +152,12 @@ class Logger
         $logDir  = STORAGE_PATH . '/logs/' . $subdirectory;
         $logFile = $logDir . '/' . $filePrefix . '-' . date('Y-m-d') . '.log';
 
-        // ── MELHORIA #3 (corrige bug real) ────────────────────────────────────
+        // ── Tratamento de erros
         // mkdir() sem checagem + file_put_contents() com @ (suprime warning):
         // se o diretório de logs não pudesse ser criado (permissão, disco
         // cheio), a mensagem desaparecia SEM NENHUM registro em lugar nenhum —
         // justamente quando um problema de disco seria a informação mais
-        // importante de se ter. Agora cai pro error_log() nativo do PHP como
+        // importante de se ter. A implementação cai pro error_log() nativo do PHP como
         // último recurso, que vai pro log do servidor web/PHP-FPM/CLI e quase
         // sempre existe independente da configuração da aplicação.
         if (!is_dir($logDir) && !@mkdir($logDir, 0755, true) && !is_dir($logDir)) {
@@ -172,7 +172,7 @@ class Logger
             $ctx = array_map([static::class, 'normalizeContextValue'], $context);
             $encoded = json_encode($ctx, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             // json_encode pode falhar (false) com dados não serializáveis
-            // (ex: NAN, referência circular) — antes isso virava a string
+            // (ex: NAN, referência circular) — esse caso é tratado como falha de serialização
             // vazia de `false` concatenada, apagando o contexto em silêncio.
             $line .= ' ' . ($encoded !== false ? $encoded : '[contexto não serializável: ' . json_last_error_msg() . ']');
         }
@@ -203,7 +203,7 @@ class Logger
     // ── Configuração ─────────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #4 (corrige bug real) ────────────────────────────────────────
+     * ── Tratamento de erros
      * Um nível inválido (typo, ex: "WARNNIG") era aceito sem checagem. Como
      * log() usa `$levelOrder[static::$minLevel] ?? 0`, um minLevel inexistente
      * silenciosamente virava ordem 0 (equivalente a DEBUG) — ou seja, chamar

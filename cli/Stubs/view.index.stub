@@ -121,8 +121,8 @@
 
     <?php
     /**
-     * ── CORRIGIDO ──────────────────────────────────────────────────────────
-     * Antes esta chamada não tinha "<?=" na frente. \Core\View::render()
+     * ── Renderização da paginação ──────────────────────────────────────────────────────────
+     * Quando esta chamada não tinha "<?=" na frente. \Core\View::render()
      * RETORNA a string, não imprime sozinho — então a paginação nunca
      * aparecia na tela, sem erro nenhum, sem aviso nenhum.
      */

@@ -28,7 +28,7 @@ class Session
         // Armazena sessões fora do public/
         $sessionPath = STORAGE_PATH . '/sessions';
 
-        // ── MELHORIA #1 ──────────────────────────────────────────────────────
+        // ── Detalhes de implementação
         // mkdir() sem checagem: se falhar (permissão, disco cheio), o código
         // seguia em frente apontando session_save_path() pra um diretório que
         // não existe — o PHP então falha silenciosamente ao persistir a
@@ -57,11 +57,11 @@ class Session
             'samesite' => 'Lax',
         ]);
 
-        // ── MELHORIA #2 ──────────────────────────────────────────────────────
+        // ── Detalhes de implementação
         // session_start() pode retornar false (ex: headers já enviados antes
-        // de chegar aqui). Antes isso passava batido — o código seguia usando
+        // de chegar aqui). Quando isso passava batido — o código seguia usando
         // $_SESSION normalmente, só que sem persistir nada entre requisições,
-        // e ninguém saberia o porquê. Agora loga o problema, se possível, mas
+        // e ninguém saberia o porquê. A implementação loga o problema, se possível, mas
         // não interrompe a execução: mesmo sem persistir, a aplicação ainda
         // funciona dentro dessa única requisição.
         if (!session_start() && class_exists(\Core\Logger::class)) {
@@ -72,7 +72,7 @@ class Session
         $_SESSION['_errors'] = $_SESSION['_errors_next'] ?? [];
         unset($_SESSION['_errors_next']);
 
-        // ── MELHORIA #3 (corrige bug real) ────────────────────────────────────
+        // ── Tratamento de erros
         // Esta chamada estava faltando. O mecanismo de "aging" do old input
         // (oldInput() marca _old_input_read; ageOldInput() descarta na
         // requisição seguinte) só funciona se ageOldInput() rodar no início
@@ -171,7 +171,7 @@ class Session
     {
         $_SESSION['_old_input'] = $data;
 
-        // ── MELHORIA #4 ──────────────────────────────────────────────────────
+        // ── Detalhes de implementação
         // Um novo flashInput() (novo erro de validação) precisa reiniciar o
         // ciclo de aging — sem isso, se _old_input_read já estivesse setado
         // de uma leitura anterior, o PRÓXIMO ageOldInput() descartaria esses
@@ -185,10 +185,10 @@ class Session
     }
 
     /**
-     * ── BUG CORRIGIDO #9 (herdado) ────────────────────────────────────────────
+     * ── Ciclo de vida do old input ────────────────────────────────────────────
      * Introduz o mecanismo de "aging" via flag _old_input_read, pra old input
      * não vazar indefinidamente entre páginas — replica o withOldInput() do
-     * Laravel. Ver MELHORIA #3 acima: o pedaço que faltava era chamar
+     * Laravel. ver o tratamento de inicialização acima: o o ciclo de inicialização chama
      * ageOldInput() de fato no início de cada requisição.
      */
     public static function oldInput(string $key, mixed $default = ''): mixed
@@ -205,7 +205,7 @@ class Session
      * Deve ser chamado no início de cada requisição para limpar old_input
      * que foi lido na requisição anterior.
      *
-     * Chamado internamente por start() (ver MELHORIA #3) — não precisa ser
+     * Chamado internamente por start() (ver o tratamento de fallback) — não precisa ser
      * chamado manualmente.
      */
     public static function ageOldInput(): void

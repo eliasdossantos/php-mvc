@@ -213,12 +213,12 @@ class Router
                 continue;
             }
 
-            // ── MELHORIA #1 ────────────────────────────────────────────────────
-            // Antes, qualquer exceção lançada aqui dentro (middleware ausente,
+            // ── Detalhes de implementação
+            // Exceções lançadas aqui dentro (middleware ausente,
             // controller/método não encontrado, parâmetro obrigatório faltando,
             // erro dentro da própria action) subia sem tratamento nenhum —
             // dependendo da configuração do PHP, isso vira uma tela branca ou
-            // um stack trace cru exposto pro usuário final. Agora a rota já
+            // um stack trace cru exposto pro usuário final. A implementação a rota já
             // identificada (essa é a rota certa pra essa URI) tem sua execução
             // isolada: se falhar, vira uma resposta 500 controlada, e o resto
             // da aplicação continua de pé pra próxima requisição.
@@ -260,7 +260,7 @@ class Router
             $action = [$cls, $methodName];
         }
 
-        // ── BUG CORRIGIDO #1 (herdado) ───────────────────────────────────────
+        // ── Mapeamento de parâmetros da rota ───────────────────────────────────────
         // Extrai os nomes dos parâmetros da rota para mapeamento posicional→nomeado.
         preg_match_all('/\{([a-zA-Z_][a-zA-Z0-9_]*)\??\}/', $fullPath, $matches);
         $paramNames = $matches[1] ?? [];
@@ -280,10 +280,10 @@ class Router
     /**
      * Tenta casar a URI com o padrão da rota.
      *
-     * ── BUG CORRIGIDO #2 (herdado) ────────────────────────────────────────────
+     * ── Correspondência de parâmetros da URI ────────────────────────────────────────────
      * Retorna array associativo ['nomeDoParam' => 'valor'] em vez de posicional.
      *
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Explicita a checagem de preg_match (=== 1) e trata preg_replace()
      * retornando null (regex malformada) como "essa rota não bate", em vez de
      * deixar passar null adiante e quebrar o preg_match seguinte.
@@ -324,7 +324,7 @@ class Router
     /**
      * Resolve e instancia o controller, chamando o método.
      *
-     * ── BUG CORRIGIDO #3 (herdado) ────────────────────────────────────────────
+     * ── Injeção de parâmetros da action ────────────────────────────────────────────
      * Usa ReflectionMethod pra injetar parâmetros por nome, com fallback pro
      * valor padrão do método quando não vierem na URI.
      */
@@ -374,7 +374,7 @@ class Router
                 // Converte para o tipo declarado no método (int, string…)
                 $args[] = $this->castParam($params[$name], $rParam);
             } elseif ($rParam->isOptional()) {
-                // ── MELHORIA #3 ────────────────────────────────────────────────
+                // ── Detalhes de implementação
                 // getDefaultValue() pode lançar ReflectionException em casos raros
                 // (ex: parâmetro variádico marcado como opcional sem um default
                 // "de verdade"). Isso não deveria travar a requisição inteira só
@@ -419,12 +419,12 @@ class Router
     /**
      * Resolve e executa um middleware.
      *
-     * ── MELHORIA #4 (corrige bug de segurança) ────────────────────────────────
-     * Antes, se a classe do middleware não existisse, o método simplesmente
+     * ── Proteção de segurança
+     * Se a classe do middleware não existir, o método
      * dava `return` — a rota seguia em frente SEM o middleware aplicado.
      * Isso é perigoso quando o middleware ausente é de autenticação/autorização:
      * um erro de digitação no nome (ex: "AuthMiddlware") liberava a rota
-     * silenciosamente para qualquer um. Agora lança uma exceção clara, que o
+     * silenciosamente para qualquer um. A implementação lança uma exceção clara, que o
      * dispatch() acima captura e transforma numa resposta 500 — a rota não é
      * mais liberada por engano, e a aplicação ainda não trava por completo.
      */
@@ -475,7 +475,7 @@ class Router
     }
 
     /**
-     * ── MELHORIA #5 (novo) ───────────────────────────────────────────────────
+     * ── Suporte adicional
      * Handler central de erro pra qualquer exceção lançada durante a execução
      * de uma rota já identificada (middleware ou action). Segue o mesmo padrão
      * de handleNotFound(): tenta usar uma view de erro do projeto, com

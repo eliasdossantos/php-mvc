@@ -25,8 +25,8 @@ class CsrfMiddleware
     {
         if (in_array($request->method(), $this->safeMethods, true)) return;
 
-        // ── MELHORIA #1 (corrige bug real) ────────────────────────────────────
-        // A versão anterior fazia:
+        // ── Tratamento de erros
+        // O corpo da requisição pode assumir as seguintes formas:
         // $_POST['_csrf_token'] ?? $request->header('X-CSRF-Token') ?? $request->header('X-XSRF-Token') ?? '';
         // Request::header() nunca retorna null — o default é '' — então assim
         // que $_POST['_csrf_token'] estivesse ausente, a cadeia caía direto no
@@ -64,10 +64,10 @@ class CsrfMiddleware
             Session::regenerateCsrf();
             Session::flash('error', 'Sua sessão expirou. Por favor, tente novamente.');
 
-            // ── MELHORIA #2 ────────────────────────────────────────────────────
+            // ── Detalhes de implementação
             // APP_URL cru vira Fatal Error se a constante não estiver definida
             // (ex: middleware disparado muito cedo no bootstrap); url() já tem
-            // esse fallback embutido. headers_sent() também é respeitado antes
+            // headers_sent() também é respeitado antes
             // de tentar o header Location, com fallback via JS se necessário.
             $fallback = safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', url('/'));
             if (!headers_sent()) {

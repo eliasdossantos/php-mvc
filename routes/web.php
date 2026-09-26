@@ -39,5 +39,5 @@ $router->group(['prefix' => '/dashboard', 'middleware' => ['AuthMiddleware']], f
 });
 
 // ── API JSON ──────────────────────────────────────────────────────────────────
-// A API REST própria (versionada, autenticada por Bearer Token) vive em
+// A API REST própria (versionada, autenticada por Bearer Token) em
 // routes/api.php — não neste arquivo. Ver docs/API.md.

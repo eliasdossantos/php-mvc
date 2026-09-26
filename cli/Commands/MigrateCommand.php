@@ -21,7 +21,7 @@ class MigrateCommand extends Command
         $migrator = new Migrator();
 
         if ($fresh) {
-            // Precisa do bootstrap ANTES de decidir se pede confirmação,
+            // Precisa do bootstrap antes de decidir se pede confirmação,
             // porque APP_ENV e a config do banco só existem depois dele rodar.
             $migrator->bootstrapEnvironment();
 

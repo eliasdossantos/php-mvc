@@ -1,12 +1,12 @@
 /**
- * PHP MVC — Redesign JS
- * Funcionalidades: sidebar mobile, password toggle, strength meter,
- * validação visual, auto-dismiss alerts, navbar scroll, animações.
+ * PHP MVC — JavaScript da interface
+ * Funcionalidades: sidebar mobile, alternância de senha, indicador de força,
+ * validação visual, remoção automática de alertas, rolagem da navbar e animações.
  */
 
 document.addEventListener('DOMContentLoaded', () => {
 
-    // ── CSRF token global ─────────────────────────────────────────────────────
+    // ── Token CSRF global ─────────────────────────────────────────────────────
     const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
     window.apiFetch = (url, options = {}) => fetch(url, {
@@ -19,7 +19,7 @@ document.addEventListener('DOMContentLoaded', () => {
         ...options,
     }).then(r => r.json());
 
-    // ── Sidebar toggle (mobile) ───────────────────────────────────────────────
+    // ── Alternância da sidebar no mobile ───────────────────────────────────────────────
     const sidebarToggle  = document.getElementById('sidebarToggle');
     const sidebar        = document.getElementById('sidebar');
     const sidebarOverlay = document.getElementById('sidebarOverlay');
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.innerWidth > 768) closeSidebar();
     });
 
-    // ── Navbar scroll effect (home page) ─────────────────────────────────────
+    // ── Efeito de rolagem da navbar na página inicial ─────────────────────────────────────
     const homeNav = document.getElementById('homeNav');
     if (homeNav) {
         const onScroll = () => {
@@ -57,7 +57,7 @@ document.addEventListener('DOMContentLoaded', () => {
         onScroll();
     }
 
-    // ── Password toggle (mostrar/ocultar senha) ───────────────────────────────
+    // ── Alternância para mostrar ou ocultar senha ───────────────────────────────
     document.querySelectorAll('.password-toggle').forEach(btn => {
         btn.addEventListener('click', () => {
             const wrap  = btn.closest('.input-password-wrap');
@@ -73,7 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── Password strength meter ───────────────────────────────────────────────
+    // ── Indicador de força da senha ───────────────────────────────────────────────
     const passwordInput    = document.getElementById('password');
     const strengthWrap     = document.querySelector('.password-strength');
     const strengthFill     = document.querySelector('.strength-fill');
@@ -125,7 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // ── Auto-dismiss de alertas ───────────────────────────────────────────────
+    // ── Remoção automática de alertas ───────────────────────────────────────────────
     document.querySelectorAll('.alert').forEach(alert => {
         // Progress bar de auto-dismiss
         const duration = 5000;
@@ -165,19 +165,19 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── Submit do form pai via data-submit-form ───────────────────────────────
+    // ── Envio do formulário pai via data-submit-form ───────────────────────────────
     document.querySelectorAll('[data-submit-form]').forEach(btn => {
         btn.addEventListener('click', () => btn.closest('form')?.submit());
     });
 
-    // ── Loading state em botões de submit ────────────────────────────────────
+    // ── Estado de carregamento dos botões de envio ────────────────────────────────────
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', () => {
             const submitBtn = form.querySelector('[type="submit"]');
             if (submitBtn && !submitBtn.dataset.noLoader) {
                 submitBtn.classList.add('btn-loading');
                 submitBtn.disabled = true;
-                // Safety: remove loading após 8s para evitar travamento
+                // Remove o estado de carregamento após 8s para evitar travamento
                 setTimeout(() => {
                     submitBtn.classList.remove('btn-loading');
                     submitBtn.disabled = false;
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── Scroll reveal (Intersection Observer) ────────────────────────────────
+    // ── Revelação durante a rolagem ────────────────────────────────
     const revealEls = document.querySelectorAll('[data-reveal]');
     if (revealEls.length) {
         const observer = new IntersectionObserver((entries) => {
@@ -201,7 +201,7 @@ document.addEventListener('DOMContentLoaded', () => {
         revealEls.forEach(el => observer.observe(el));
     }
 
-    // ── Smooth scroll para âncoras ────────────────────────────────────────────
+    // ── Rolagem suave para âncoras ────────────────────────────────────────────
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.addEventListener('click', e => {
             const target = document.querySelector(anchor.getAttribute('href'));
@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
-    // ── Highlight menu ativo na sidebar ──────────────────────────────────────
+    // ── Destaca o item ativo na sidebar ──────────────────────────────────────
     const currentPath = window.location.pathname;
     document.querySelectorAll('.sidebar-link').forEach(link => {
         const href = link.getAttribute('href');

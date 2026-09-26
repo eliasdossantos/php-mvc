@@ -14,9 +14,9 @@ use Core\Auth;
  *
  * O parâmetro após ":" define a role exigida. Default: admin.
  *
- * ── BUG CORRIGIDO #11 (mesma origem do GuestMiddleware) ─────────────────────
- * Antes: redirecionava para 'app/dashboard' (rota inexistente → 404).
- * Corrigido para 'dashboard'.
+ * ── Redirecionamento após autenticação ─────────────────────
+ * Usa a rota de dashboard definida pela aplicação.
+ * O destino corresponde ao nome registrado no grupo protegido de rotas.
  */
 class RoleMiddleware
 {

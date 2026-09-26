@@ -40,7 +40,7 @@ Isso permite discutir a implementação e manter a consistência do projeto.
 # Faça um fork do projeto
 
 # Clone seu fork
-git clone https://github.com/SEU_USUARIO/php-mvc.git
+git clone https://github.com/SEU_USERNAME/php-mvc.git
 
 # Entre no diretório
 cd php-mvc

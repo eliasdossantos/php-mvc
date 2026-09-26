@@ -70,13 +70,13 @@ abstract class Model
     /**
      * Cada condição é ['type' => 'and'|'or', 'sql' => 'coluna = :param'].
      *
-     * ── MELHORIA #1 (corrige bug real) ──────────────────────────────────────
-     * Antes, orWhere() funcionava fazendo array_pop() da última condição e
-     * remontando como "(ultima OR nova)" numa única string. Isso quebrava se
+     * ── Tratamento de erros
+     * orWhere() preserva a condição anterior e
+     * remontando como "(ultima OR nova)" numa única string. Essa lógica falhava quando
      * orWhere() fosse a PRIMEIRA chamada (array_pop de array vazio = null,
      * virando "( OR coluna = valor)", SQL inválido), e também misturava a
      * lógica de agrupamento de forma imprevisível em cadeias mais longas.
-     * Agora cada condição fica isolada com seu tipo (and/or) e o SQL final é
+     * A implementação cada condição fica isolada com seu tipo (and/or) e o SQL final é
      * montado juntando todas em sequência — o mesmo modelo usado por
      * query builders como o do Laravel.
      */
@@ -91,9 +91,9 @@ abstract class Model
     private array  $selects       = ['*'];
 
     /**
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Contador estático (compartilhado entre todas as instâncias/models) pra
-     * gerar nomes de parâmetro sempre únicos. Antes o nome do parâmetro
+     * gerar nomes de parâmetro sempre únicos. O nome do parâmetro
      * dependia de count($this->wheres) da própria instância — o que colide
      * quando duas instâncias diferentes têm suas condições combinadas (caso
      * de whereGroup() abaixo, que roda um sub-builder e junta os bindings).
@@ -110,9 +110,9 @@ abstract class Model
     /**
      * Retorna todos os registros.
      *
-     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
-     * Antes duplicava a lógica de sanitização/ORDER BY que já existe em
-     * orderBy()+get(). Agora reaproveita o builder fluente — uma lógica só,
+     * ── Detalhes de implementação
+     * Reutiliza a lógica de sanitização/ORDER BY que já existe em
+     * orderBy()+get(). A implementação reaproveita o builder fluente — uma lógica só,
      * menos chance de os dois caminhos divergirem no futuro.
      */
     public function all(string $orderBy = 'id', string $direction = 'ASC'): array
@@ -474,7 +474,7 @@ abstract class Model
     /** Conta registros que batem com as condições atuais */
     public function count(): int
     {
-        // ── BUG CORRIGIDO #6 (herdado) ──────────────────────────────────────
+        // ── Preservação do estado do builder ──────────────────────────────────────
         // count() precisa rodar sem destruir o estado do builder, porque
         // paginate() chama count() e depois get() usando os mesmos
         // wheres/joins/bindings.
@@ -670,7 +670,7 @@ abstract class Model
     /**
      * Retorna dados paginados
      *
-     * ── BUG CORRIGIDO #6 (continuação, herdado) ─────────────────────────────
+     * ── Preservação do estado na paginação ─────────────────────────────
      * count() preserva o estado do builder; portanto o get() subsequente
      * ainda enxerga os wheres/joins/bindings intactos.
      *
@@ -711,7 +711,7 @@ abstract class Model
         return $this;
     }
 
-    /** Gera nome de parâmetro sempre único (ver MELHORIA #2 acima) */
+    /** Gera nome de parâmetro sempre único (ver a geração de parâmetros acima) */
     private function nextParam(string $prefix): string
     {
         return ':' . $prefix . '_' . (self::$paramCounter++);
@@ -801,7 +801,7 @@ abstract class Model
      * ou tabela.coluna em joins).
      * Lança exceção se o identificador for inválido.
      *
-     * ── BUG CORRIGIDO #4 / #5 (herdado) ─────────────────────────────────────
+     * ── Validação de identificadores SQL ─────────────────────────────────────
      */
     protected function sanitizeIdentifier(string $identifier): string
     {

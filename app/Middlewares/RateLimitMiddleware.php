@@ -60,15 +60,15 @@ class RateLimitMiddleware
     // ── Internos ──────────────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #1 (corrige bug real) ────────────────────────────────────────
-     * A versão anterior usava load()+save() como duas operações separadas:
+     * ── Tratamento de erros
+     * O rate limit utiliza uma seção bloqueada para leitura, incremento e gravação:
      * lê o arquivo, incrementa em memória, escreve de volta. Sob requisições
      * concorrentes (exatamente o cenário que um rate limiter de login precisa
      * segurar), duas requisições podem ler "attempts: 3" ao mesmo tempo, cada
      * uma incrementar pra 4 e escrever — perdendo um dos incrementos. Um
      * atacante rodando tentativas em paralelo furava o limite.
      *
-     * Agora tudo acontece dentro de uma única seção travada com flock():
+     * A implementação tudo acontece dentro de uma única seção travada com flock():
      * abre (ou cria) o arquivo, trava, lê, decide se a janela expirou,
      * incrementa, escreve e destrava — sem brecha entre ler e escrever.
      */
@@ -131,10 +131,10 @@ class RateLimitMiddleware
             // tenta vários e-mails diferentes (credential stuffing por IP)
             // E para evitar bloquear usuário legítimo por atacante com mesmo IP
             //
-            // ── MELHORIA #2 (corrige bug real) ──────────────────────────────
+            // ── Tratamento de erros
             // Se "email" viesse como array (ex: corpo "email[]=a&email[]=b"),
             // trim() num array é TypeError fatal — um POST malformado
-            // derrubava a própria proteção contra força bruta. Agora só usa
+            // derrubava a própria proteção contra força bruta. A implementação só usa
             // o valor se for de fato uma string.
             $emailRaw = $_POST['email'] ?? '';
             $email    = is_string($emailRaw) ? strtolower(trim($emailRaw)) : '';
@@ -164,7 +164,7 @@ class RateLimitMiddleware
     {
         $retryAfter = max(1, $retryAfter);
 
-        // ── MELHORIA #3 ──────────────────────────────────────────────────────
+        // ── Detalhes de implementação
         // Guarda headers_sent() antes de cada header(), mesmo padrão já
         // aplicado no resto do projeto — evita warning se algo (raro, mas
         // possível numa cadeia de middlewares) já tiver mandado output antes.

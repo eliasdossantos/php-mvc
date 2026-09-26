@@ -10,7 +10,7 @@ namespace Cli;
  * Não faz echo/exit diretamente: progresso é reportado por callback opcional,
  * e falhas são lançadas como exceção (capturadas pelo Cli\Kernel::run()).
  *
- * MUDANÇA: migrations deixaram de ser arquivos .sql soltos e passaram a ser
+ * Implementação: migrations são classes PHP
  * classes PHP (Core\Migration) com up()/down(), no estilo Laravel. Cada
  * execução é registrada com um número de "batch", permitindo desfazer
  * (rollback()) o último lote aplicado — o que não era possível no formato
@@ -148,7 +148,7 @@ class Migrator
     // seeders também fazem sua própria preparação de ambiente).
     //
     // Público (não mais private) porque MigrateCommand precisa chamá-lo
-    // ANTES de run(), para ter acesso a APP_ENV/config do banco na hora de
+    // antes de run(), para ter acesso a APP_ENV/config do banco na hora de
     // decidir se pede confirmação para --fresh. Idempotente: pode ser chamado
     // mais de uma vez na mesma requisição sem efeito colateral (require_once
     // evita redefinir as constantes de config/app.php duas vezes).
@@ -270,7 +270,7 @@ class Migrator
         return $migration;
     }
 
-    // ── Bookkeeping (histórico de execução) ──────────────────────────────────
+    // ── Registro do histórico de execuções ───────────────────────────────────
 
     private function ranMigrations(\PDO $pdo): array
     {

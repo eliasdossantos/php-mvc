@@ -30,7 +30,7 @@ abstract class Repository implements RepositoryInterface
     protected string $modelClass = '';
 
     /**
-     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Se $modelClass apontasse pra uma classe que não existe (typo no nome,
      * import esquecido), `new ($this->modelClass)()` já falhava — mas com um
      * Error genérico do PHP ("Class \"X\" not found"), sem dizer QUAL

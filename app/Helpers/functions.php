@@ -13,11 +13,11 @@
 // ── URLs ──────────────────────────────────────────────────────────────────────
 
 /**
- * ── MELHORIA #1 ──────────────────────────────────────────────────────────────
- * Antes usava APP_URL direto — se a constante não estivesse definida ainda
+ * ── Detalhes de implementação
+ * Resolve a URL a partir da configuração disponível; se a constante não estiver definida ainda
  * (ex: helper chamado muito cedo no bootstrap, ou em um teste isolado),
  * isso era Fatal Error "Undefined constant APP_URL", derrubando a página
- * inteira. Agora cai pra string vazia nesse caso, gerando uma URL relativa
+ * inteira. A implementação cai pra string vazia nesse caso, gerando uma URL relativa
  * em vez de travar.
  */
 function url(string $path = ''): string
@@ -50,11 +50,11 @@ function route(string $name, array $params = []): string
         return url($name);
     }
 
-    // ── MELHORIA #2 ──────────────────────────────────────────────────────────
+    // ── Detalhes de implementação
     // route() é chamado o tempo todo dentro de views (menus, links, forms).
-    // Antes, uma rota nomeada errada ou inexistente lançava InvalidArgumentException
+    // Uma rota nomeada errada ou inexistente lança InvalidArgumentException
     // direto de dentro do template, quebrando a página inteira renderizada até
-    // aquele ponto. Agora captura o erro, loga se possível, e devolve um link
+    // aquele ponto. A implementação captura o erro, loga se possível, e devolve um link
     // seguro pra home — a página continua de pé mesmo com um link errado nela.
     try {
         return $router->route($name, $params);
@@ -69,7 +69,7 @@ function route(string $name, array $params = []): string
 // ── Redirecionamento ──────────────────────────────────────────────────────────
 
 /**
- * ── MELHORIA #3 ──────────────────────────────────────────────────────────────
+ * ── Detalhes de implementação
  * Se algo (um echo esquecido, um espaço antes do <?php) já mandou output antes
  * do redirect, header("Location: ...") não tem efeito e só emite um warning —
  * a página fica "pela metade" sem redirecionar de verdade. Agora, quando os
@@ -133,7 +133,7 @@ function old(string $key, string $default = ''): string
 {
     $value = \Core\Session::oldInput($key, $default);
 
-    // ── MELHORIA #4 ──────────────────────────────────────────────────────────
+    // ── Detalhes de implementação
     // Se o valor salvo como "old input" for um array (ex: checkboxes múltiplos,
     // campo[] reenviado sem tratamento), o cast (string) abaixo geraria o
     // warning "Array to string conversion" e imprimiria só "Array". Cai pro
@@ -175,10 +175,10 @@ function csrf_token(): string
 
 function e(mixed $value): string
 {
-    // ── MELHORIA #5 ──────────────────────────────────────────────────────────
+    // ── Detalhes de implementação
     // Objetos sem __toString() (ex: array, stdClass) quebravam o cast (string)
     // com um erro fatal ("Object of class stdClass could not be converted").
-    // Agora normaliza pra algo seguro de exibir em vez de derrubar a view.
+    // A implementação normaliza pra algo seguro de exibir em vez de derrubar a view.
     if (is_array($value)) {
         $value = json_encode($value, JSON_UNESCAPED_UNICODE);
     } elseif (is_object($value) && !method_exists($value, '__toString')) {
@@ -219,13 +219,13 @@ function isRole(string $r): bool
 // ── Ambiente ──────────────────────────────────────────────────────────────────
 
 /**
- * ── MELHORIA #6 (corrige bug real) ────────────────────────────────────────────
- * A versão anterior usava `getenv($key) ?: $default`. O operador ?: trata
+ * ── Tratamento de erros
+ * A leitura usa `getenv($key) ?: $default`. O operador ?: trata
  * QUALQUER valor "falsy" como ausente — então uma variável de ambiente com
  * valor "0", "" ou "false" (string) caía pro $default em vez de retornar o
  * valor real configurado. Isso é um bug clássico: ex. FEATURE_X=0 no .env
  * pra desligar uma feature explicitamente, mas env('FEATURE_X', true) ainda
- * retornava true. Agora usa checagem explícita de existência/false.
+ * retornava true. A implementação usa checagem explícita de existência/false.
  */
 function env(string $key, mixed $default = null): mixed
 {
@@ -259,9 +259,9 @@ function slug(string $text): string
 // ── Datas ─────────────────────────────────────────────────────────────────────
 
 /**
- * ── MELHORIA #7 (corrige bug real) ────────────────────────────────────────────
+ * ── Tratamento de erros
  * strtotime() retorna `false` para uma data inválida ou mal formatada.
- * Antes, esse `false` era passado direto pra date(), que o PHP converte
+ * O retorno `false` não é passado diretamente para date(), que o PHP converte
  * silenciosamente pra int 0 — resultando em "01/01/1970" exibido na tela
  * como se fosse uma data válida, o que é pior que mostrar "—": engana o
  * usuário/o admin achando que aquele registro tem uma data real.
@@ -316,7 +316,7 @@ function formatBytes(int $bytes, int $precision = 1): string
 // ── Navegação ─────────────────────────────────────────────────────────────────
 
 /**
- * ── MELHORIA #8 ──────────────────────────────────────────────────────────────
+ * ── Detalhes de implementação
  * parse_url() pode retornar null (URI malformada) — passar null pro
  * str_replace()/str_starts_with() abaixo gera deprecation warning em PHP 8.1+
  * ("Passing null to parameter #... of type string is deprecated"). Agora

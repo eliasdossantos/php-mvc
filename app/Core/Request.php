@@ -29,7 +29,7 @@ class Request
      * Retorna o método HTTP.
      * Suporta override via campo POST `_method` (para PUT/PATCH/DELETE em forms HTML).
      *
-     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Se `_method` viesse como array (ex: campo de formulário mal montado,
      * `_method[]=PUT`), strtoupper() de um array gera TypeError fatal. Agora
      * só considera o override se for de fato uma string.
@@ -51,10 +51,10 @@ class Request
     /**
      * Retorna a URI limpa, sem query string e sem base path.
      *
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * $_SERVER['SCRIPT_NAME'] pode não existir em alguns SAPIs/contextos de
      * teste — acessá-lo direto gera "Undefined array key", e dirname(null)
-     * é deprecated em PHP 8.1+. Agora cai pra '/' nesse caso.
+     * é deprecated em PHP 8.1+. A implementação cai pra '/' nesse caso.
      */
     public function uri(): string
     {
@@ -143,13 +143,13 @@ class Request
     /**
      * Decodifica o body JSON (para APIs REST).
      *
-     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * (1) `?string $key = null` explícito — parâmetro implicitamente nullable
      * é deprecated desde PHP 8.4. (2) file_get_contents() pode retornar false
-     * (stream já consumido, erro de leitura); antes isso ia direto pro
+     * (stream já consumido ou erro de leitura); esse caso é tratado antes de chegar ao
      * json_decode(false, true), que na prática devolve null e cai no `?? []`
-     * — funcionava, mas por acidente. Agora é uma checagem explícita.
-     * (3) JSON malformado agora é tratado da mesma forma (corpo vazio),
+     * — funcionava, mas por acidente. A implementação é uma checagem explícita.
+     * (3) JSON malformado a implementação é tratado da mesma forma (corpo vazio),
      * documentado no comentário em vez de deixar implícito no `?? []`.
      */
     public function json(?string $key = null, mixed $default = null): mixed

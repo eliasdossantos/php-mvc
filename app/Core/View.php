@@ -50,14 +50,14 @@ class View
     /**
      * Captura o output de uma view em uma string.
      *
-     * ── MELHORIA #1 (corrige bug real) ────────────────────────────────────────
+     * ── Tratamento de erros
      * Se a view lançasse uma exceção no meio do require, o ob_start() aberto
      * antes dele nunca era fechado — o buffer ficava pendurado. Como capture()
      * é usado fora de requisições HTTP também (View::render() em componentes,
      * emails, exports), um erro numa view de e-mail, por exemplo, deixava
      * lixo de buffer que podia vazar pra saída de outra coisa rodando no
      * mesmo processo (um worker de fila, um script CLI de longa duração).
-     * Agora fecha o(s) buffer(s) aberto(s) por este método antes de repropagar.
+     * A implementação fecha o(s) buffer(s) aberto(s) por este método antes de repropagar.
      */
     public static function capture(string $view, array $data = []): string
     {
@@ -81,7 +81,7 @@ class View
     /**
      * Renderiza view com layout (equivalente a Controller::view).
      *
-     * ── MELHORIA #1 (continuação) ─────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Mesma proteção de capture(): a view em si roda dentro de um buffer
      * monitorado, fechado corretamente se ela lançar exceção. O require do
      * layout roda fora de qualquer ob_start() deste método (o buffer da view
@@ -158,7 +158,7 @@ class View
     }
 
     /**
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Remove ".." antes de montar o caminho — proteção básica contra
      * directory traversal caso $view algum dia venha de um valor dinâmico
      * (ex: nome de componente montado a partir de input) em vez de sempre
@@ -188,12 +188,12 @@ class View
     /**
      * Finaliza a captura da section aberta mais recentemente.
      *
-     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * ob_get_clean() retorna `false` se não houver buffer ativo (ex: start()/
      * end() desbalanceados por algum bug em outro lugar do código). Antes,
      * isso guardava `false` em $sections[$name] — e section() tem tipo de
      * retorno declarado `string`, então um `false` ali vira TypeError na
-     * hora de usar aquela section no layout. Agora cai pra string vazia.
+     * hora de usar aquela section no layout. A implementação cai pra string vazia.
      */
     public static function end(): void
     {

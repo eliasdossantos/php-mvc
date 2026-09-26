@@ -482,9 +482,10 @@ php-mvc/
 │   └── mail.php
 ├── database/
 │   ├── migrations/
-│   │   ├── 2026_09_21_100000_create_usuarios_table.php
-│   │   ├── 2026_09_25_140000_migrate_users_schema_to_english.php
-│   │   └── 2026_09_21_100001_create_redefinicoes_senha_table.php
+│   │   ├── 0001_01_01_100000_create_users_table.php
+│   │   ├── 0001_01_01_100001_create_redefinicoes_senha_table.php
+│   │   ├── 0001_01_01_100002_add_remember_token_expires_at_to_users_table.php
+│   │   └── 0001_01_01_100003_create_api_tokens_table.php
 │   └── seeds/
 │       └── UserSeeder.php
 ├── docs/
@@ -641,7 +642,6 @@ https://www.gnu.org/licenses/gpl-3.0.html
 ---
 
 ⭐ Se este projeto foi útil para você, considere deixar uma estrela no GitHub.
-
 
 ## Configuração de proxy e CORS
 

@@ -60,13 +60,13 @@ abstract class Controller
      *                                  - null    -> usa o layout padrão ($this->defaultLayout)
      *                                  - false | '' -> força renderização SEM layout
      *
-     * ── MELHORIA #1 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Se a view (ou o layout) lançasse uma exceção no meio do require, os
      * ob_start() já abertos ficavam pendurados (um deles, ou os dois, quando
      * havia layout). O buffer nunca era fechado, então a PRÓXIMA saída da
      * aplicação (ex: a página de erro 500 do Router) saía misturada com o
      * HTML parcial que já tinha sido bufferizado — uma página bagunçada em
-     * vez de um erro limpo. Agora qualquer buffer aberto por este método é
+     * vez de um erro limpo. A implementação qualquer buffer aberto por este método é
      * fechado antes de repropagar a exceção, então o handler de erro (Router)
      * recebe uma saída limpa pra trabalhar.
      */
@@ -167,7 +167,7 @@ abstract class Controller
     // ── Resolução de caminhos (helpers internos) ─────────────────────────────
 
     /**
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Remove sequências ".." antes de montar o caminho — proteção básica
      * contra directory traversal caso $view algum dia venha de um valor
      * dinâmico (ex: name de view montado a partir de parâmetro de rota) em
@@ -227,8 +227,8 @@ abstract class Controller
     // ── Redirecionamento ──────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
-     * Duas correções: (1) usa appUrl() em vez de APP_URL direto, evitando
+     * ── Detalhes de implementação
+     * Usa appUrl() em vez de APP_URL direto, evitando
      * Fatal Error se a constante não estiver definida; (2) cai pra um
      * redirect via HTML/JS se os headers já tiverem sido enviados, em vez de
      * só emitir um warning e não redirecionar de verdade.
@@ -270,11 +270,11 @@ abstract class Controller
     // ── Respostas JSON (APIs) ─────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #4 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * json_encode() pode falhar (retorna false) — ex: dados com encoding
-     * inválido, NAN/INF numa struct, referência circular. Antes, isso fazia
+     * inválido, NAN/INF numa struct, referência circular. Esse caso fazia
      * echo imprimir a string vazia de `false`, respondendo 200 com corpo
-     * vazio como se tivesse dado tudo certo. Agora detecta a falha, responde
+     * vazio como se tivesse dado tudo certo. A implementação detecta a falha, responde
      * 500 e devolve uma mensagem de erro real em vez de um corpo vazio
      * enganoso.
      */
@@ -352,7 +352,7 @@ abstract class Controller
      * Tipos válidos: ajax, json, get, post, put, patch, delete.
      *
      * Diferença importante em relação à primeira versão: um $tipo digitado
-     * errado (ex: 'pust') agora É um erro de verdade — lança exceção em vez
+     * errado (ex: 'pust') a implementação É um erro de verdade — lança exceção em vez
      * de silenciosamente deixar passar sem validar nada. Faz sentido separar
      * os dois casos: "o tipo que você pediu pra checar não existe" é bug de
      * programação (quer barulho, não passe batido); "a requisição não bate

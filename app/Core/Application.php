@@ -91,7 +91,7 @@ class Application
     // ── Configuração ─────────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #1 (corrige bug real e grave) ────────────────────────────────
+     * ── Tratamento de erros críticos
      * register_shutdown_function([$this, 'handleShutdown']) estava dentro do
      * bloco `if (APP_DEBUG)` — ou seja, só era registrado em desenvolvimento.
      * handleShutdown() é quem intercepta erros FATAIS do PHP (E_ERROR, E_PARSE
@@ -102,11 +102,11 @@ class Application
      * passava pelo handleException() de jeito nenhum. Como display_errors
      * fica desligado em produção, o resultado era uma tela BRANCA — sem log
      * bonito, sem página de erro, sem nada — exatamente o cenário que esta
-     * classe inteira existe para evitar. Agora handleShutdown() é registrado
+     * classe inteira existe para evitar. A implementação handleShutdown() é registrado
      * sempre, incondicionalmente; só o modo verboso (display_errors,
      * set_error_handler pra warnings/notices) continua exclusivo do debug.
      *
-     * Também passei a garantir que storage/logs exista antes de apontar
+     * Garante que storage/logs exista antes de apontar
      * ini_set('error_log', ...) pra lá — sem isso, se o diretório não
      * existisse, os próprios erros do PHP (fora do fluxo desta classe)
      * falhavam silenciosamente ao serem gravados.
@@ -145,12 +145,12 @@ class Application
     // ── Tratamento de Exceções ────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #2 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Esta é a última linha de defesa da aplicação — chamada direto do catch
-     * em run(). Se ELA MESMA lançasse uma exceção (ex: um bug futuro nesta
-     * classe, ou a própria view de erro falhando — ver MELHORIA #3), nada
+     * em run(). Se ELA MESMA lançasse uma exceção (ex: um falha no próprio tratamento nesta
+     * classe, ou a própria view de erro falhando — ver o tratamento de fallback), nada
      * mais captura isso, e o usuário veria o erro cru do PHP ou tela branca.
-     * Agora tem seu próprio try/catch como rede de segurança final: garante
+     * A implementação tem seu próprio try/catch como rede de segurança final: garante
      * uma resposta mínima em vez de deixar qualquer exceção escapar sem
      * controle nenhum desta classe.
      */
@@ -172,11 +172,11 @@ class Application
 
             Logger::error($e->getMessage(), $context);
 
-            // ── MELHORIA #4 (corrige bug real) ────────────────────────────────
+            // ── Tratamento de erros
             // Removida a chamada explícita a logRequest($httpCode) que existia
             // aqui. Dois problemas nela: (1) logRequest() não aceita nenhum
             // parâmetro — o $httpCode passado era silenciosamente ignorado;
-            // (2) essa chamada rodava ANTES de http_response_code($httpCode)
+            // (2) registra a requisição depois de http_response_code($httpCode)
             // ser de fato definido (isso só acontece dentro de
             // renderProductionError()/renderDebugPage(), logo abaixo), então
             // o log de requisição registrava o status ERRADO (o anterior à
@@ -236,10 +236,10 @@ class Application
     // ── Renderização de Erros ─────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #3 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * Se a própria view de erro (errors/{code}.php ou errors/generic.php)
      * tivesse um bug, a exceção subia sem controle — durante o tratamento de
-     * erro, que é o pior momento possível pra isso acontecer. Agora cai pra
+     * erro, que é o pior momento possível pra isso acontecer. A implementação cai pra
      * um HTML mínimo se a view falhar, em vez de propagar.
      */
     protected function renderProductionError(int $httpCode): void
@@ -315,10 +315,10 @@ class Application
     // ── Utilidades ────────────────────────────────────────────────────────────
 
     /**
-     * ── MELHORIA #5 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * file() pode retornar false (arquivo sumiu entre o is_readable() e a
-     * leitura, permissão mudou, etc). Antes isso ia direto pro count()/loop
-     * seguinte, gerando warning e comportamento estranho. Agora trata como
+     * leitura, permissão mudou, etc). Esse caso é tratado antes de count()/loop
+     * seguinte, gerando warning e comportamento estranho. A implementação trata como
      * "sem código-fonte disponível" em vez de propagar o erro.
      */
     protected function extractSourceLines(string $file, int $line, int $padding = 8): array
@@ -369,7 +369,7 @@ class Application
      * Roda em toda requisição, independente de APP_DEBUG (via
      * register_shutdown_function no construtor — inclusive depois de exit()).
      *
-     * ── MELHORIA #6 ──────────────────────────────────────────────────────────
+     * ── Detalhes de implementação
      * mkdir() sem checagem — se falhasse, o error_log() abaixo (que também já
      * falha silenciosamente pra path inválido) resultava em log de requisição
      * perdido sem nenhum aviso. Segue o mesmo padrão já aplicado no restante
