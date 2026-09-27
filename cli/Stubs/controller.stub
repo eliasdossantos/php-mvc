@@ -15,6 +15,12 @@ use Framework\Session;
  *
  * Regra: controllers devem ser finos.
  * Lógica de negócio → Service | Acesso a dados → Repository
+ *
+ * Upload de arquivo (se o Model tiver algum campo de arquivo):
+ *   Os blocos de upload em store()/update() estão comentados por padrão.
+ *   Descomente e ajuste o nome do campo (ex: 'imagem', 'avatar', 'anexo').
+ *   Ver Framework\Upload e BaseController::saveUploadedFile()/replaceUploadedFile()
+ *   para detalhes.
  */
 class {{ ClassName }} extends BaseController
 {
@@ -91,7 +97,33 @@ class {{ ClassName }} extends BaseController
             'nome' => 'required|min:2|max:100',
         ]);
 
-        // $id = $this->repository->create($this->request->all());
+        $data = $this->request->all();
+
+        // ── Upload de arquivo (exemplo — descomente e ajuste o campo) ───────────
+        // Sem dono (arquivo avulso, ex: imagem de capa):
+        //     uploads/{{ routePrefix }}/arquivo.jpg
+        //
+        // if (!empty($_FILES['imagem']['name'])) {
+        //     $nomeArquivo = $this->saveUploadedFile(
+        //         $_FILES['imagem'],
+        //         '{{ routePrefix }}', // entity — categoria da pasta
+        //         'image',              // ou 'document'
+        //         5                     // maxMb
+        //         // , $this->userId()  // entityId opcional — agrupa em {{ routePrefix }}/{id}/
+        //         //                      quando o arquivo pertence a um dono (ex: usuário logado)
+        //     );
+        //
+        //     if ($nomeArquivo === null) {
+        //         Session::flash('error', $this->uploadErrors[0] ?? 'Falha no upload.');
+        //         Session::flashInput($data);
+        //         $this->back();
+        //         return;
+        //     }
+        //
+        //     $data['imagem'] = $nomeArquivo;
+        // }
+
+        // $id = $this->repository->create($data);
         $this->redirectWith('{{ routePrefix }}', 'success', '{{ ModelName }} criado com sucesso!');
     }
 
@@ -116,6 +148,9 @@ class {{ ClassName }} extends BaseController
      */
     public function update(int $id): void
     {
+        // $item = $this->repository->findById($id);
+        // $this->abortUnless((bool)$item, 404);
+
         // Exemplo com FormRequest:
         // $request = new Update{{ ModelName }}Request();
         // if ($request->fails()) {
@@ -134,7 +169,33 @@ class {{ ClassName }} extends BaseController
             'nome' => 'required|min:2|max:100',
         ]);
 
-        // $updated = $this->repository->update($id, $this->request->all());
+        $data = $this->request->all();
+
+        // ── Upload de arquivo (exemplo — descomente e ajuste o campo) ───────────
+        // Troca o arquivo antigo pelo novo (o antigo só é apagado se o novo
+        // upload for salvo com sucesso). $item precisa estar carregado acima.
+        //
+        // if (!empty($_FILES['imagem']['name'])) {
+        //     $nomeArquivo = $this->replaceUploadedFile(
+        //         $_FILES['imagem'],
+        //         '{{ routePrefix }}',        // entity
+        //         $item->imagem ?? null,       // nome antigo salvo no banco
+        //         'image',                     // ou 'document'
+        //         5                             // maxMb
+        //         // , $this->userId()          // entityId opcional
+        //     );
+        //
+        //     if ($nomeArquivo === null) {
+        //         Session::flash('error', $this->uploadErrors[0] ?? 'Falha no upload.');
+        //         Session::flashInput($data);
+        //         $this->back();
+        //         return;
+        //     }
+        //
+        //     $data['imagem'] = $nomeArquivo;
+        // }
+
+        // $updated = $this->repository->update($id, $data);
         //
         // if (!$updated) {
         //     $this->redirectWith(
@@ -160,6 +221,12 @@ class {{ ClassName }} extends BaseController
     {
         // $item = $this->repository->findById($id);
         // $this->abortUnless((bool)$item, 404);
+
+        // Se o Model tiver arquivo, apague-o junto (evita lixo em storage/uploads):
+        // if (!empty($item->imagem)) {
+        //     $this->deleteUploadedFile('{{ routePrefix }}', $item->imagem);
+        // }
+
         // $this->repository->delete($id);
 
         $this->jsonSuccess('{{ ModelName }} removido com sucesso.');

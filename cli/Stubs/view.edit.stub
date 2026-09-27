@@ -42,6 +42,11 @@
     <div class="card">
         <div class="card-body">
 
+            <!--
+                Se o Model tiver campo de arquivo, adicione enctype="multipart/form-data"
+                abaixo — sem isso, $_FILES chega vazio no controller.
+                Ex: <form method="POST" action="..." enctype="multipart/form-data">
+            -->
             <form method="POST"
                   action="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>">
 
@@ -71,6 +76,34 @@
                 </div>
 
                 <!-- Adicione mais campos conforme o Model -->
+
+                <!-- Campo de arquivo (exemplo — descomente e ajuste o nome do campo) -->
+                <!--
+                <div class="form-group">
+                    <label for="imagem">Imagem</label>
+
+                    <?php if (!empty($item->imagem)): ?>
+                        <div class="mb-2">
+                            <img src="<?= uploadUrl('{{ routePrefix }}', $item->imagem) ?>"
+                                 alt="Imagem atual" width="80">
+                        </div>
+                    <?php endif; ?>
+
+                    <input type="file"
+                           id="imagem"
+                           name="imagem"
+                           accept="image/*"
+                           class="<?= inputClass('imagem') ?>">
+
+                    <small class="text-muted">Deixe em branco para manter a imagem atual.</small>
+
+                    <?php if (hasError('imagem')): ?>
+                        <span class="form-error">
+                            <?= e(error('imagem')) ?>
+                        </span>
+                    <?php endif; ?>
+                </div>
+                -->
 
                 <div class="mt-2" style="display:flex;gap:10px">
 

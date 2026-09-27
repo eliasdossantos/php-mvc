@@ -42,6 +42,19 @@ function storageUrl(string $path): string
     return url('storage/' . ltrim($path, '/'));
 }
 
+/**
+ * URL de um arquivo salvo via Upload — atalho pra não repetir
+ * storageUrl(\Framework\Upload::resolvePath(...)) toda hora nas views.
+ *
+ * Uso:
+ *   uploadUrl('user', $item->avatar, $item->id)   // arquivo com dono
+ *   uploadUrl('banners', $item->banner)           // arquivo sem dono
+ */
+function uploadUrl(string $entity, string $filename, int|string|null $entityId = null): string
+{
+    return storageUrl(\Framework\Upload::resolvePath($entity, $filename, $entityId));
+}
+
 function route(string $name, array $params = []): string
 {
     $router = \Framework\Router::getInstance();

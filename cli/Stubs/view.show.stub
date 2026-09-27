@@ -68,6 +68,23 @@
                         </td>
                     </tr>
 
+                    <!-- Campo de arquivo (exemplo — descomente e ajuste o nome do campo) -->
+                    <!--
+                    <tr>
+                        <td>
+                            <strong>Imagem</strong>
+                        </td>
+                        <td>
+                            <?php if (!empty($item->imagem)): ?>
+                                <img src="<?= uploadUrl('{{ routePrefix }}', $item->imagem) ?>"
+                                     alt="Imagem" width="80">
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    -->
+
                     <tr>
                         <td>
                             <strong>Criado em</strong>
