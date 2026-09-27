@@ -1,0 +1,44 @@
+<!-- resources/views/layouts/{{ LayoutName }}.php -->
+
+<!--
+    Layout gerado por `php mvc make:layout`.
+
+    Compatível com os dois estilos de view suportados pelo framework — a
+    view que usar este layout pode escolher livremente entre:
+
+      - Sections:  View::start('title'|'styles'|'content'|'scripts') ... View::end()
+      - HTML solto: a view inteira sem nenhum View::start()
+
+    View::title()/View::content() abaixo resolvem automaticamente qual dos
+    dois foi usado, então não precisa manter esse layout em sincronia com
+    o estilo escolhido em cada view.
+-->
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="<?= csrf_token() ?>">
+    <title><?= e(\Framework\Support\View::title($title ?? '{{ LayoutName }}')) ?> — <?= e(APP_NAME) ?></title>
+
+    <link rel="stylesheet" href="<?= asset('css/app.css') ?>">
+
+    <!-- CSS específico da página (opcional): View::start('styles') ... View::end() -->
+    <?= \Framework\Support\View::section('styles') ?>
+</head>
+
+<body>
+
+    <?= \Framework\Support\View::render('components.alerts') ?>
+
+    <?= \Framework\Support\View::content($content ?? '') ?>
+
+    <script src="<?= asset('js/app.js') ?>"></script>
+
+    <!-- JS específico da página (opcional): View::start('scripts') ... View::end() -->
+    <?= \Framework\Support\View::section('scripts') ?>
+</body>
+
+</html>

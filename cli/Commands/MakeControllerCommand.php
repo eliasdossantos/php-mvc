@@ -13,8 +13,8 @@ use Cli\Output;
  *   php mvc make:controller Api/UserController     ← sub-namespace
  *
  * Cria:
- *   app/Controllers/UserController.php
- *   app/Controllers/Api/UserController.php
+ *   app/Http/Controllers/Web/UserController.php
+ *   app/Http/Controllers/Web/Api/UserController.php
  */
 class MakeControllerCommand extends Command
 {
@@ -43,7 +43,7 @@ class MakeControllerCommand extends Command
         // Namespace e caminho de destino
         $nsExtra   = $subNs ? '\\' . $subNs : '';
         $subDir    = $subNs ? str_replace('\\', DIRECTORY_SEPARATOR, $subNs) . DIRECTORY_SEPARATOR : '';
-        $destPath  = ROOT_PATH . '/app/Controllers/' . $subDir . $className . '.php';
+        $destPath  = ROOT_PATH . '/app/Http/Controllers/Web/' . $subDir . $className . '.php';
 
         Output::info("Gerando controller <comment>{$className}</comment>…");
 
@@ -57,7 +57,7 @@ class MakeControllerCommand extends Command
             '{{ UseRequest }}'    => '',
         ]);
 
-        Output::success("Controller criado: <info>app/Controllers/{$subDir}{$className}.php</info>");
+        Output::success("Controller criado: <info>app/Http/Controllers/Web/{$subDir}{$className}.php</info>");
         Output::newline();
         Output::line("Registre a rota em <comment>routes/web.php</comment>:");
         Output::dim("  \$router->resource('/{$routePrefix}', {$className}::class);");

@@ -12,7 +12,7 @@
 define('ROOT_PATH',    dirname(__DIR__));
 define('APP_PATH',     ROOT_PATH . '/app');
 define('PUBLIC_PATH',  ROOT_PATH . '/public');
-define('VIEW_PATH',    APP_PATH  . '/Views');
+define('VIEW_PATH',    ROOT_PATH . '/resources/views');
 define('STORAGE_PATH', ROOT_PATH . '/storage');
 define('CONFIG_PATH',  ROOT_PATH . '/config');
 define('ROUTES_PATH',  ROOT_PATH . '/routes');
@@ -29,8 +29,8 @@ if (!file_exists($autoload)) {
 require $autoload;
 
 // ── 3. Alias global para uso direto de View::... ─────────────────────────────────────
-// Nas views, sem precisar de "use Framework\View;"
-class_alias(\Framework\View::class, 'View');
+// Nas views, sem precisar de "use Framework\Support\View;"
+class_alias(\Framework\Support\View::class, 'View');
 
 // ── 4. Variáveis de ambiente (.env) ──────────────────────────────────────────
 
@@ -43,15 +43,15 @@ require CONFIG_PATH . '/app.php';
 
 // ── 6. Sessão + old input aging ───────────────────────────────────────────────
 
-\Framework\Session::start();
-\Framework\Session::ageOldInput();
+\Framework\Support\Session::start();
+\Framework\Support\Session::ageOldInput();
 
 // ── 7. Recuperação via cookie "lembrar de mim" ───────────────────────────────
 // Tenta re-autenticar silenciosamente via cookie se a sessão estiver vazia.
 // Isso acontece quando o usuário fecha e reabre o navegador mas tinha marcado
 // "lembrar de mim". Só executa se houver o cookie e nenhuma sessão ativa.
 if (!empty($_COOKIE['remember_me'])) {
-    \Framework\Auth::recoverFromCookie();
+    \Framework\Auth\Auth::recoverFromCookie();
 }
 
 // ── 8. Limpeza periódica de cache de rate limit (1% das requisições) ─────────
@@ -70,4 +70,4 @@ if (rand(1, 100) === 1) {
 
 // ── 9. Instancia e retorna a Application ─────────────────────────────────────
 
-return new \Framework\Application();
+return new \Framework\Core\Application();

@@ -13,8 +13,8 @@ use Cli\Output;
  *   php mvc make:request Auth/LoginRequest        ← sub-pasta
  *
  * Cria:
- *   app/Requests/StoreProductRequest.php
- *   app/Requests/Auth/LoginRequest.php
+ *   app/Http/Requests/StoreProductRequest.php
+ *   app/Http/Requests/Auth/LoginRequest.php
  */
 class MakeRequestCommand extends Command
 {
@@ -37,7 +37,7 @@ class MakeRequestCommand extends Command
 
         $nsExtra  = $subNs ? '\\' . $subNs : '';
         $subDir   = $subNs ? str_replace('\\', DIRECTORY_SEPARATOR, $subNs) . DIRECTORY_SEPARATOR : '';
-        $destPath = ROOT_PATH . '/app/Requests/' . $subDir . $className . '.php';
+        $destPath = ROOT_PATH . '/app/Http/Requests/' . $subDir . $className . '.php';
 
         Output::info("Gerando request <comment>{$className}</comment>…");
 
@@ -46,7 +46,7 @@ class MakeRequestCommand extends Command
             '{{ SubNamespace }}' => $nsExtra,
         ]);
 
-        Output::success("Request criado: <info>app/Requests/{$subDir}{$className}.php</info>");
+        Output::success("Request criado: <info>app/Http/Requests/{$subDir}{$className}.php</info>");
         Output::newline();
         Output::line("Uso no controller:");
         Output::dim("  \$request = new {$className}();");

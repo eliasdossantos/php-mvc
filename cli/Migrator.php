@@ -11,7 +11,7 @@ namespace Cli;
  * e falhas são lançadas como exceção (capturadas pelo Cli\Kernel::run()).
  *
  * Implementação: migrations são classes PHP
- * classes PHP (Framework\Migration) com up()/down(), no estilo Laravel. Cada
+ * classes PHP (Framework\Database\Migration) com up()/down(), no estilo Laravel. Cada
  * execução é registrada com um número de "batch", permitindo desfazer
  * (rollback()) o último lote aplicado — o que não era possível no formato
  * anterior baseado só em nome de arquivo já rodado ou não.
@@ -48,7 +48,7 @@ class Migrator
 
         $this->ensureDatabaseExists($conn, $dbName, $fresh, $report);
 
-        $db  = \Framework\Database::getInstance();
+        $db  = \Framework\Database\Database::getInstance();
         $pdo = $db->getPdo();
 
         $this->ensureMigrationsTable($db, $pdo);
@@ -104,7 +104,7 @@ class Migrator
 
         $this->bootstrapEnvironment();
 
-        $db  = \Framework\Database::getInstance();
+        $db  = \Framework\Database\Database::getInstance();
         $pdo = $db->getPdo();
 
         $this->ensureMigrationsTable($db, $pdo);
@@ -184,7 +184,7 @@ class Migrator
     }
 
     // ── Provisionamento do banco ─────────────────────────────────────────────
-    // Conexão própria, sem dbname: Framework\Database sempre inclui dbname no DSN
+    // Conexão própria, sem dbname: Framework\Database\Database sempre inclui dbname no DSN
     // e por isso não pode ser usado antes de o banco existir.
     private function ensureDatabaseExists(array $conn, string $dbName, bool $fresh, callable $report): void
     {
@@ -225,7 +225,7 @@ class Migrator
 
     // ── Tabela de controle de migrations ─────────────────────────────────────
 
-    private function ensureMigrationsTable(\Framework\Database $db, \PDO $pdo): void
+    private function ensureMigrationsTable(\Framework\Database\Database $db, \PDO $pdo): void
     {
         $db->execMigration("
             CREATE TABLE IF NOT EXISTS `{$this->migrationsTable}` (
@@ -261,10 +261,10 @@ class Migrator
         return $map;
     }
 
-    private function loadMigration(string $path): \Framework\Migration
+    private function loadMigration(string $path): \Framework\Database\Migration
     {
         $migration = require $path; // arquivo deve fazer: return new class extends Migration {...};
-        if (!$migration instanceof \Framework\Migration) {
+        if (!$migration instanceof \Framework\Database\Migration) {
             throw new \RuntimeException("Migration inválida: {$path} não retorna uma instância de Framework\\Migration.");
         }
         return $migration;

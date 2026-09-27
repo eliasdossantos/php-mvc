@@ -13,7 +13,7 @@ use Cli\Output;
  *   php mvc make:layout admin/print   ← sub-pasta
  *
  * Cria:
- *   app/Views/layouts/blank.php
+ *   resources/views/layouts/blank.php
  *
  * O stub já vem pronto com View::title()/View::content() e as sections
  * 'styles'/'scripts', então o layout gerado funciona tanto com views que
@@ -40,7 +40,7 @@ class MakeLayoutCommand extends Command
         $subDir     = $parts ? implode('/', $parts) . '/' : '';
 
         $layoutPath = $subDir . $layoutName;                         // 'admin/print'
-        $destPath   = ROOT_PATH . '/app/Views/layouts/' . $layoutPath . '.php';
+        $destPath   = ROOT_PATH . '/resources/views/layouts/' . $layoutPath . '.php';
 
         Output::info("Gerando layout <comment>{$layoutName}</comment>…");
 
@@ -49,7 +49,7 @@ class MakeLayoutCommand extends Command
         ]);
 
         if ($created) {
-            Output::success("Layout criado: <info>app/Views/layouts/{$layoutPath}.php</info>");
+            Output::success("Layout criado: <info>resources/views/layouts/{$layoutPath}.php</info>");
             Output::newline();
             Output::line("Use no controller:");
             Output::dim("  \$this->view('pasta.view', \$data, '{$layoutPath}');");

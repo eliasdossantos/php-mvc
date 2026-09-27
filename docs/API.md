@@ -42,8 +42,8 @@ $router->group(['prefix' => '/api/v1', 'middleware' => ['CorsMiddleware', 'RateL
 });
 ```
 
-`Framework\Application` carrega **automaticamente** qualquer arquivo
-`routes/api*.php` — não é preciso tocar em `Framework\Application` para adicionar
+`Framework\Core\Application` carrega **automaticamente** qualquer arquivo
+`routes/api*.php` — não é preciso tocar em `Framework\Core\Application` para adicionar
 rotas novas, só editar `routes/api.php` (ou criar `routes/api_v2.php` no
 futuro — ver [seção 13](#13-como-utilizar-versionamento)).
 
@@ -53,9 +53,9 @@ futuro — ver [seção 13](#13-como-utilizar-versionamento)).
 php mvc make:api-controller ProdutoApiController
 ```
 
-Gera `app/Api/Controllers/ProdutoApiController.php` já estendendo
-`App\Api\Controllers\ApiController` (que por sua vez estende
-`Framework\Controller` — o mesmo Controller base do MVC Web) com `index`, `show`,
+Gera `app/Http/Controllers/Api/ProdutoApiController.php` já estendendo
+`App\Http\Controllers\Api\ApiController` (que por sua vez estende
+`Framework\Http\Controller` — o mesmo Controller base do MVC Web) com `index`, `show`,
 `store`, `update`, `destroy` prontos para conectar a um Repository existente.
 
 Regra: Controllers de API são **finos**, igual aos da Web — nenhuma lógica de
@@ -94,10 +94,10 @@ ProdutoResource::collection($produtos); // vários → array de arrays
 
 ## 4. Como criar um Request de API
 
-Se já existe um `FormRequest` equivalente em `app/Requests/` para o
+Se já existe um `FormRequest` equivalente em `app/Http/Requests/` para o
 formulário Web (mesmas regras de validação), **reaproveite-o** — é
 exatamente o que `AuthApiController::login()` faz com
-`App\Requests\Auth\LoginRequest`, sem duplicar nada. `FormRequest` já
+`App\Http\Requests\Auth\LoginRequest`, sem duplicar nada. `FormRequest` já
 detecta corpo JSON automaticamente (`Content-Type: application/json`).
 
 Quando as regras realmente divergem da Web, gere um Request específico:
@@ -106,8 +106,8 @@ Quando as regras realmente divergem da Web, gere um Request específico:
 php mvc make:api-request StoreProdutoRequest
 ```
 
-Isso cria a classe em `app/Api/Requests/` com `authorize()` já usando
-`Framework\Api\ApiAuthContext::check()` (Bearer Token) em vez de `Framework\Auth`
+Isso cria a classe em `app/Http/Requests/Api/` com `authorize()` já usando
+`Framework\Http\Api\ApiAuthContext::check()` (Bearer Token) em vez de `Framework\Auth\Auth`
 (sessão).
 
 No Controller, use o helper `validated()` de `ApiController` — ele já
@@ -142,11 +142,11 @@ Envie o token recebido no login em todas as requisições autenticadas:
 Authorization: Bearer 8f2c9e1a4b7d...
 ```
 
-`App\Middlewares\ApiAuthMiddleware` valida o token a cada requisição
-(stateless — sem sessão/cookie) e popula `Framework\Api\ApiAuthContext`:
+`App\Http\Middlewares\ApiAuthMiddleware` valida o token a cada requisição
+(stateless — sem sessão/cookie) e popula `Framework\Http\Api\ApiAuthContext`:
 
 ```php
-use Framework\Api\ApiAuthContext;
+use Framework\Http\Api\ApiAuthContext;
 
 ApiAuthContext::check(); // bool
 ApiAuthContext::user();  // objeto do usuário autenticado
@@ -163,10 +163,10 @@ curl -X GET https://seusite.com/api/v1/users \
 
 ## 8. Como consumir APIs externas
 
-Nunca use `curl_*()` direto num Service — use `Framework\Api\ApiClient`:
+Nunca use `curl_*()` direto num Service — use `Framework\Http\Api\ApiClient`:
 
 ```php
-use Framework\Api\ApiClient;
+use Framework\Http\Api\ApiClient;
 
 $client = new ApiClient('https://api.exemplo.com', timeout: 10);
 
@@ -179,7 +179,7 @@ $res = $client->post('/recursos', ['json' => ['nome' => 'Teste'], 'token' => $ac
 ```
 
 Por padrão, status HTTP de erro (4xx/5xx) ou falha de conexão lançam
-`Framework\Api\ApiException` — capture no Service, nunca deixe subir crua até o
+`Framework\Http\Api\ApiException` — capture no Service, nunca deixe subir crua até o
 Controller. Passe `'throw_on_error' => false` para tratar manualmente via
 `$res['ok']`.
 
@@ -188,7 +188,7 @@ Controller. Passe `'throw_on_error' => false` para tratar manualmente via
 Padrão de referência real, já implementado: `Services/Integrations/Cep/`.
 
 ```
-Service  →  Integration (Gateway)  →  Framework\Api\ApiClient  →  API externa
+Service  →  Integration (Gateway)  →  Framework\Http\Api\ApiClient  →  API externa
 ```
 
 1. Defina o contrato: `app/Services/Integrations/Nome/NomeGatewayInterface.php`
@@ -266,7 +266,7 @@ Todo erro da API responde no mesmo envelope (ver
 | 500 | Erro interno — nunca expõe stack trace em produção (`APP_DEBUG=false`) |
 
 Em produção, mensagens internas nunca vazam para o cliente — o
-`Framework\Logger` registra o detalhe, a resposta ao cliente é sempre uma
+`Framework\Support\Logger` registra o detalhe, a resposta ao cliente é sempre uma
 mensagem segura e genérica quando aplicável.
 
 ## 13. Como utilizar versionamento
@@ -275,10 +275,10 @@ A v1 vive inteira em `routes/api.php`, sob o prefixo `/api/v1`. Quando for
 necessária uma v2 **sem quebrar a v1**:
 
 1. Crie `routes/api_v2.php` com seu próprio `$router->group(['prefix' => '/api/v2', ...], ...)`.
-2. Nada mais — `Framework\Application::run()` já carrega qualquer
+2. Nada mais — `Framework\Core\Application::run()` já carrega qualquer
    `routes/api*.php` automaticamente via `glob()`.
 
-Controllers/Resources da v2 podem viver em `app/Api/V2/...` se divergirem
+Controllers/Resources da v2 podem viver em `app/Http/Controllers/Api/V2/...` se divergirem
 muito da v1, ou reaproveitar os mesmos da v1 quando o contrato não mudou.
 
 ## 14. Exemplos de requisições
@@ -366,14 +366,14 @@ Authorization: Bearer 8f2c9e1a4b7d...
 ## 16. CORS
 
 Configurado em `config/api.php` (lendo `CORS_ALLOWED_ORIGINS` do `.env`) e
-aplicado por `App\Middlewares\CorsMiddleware` a todo o grupo `/api/v1`.
+aplicado por `App\Http\Middlewares\CorsMiddleware` a todo o grupo `/api/v1`.
 Requisições `OPTIONS` (preflight) são respondidas com `204` sem chegar ao
 Controller. Use `*` apenas em desenvolvimento — em produção, liste as
 origens explicitamente.
 
 ## 17. Rate limiting
 
-`App\Middlewares\RateLimitMiddleware` (já existente no framework, reutilizado
+`App\Http\Middlewares\RateLimitMiddleware` (já existente no framework, reutilizado
 sem duplicação) aplica dois perfis à API:
 
 - `api` (grupo inteiro): 60 requisições/minuto por IP.

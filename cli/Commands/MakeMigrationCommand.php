@@ -6,7 +6,7 @@ use Cli\Command;
 use Cli\Output;
 
 /**
- * make:migration — Gera um arquivo de migration PHP (Framework\Migration)
+ * make:migration — Gera um arquivo de migration PHP (Framework\Database\Migration)
  *
  * Uso:
  *   php mvc make:migration CreatePostsTable

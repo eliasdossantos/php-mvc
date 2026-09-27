@@ -4,7 +4,7 @@ namespace Cli\Commands;
 
 use Cli\Command;
 use Cli\Output;
-use Framework\Session;
+use Framework\Support\Session;
 
 /**
  * key:generate — Gera uma chave de aplicação segura

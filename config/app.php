@@ -39,8 +39,8 @@ if (!headers_sent()) {
     ini_set('session.gc_maxlifetime', (int)($_ENV['SESSION_LIFETIME'] ?? 120) * 60);
 
     // Força cookie seguro em produção mesmo que a variável esteja errada
-    // (regra centralizada em Framework\Session::shouldUseSecureCookies())
-    if (\Framework\Session::shouldUseSecureCookies($env)) {
+    // (regra centralizada em Framework\Support\Session::shouldUseSecureCookies())
+    if (\Framework\Support\Session::shouldUseSecureCookies($env)) {
         ini_set('session.cookie_secure', 1);
     }
 }

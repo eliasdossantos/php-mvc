@@ -13,10 +13,10 @@ use Cli\Output;
  *   php mvc make:view admin/product   ← sub-pasta
  *
  * Cria:
- *   app/Views/product/index.php
- *   app/Views/product/show.php
- *   app/Views/product/create.php
- *   app/Views/product/edit.php
+ *   resources/views/product/index.php
+ *   resources/views/product/show.php
+ *   resources/views/product/create.php
+ *   resources/views/product/edit.php
  */
 class MakeViewCommand extends Command
 {
@@ -43,7 +43,7 @@ class MakeViewCommand extends Command
         $routePrefix = str_replace('/', '/', $viewPath);           // 'admin/product'
 
         $views = ['index', 'show', 'create', 'edit'];
-        $baseDir = ROOT_PATH . '/app/Views/' . $viewPath;
+        $baseDir = ROOT_PATH . '/resources/views/' . $viewPath;
 
         Output::info("Gerando views para <comment>{$modelName}</comment>…");
 
@@ -62,7 +62,7 @@ class MakeViewCommand extends Command
         }
 
         if ($ok > 0) {
-            Output::success("{$ok} view(s) criadas em: <info>app/Views/{$viewPath}/</info>");
+            Output::success("{$ok} view(s) criadas em: <info>resources/views/{$viewPath}/</info>");
             Output::newline();
             Output::line("Renderize no controller:");
             Output::dim("  \$this->view('{$resourceName}.index', \$data);");

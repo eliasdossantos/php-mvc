@@ -1,0 +1,146 @@
+<!-- resources/views/{{ viewPath }}/show.php -->
+
+<!-- Aqui enviamos para o template principal o título da página -->
+
+<?php View::start('title'); ?>
+
+<?= e($title ?? 'Detalhes') ?> | Admin
+
+<?php View::end(); ?>
+
+
+<!-- Aqui enviamos para o template principal os estilos -->
+
+<?php View::start('styles'); ?>
+
+<?php View::end(); ?>
+
+
+<!-- Aqui enviamos para o template principal o conteúdo -->
+
+<?php View::start('content'); ?>
+
+<!-- Begin Page Content -->
+
+<div class="container-fluid">
+
+    <div class="page-header">
+        <div>
+            <a href="<?= url('dashboard/{{ routePrefix }}') ?>"
+               class="btn btn-outline btn-sm">
+                ← Voltar
+            </a>
+
+            <h1 class="h3 mb-4 text-gray-800" style="margin-top: 12px">
+                <?= e($title ?? 'Detalhes') ?>
+            </h1>
+        </div>
+
+        <a href="<?= url("dashboard/{{ routePrefix }}/{$item->id}/edit") ?>"
+           class="btn btn-secondary">
+            Editar
+        </a>
+    </div>
+
+    <?= \Framework\Support\View::render('components.alerts'); ?>
+
+    <div class="card">
+        <div class="card-body">
+
+            <table class="doc-table">
+                <tbody>
+
+                    <tr>
+                        <td>
+                            <strong>ID</strong>
+                        </td>
+                        <td>
+                            <?= e($item->id ?? '—') ?>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Nome</strong>
+                        </td>
+                        <td>
+                            <?= e($item->nome ?? '—') ?>
+                        </td>
+                    </tr>
+
+                    <!-- Campo de arquivo (exemplo — descomente e ajuste o nome do campo) -->
+                    <!--
+                    <tr>
+                        <td>
+                            <strong>Imagem</strong>
+                        </td>
+                        <td>
+                            <?php if (!empty($item->imagem)): ?>
+                                <img src="<?= uploadUrl('{{ routePrefix }}', $item->imagem) ?>"
+                                     alt="Imagem" width="80">
+                            <?php else: ?>
+                                —
+                            <?php endif; ?>
+                        </td>
+                    </tr>
+                    -->
+
+                    <tr>
+                        <td>
+                            <strong>Criado em</strong>
+                        </td>
+                        <td>
+                            <?= dateBR($item->created_at ?? null) ?>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <strong>Atualizado em</strong>
+                        </td>
+                        <td>
+                            <?= dateBR($item->updated_at ?? null) ?>
+                        </td>
+                    </tr>
+
+                    <!-- Adicione mais campos conforme o Model -->
+
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="mt-2">
+
+        <form method="POST"
+              action="<?= url("dashboard/{{ routePrefix }}/{$item->id}") ?>"
+              style="display:inline">
+
+            <?= csrf_field() ?>
+            <?= method_field('DELETE') ?>
+
+            <button type="submit"
+                    class="btn btn-danger"
+                    data-confirm="Excluir este {{ ModelName }} permanentemente?">
+                Excluir
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+<!-- /.container-fluid -->
+
+<?php View::end(); ?>
+
+
+<!-- Aqui enviamos para o template principal os scripts -->
+
+<?php View::start('scripts'); ?>
+
+<script src="<?= asset('js/demo.js') ?>"></script>
+
+<?php View::end(); ?>

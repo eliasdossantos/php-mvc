@@ -70,8 +70,8 @@ O objetivo é oferecer uma alternativa leve e flexível para quem deseja utiliza
 
 ### E-mails
 
-- Integração com PHPMailer
-- Templates reutilizáveis
+- Integração com PHPMailer para e-mails transacionais
+- O corpo HTML/texto é fornecido ao Mailer; esta base não inclui diretório ou renderizador dedicado de templates de e-mail
 - Configuração via ambiente
 
 ### Logs
@@ -84,12 +84,14 @@ O objetivo é oferecer uma alternativa leve e flexível para quem deseja utiliza
 
 Comandos para geração rápida de código:
 
-- Controllers
+- Controllers Web e API
 - Models
-- Requests
+- Requests Web e API
+- Recursos JSON da API
 - Services
 - Repositories
 - Views
+- Layouts
 - Migrations
 - Seeders
 - Key generation (`php mvc key:generate`)
@@ -190,9 +192,9 @@ O comando gera um arquivo com timestamp no nome (ex.: `2026_09_21_100000_create_
 ```php
 <?php
 
-use App\Core\Migration;
-use App\Core\Schema;
-use App\Core\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+use Framework\Database\Blueprint;
 
 class CreatePostsTable extends Migration
 {
@@ -357,173 +359,82 @@ php mvc help
 
 ## Estrutura do Projeto
 
+A árvore abaixo resume os diretórios existentes nesta versão; não lista todos os arquivos de cada pasta.
+
 ```text
 php-mvc/
 ├── .github/
-│   └── workflows/
-│       └── ci.yml
 ├── app/
-│   ├── Controllers/
-│   │   ├── AuthController.php
-│   │   ├── BaseController.php
-│   │   ├── DashboardController.php
-│   │   └── HomeController.php
-│   ├── Core/
-│   │   ├── Interfaces/
-│   │   │   └── RepositoryInterface.php
-│   │   ├── Application.php
-│   │   ├── Auth.php
-│   │   ├── Blueprint.php
-│   │   ├── Column.php
-│   │   ├── Controller.php
-│   │   ├── Database.php
-│   │   ├── Logger.php
-│   │   ├── Migration.php
-│   │   ├── Model.php
-│   │   ├── Repository.php
-│   │   ├── Request.php
-│   │   ├── Router.php
-│   │   ├── Schema.php
-│   │   ├── Service.php
-│   │   ├── Session.php
-│   │   ├── Upload.php
-│   │   ├── Validator.php
-│   │   └── View.php
-│   ├── Helpers/
-│   │   ├── Mailer.php
-│   │   ├── SecurityHelper.php
-│   │   ├── ViewHelper.php
-│   │   └── functions.php
-│   ├── Middlewares/
-│   │   ├── AuthMiddleware.php
-│   │   ├── CsrfMiddleware.php
-│   │   ├── DevelopmentMiddleware.php
-│   │   ├── GuestMiddleware.php
-│   │   ├── RateLimitMiddleware.php
-│   │   ├── RoleMiddleware.php
-│   │   └── SecurityHeadersMiddleware.php
+│   ├── Http/
+│   │   ├── Controllers/
+│   │   │   ├── Api/
+│   │   │   └── Web/
+│   │   ├── Middlewares/
+│   │   ├── Requests/
+│   │   │   ├── Auth/
+│   │   │   └── Users/
+│   │   └── Resources/
 │   ├── Models/
-│   │   ├── RedefinicaoSenha.php
-│   │   └── User.php
 │   ├── Repositories/
-│   │   └── UserRepository.php
-│   ├── Requests/
-│   │   ├── Auth/
-│   │   │   ├── ForgotPasswordRequest.php
-│   │   │   ├── LoginRequest.php
-│   │   │   ├── RegisterRequest.php
-│   │   │   └── ResetPasswordRequest.php
-│   │   ├── Users/
-│   │   │   ├── StoreUserRequest.php
-│   │   │   └── UpdateUserRequest.php
-│   │   └── FormRequest.php
 │   ├── Services/
-│   │   └── AuthService.php
-│   └── Views/
-│       ├── auth/
-│       │   ├── forgot.php
-│       │   ├── login.php
-│       │   ├── register.php
-│       │   └── reset.php
-│       ├── components/
-│       │   ├── alerts.php
-│       │   ├── footer.php
-│       │   ├── pagination.php
-│       │   ├── sidebar.php
-│       │   └── topbar.php
-│       ├── dashboard/
-│       │   └── index.php
-│       ├── errors/
-│       │   ├── 404.php
-│       │   ├── debug.php
-│       │   └── generic.php
-│       ├── home/
-│       │   └── index.php
-│       └── layouts/
-│           ├── auth.php
-│           ├── home.php
-│           └── main.php
+│   │   ├── Auth/
+│   │   └── Integrations/
+│   │       ├── Cep/
+│   │       └── Payment/
+│   └── Support/
+│       └── Helpers/
 ├── bootstrap/
 │   └── app.php
 ├── cli/
 │   ├── Commands/
-│   │   ├── KeyGenerateCommand.php
-│   │   ├── MakeControllerCommand.php
-│   │   ├── MakeMigrationCommand.php
-│   │   ├── MakeModelCommand.php
-│   │   ├── MakeRepositoryCommand.php
-│   │   ├── MakeRequestCommand.php
-│   │   ├── MakeSeedCommand.php
-│   │   ├── MakeServiceCommand.php
-│   │   ├── MakeViewCommand.php
-│   │   ├── MigrateCommand.php
-│   │   ├── MigrateRollbackCommand.php
-│   │   ├── SeedRunCommand.php
-│   │   └── ServeCommand.php
 │   ├── Stubs/
-│   │   ├── controller.stub
-│   │   ├── migration.stub
-│   │   ├── model.stub
-│   │   ├── repository.stub
-│   │   ├── request.stub
-│   │   ├── seed.stub
-│   │   ├── service.stub
-│   │   ├── view.create.stub
-│   │   ├── view.edit.stub
-│   │   ├── view.index.stub
-│   │   └── view.show.stub
+│   │   ├── api/
+│   │   ├── controller/
+│   │   ├── layout/
+│   │   ├── migration/
+│   │   ├── model/
+│   │   ├── repository/
+│   │   ├── request/
+│   │   ├── seed/
+│   │   ├── service/
+│   │   └── view/
 │   ├── Command.php
 │   ├── Kernel.php
-│   ├── Migrator.php
-│   └── Output.php
+│   └── Migrator.php
 ├── config/
-│   ├── app.php
-│   ├── database.php
-│   └── mail.php
 ├── database/
 │   ├── migrations/
-│   │   ├── 0001_01_01_100000_create_users_table.php
-│   │   ├── 0001_01_01_100001_create_redefinicoes_senha_table.php
-│   │   ├── 0001_01_01_100002_add_remember_token_expires_at_to_users_table.php
-│   │   └── 0001_01_01_100003_create_api_tokens_table.php
 │   └── seeds/
-│       └── UserSeeder.php
 ├── docs/
-│   ├── assets/
-│   │   ├── css/
-│   │   │   └── styles.css
-│   │   └── js/
-│   │       └── app.js
+│   ├── API.md
 │   └── index.html
+├── framework/
+│   ├── Auth/
+│   ├── Core/
+│   ├── Database/
+│   ├── Http/
+│   │   └── Api/
+│   ├── Interfaces/
+│   └── Support/
 ├── public/
-│   ├── assets/
-│   │   ├── css/
-│   │   │   └── app.css
-│   │   └── js/
-│   │       └── app.js
-│   ├── .htaccess
-│   └── index.php
+├── resources/
+│   └── views/
+│       ├── auth/
+│       ├── components/
+│       ├── dashboard/
+│       ├── errors/
+│       ├── home/
+│       └── layouts/
 ├── routes/
-│   └── web.php
 ├── storage/
-│   ├── logs/
-│   ├── sessions/
-│   └── uploads/
-├── tests/
-│   ├── Feature/
-│   │   └── .gitkeep
-│   └── Unit/
-│       └── .gitkeep
-├── .env.example
-├── .gitignore
-├── CHANGELOG.md
-├── CONTRIBUTING.md
-├── LICENSE
-├── README.md
-├── composer.json
-├── mvc
-└── phpunit.xml
+└── tests/
 ```
+
+Controllers Web ficam em `app/Http/Controllers/Web/` e controllers da API em `app/Http/Controllers/Api/`. A camada JSON da API em `app/Http/Resources/` é diferente das views HTML em `resources/views/`.
+
+O renderizador usa `resources/views/` como raiz. Por isso, `$this->view('home.index', $data, 'home')` resolve `resources/views/home/index.php` e o layout `resources/views/layouts/home.php`. A notação por pontos e a chamada dos controllers permanecem iguais.
+
+Nesta versão, `resources/` contém `views/`; diretórios como `resources/lang/`, `resources/emails/` ou `resources/pdf/` não fazem parte do projeto. Adicione um diretório e seu carregador/renderizador quando a funcionalidade correspondente for implementada, não apenas para completar uma árvore.
 
 ---
 

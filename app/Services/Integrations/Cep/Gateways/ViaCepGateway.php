@@ -2,16 +2,16 @@
 
 namespace App\Services\Integrations\Cep\Gateways;
 
-use Framework\Api\ApiClient;
-use Framework\Api\ApiException;
-use Framework\Logger;
+use Framework\Http\Api\ApiClient;
+use Framework\Http\Api\ApiException;
+use Framework\Support\Logger;
 use App\Services\Integrations\Cep\CepGatewayInterface;
 
 /**
  * ViaCepGateway — Implementação concreta usando a API pública ViaCEP
  * ─────────────────────────────────────────────────────────────────────────────
  * Serve como exemplo de referência real do fluxo:
- *   Service → Integration (Gateway) → Framework\Api\ApiClient → API externa
+ *   Service → Integration (Gateway) → Framework\Http\Api\ApiClient → API externa
  * para as próximas integrações (Mapas, WhatsApp, IA, etc.) — copie este
  * padrão.
  */

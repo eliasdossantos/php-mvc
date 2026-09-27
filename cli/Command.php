@@ -89,7 +89,13 @@ abstract class Command
         }
 
         // Carrega o stub
-        $stubPath = ROOT_PATH . '/cli/Stubs/' . $stubName . '.stub';
+        $stubGroup = match (true) {
+            str_starts_with($stubName, 'api-') => 'api',
+            str_starts_with($stubName, 'view.') => 'view',
+            in_array($stubName, ['controller', 'layout', 'migration', 'model', 'repository', 'request', 'seed', 'service'], true) => $stubName,
+            default => '',
+        };
+        $stubPath = ROOT_PATH . '/cli/Stubs/' . ($stubGroup !== '' ? $stubGroup . '/' : '') . $stubName . '.stub';
         if (!file_exists($stubPath)) {
             Output::error("Stub não encontrado: {$stubName}.stub");
             return false;

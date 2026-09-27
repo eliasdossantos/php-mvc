@@ -2,8 +2,8 @@
 
 namespace App\Services\Integrations\Payment;
 
-use Framework\Service;
-use Framework\Logger;
+use Framework\Core\Service;
+use Framework\Support\Logger;
 use App\Services\Integrations\Payment\Gateways\NullPaymentGateway;
 
 /**

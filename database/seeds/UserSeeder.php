@@ -58,7 +58,7 @@ require ROOT_PATH . '/vendor/autoload.php';
 // ─────────────────────────────────────────────────────────────────────────────
 
 try {
-    $pdo = \Framework\Database::getInstance()->getPdo();
+    $pdo = \Framework\Database\Database::getInstance()->getPdo();
 } catch (\Throwable $e) {
     die("❌ Conexão falhou: " . $e->getMessage() . PHP_EOL);
 }

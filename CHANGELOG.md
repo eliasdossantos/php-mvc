@@ -4,6 +4,25 @@ Todas as alterações relevantes deste projeto serão documentadas neste arquivo
 
 O formato segue o padrão [**Keep a Changelog**](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adota o [**Versionamento Semântico**](https://semver.org/lang/pt-BR/).
 
+## [2.0.0] — 2026-09-27
+
+### Alterado
+
+- Reorganizados controllers Web e de API em `app/Http/Controllers/Web/` e `app/Http/Controllers/Api/`.
+- Requests, middlewares e recursos JSON da API agrupados em `app/Http/`; helpers movidos para `app/Support/Helpers/`.
+- Views movidas de `app/Views/` para `resources/views/`; o renderizador mantém a notação por pontos e passa a resolver a partir desse diretório.
+- Classes do framework redistribuídas entre `framework/Core/`, `framework/Http/`, `framework/Database/`, `framework/Auth/`, `framework/Support/` e `framework/Interfaces/`, com namespaces alinhados aos caminhos.
+- Stubs do CLI agrupados em subpastas por categoria e carregador de stubs atualizado para os novos caminhos.
+- Atualizadas referências no bootstrap, autoload, rotas, CLI, geradores e documentação.
+
+### Compatibilidade
+
+- Código personalizado que importe namespaces ou caminhos antigos precisa ser atualizado. A mudança não altera o schema e não requer migration de banco de dados.
+- A organização foi baseada em uma dica do usuário **Davi**, a partir da estrutura utilizada em seu sistema real, e adaptada a este projeto com auxílio deste sistema.
+- Arquivos e funcionalidades ausentes no projeto recebido não foram criados apenas para preencher a árvore de referência.
+
+---
+
 ## [1.4.2] — 2026-09-26
 
 ### Alterado

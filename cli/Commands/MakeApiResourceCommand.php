@@ -6,12 +6,12 @@ use Cli\Command;
 use Cli\Output;
 
 /**
- * make:api-resource — Gera uma transformação de Model → JSON em app/Api/Resources
+ * make:api-resource — Gera uma transformação de Model → JSON em app/Http/Resources
  *
  * Uso:
  *   php mvc make:api-resource ProdutoResource
  *
- * Cria: app/Api/Resources/ProdutoResource.php
+ * Cria: app/Http/Resources/ProdutoResource.php
  */
 class MakeApiResourceCommand extends Command
 {
@@ -31,7 +31,7 @@ class MakeApiResourceCommand extends Command
             $className .= 'Resource';
         }
 
-        $destPath = ROOT_PATH . '/app/Api/Resources/' . $className . '.php';
+        $destPath = ROOT_PATH . '/app/Http/Resources/' . $className . '.php';
 
         Output::info("Gerando resource de API <comment>{$className}</comment>…");
 
@@ -39,7 +39,7 @@ class MakeApiResourceCommand extends Command
             '{{ ClassName }}' => $className,
         ]);
 
-        Output::success("Resource criado: <info>app/Api/Resources/{$className}.php</info>");
+        Output::success("Resource criado: <info>app/Http/Resources/{$className}.php</info>");
         Output::newline();
         Output::line("Uso no Controller:");
         Output::dim("  {$className}::make(\$item);        // um registro");

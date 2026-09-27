@@ -1,8 +1,8 @@
 <?php
 
-use Framework\Migration;
-use Framework\Schema;
-use Framework\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+use Framework\Database\Blueprint;
 
 return new class extends Migration {
     public function up(): void

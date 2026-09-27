@@ -6,14 +6,14 @@ use Cli\Command;
 use Cli\Output;
 
 /**
- * make:api-controller — Gera um Controller REST em app/Api/Controllers
+ * make:api-controller — Gera um Controller REST em app/Http/Controllers/Api
  *
  * Uso:
  *   php mvc make:api-controller ProdutoApiController
  *
- * Cria: app/Api/Controllers/ProdutoApiController.php
+ * Cria: app/Http/Controllers/Api/ProdutoApiController.php
  * Espera que exista (ou você crie em seguida): App\Repositories\ProdutoRepository
- * e App\Api\Resources\ProdutoResource (veja make:api-resource).
+ * e App\Http\Resources\ProdutoResource (veja make:api-resource).
  */
 class MakeApiControllerCommand extends Command
 {
@@ -35,7 +35,7 @@ class MakeApiControllerCommand extends Command
 
         $modelName   = preg_replace('/ApiController$|Controller$/', '', $className);
         $routePrefix = $this->toRoutePrefix($modelName);
-        $destPath    = ROOT_PATH . '/app/Api/Controllers/' . $className . '.php';
+        $destPath    = ROOT_PATH . '/app/Http/Controllers/Api/' . $className . '.php';
 
         Output::info("Gerando controller de API <comment>{$className}</comment>…");
 
@@ -45,7 +45,7 @@ class MakeApiControllerCommand extends Command
             '{{ routePrefix }}' => $routePrefix,
         ]);
 
-        Output::success("Controller criado: <info>app/Api/Controllers/{$className}.php</info>");
+        Output::success("Controller criado: <info>app/Http/Controllers/Api/{$className}.php</info>");
         Output::newline();
         Output::line("Registre as rotas em <comment>routes/api.php</comment>:");
         Output::dim("  \$r->get('/{$routePrefix}',      [{$className}::class, 'index'],   ['ApiAuthMiddleware']);");

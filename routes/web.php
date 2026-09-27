@@ -1,9 +1,9 @@
 <?php
 
-use App\Controllers\HomeController;
-use App\Controllers\AuthController;
-use App\Controllers\DashboardController;
-use Framework\Router;
+use App\Http\Controllers\Web\HomeController;
+use App\Http\Controllers\Web\AuthController;
+use App\Http\Controllers\Web\DashboardController;
+use Framework\Http\Router;
 
 /** @var Router $router */
 

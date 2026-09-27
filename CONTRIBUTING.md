@@ -75,14 +75,20 @@ Este projeto segue as seguintes convenções:
 
 ## Estrutura do Projeto
 
-Ao contribuir, procure manter a arquitetura existente:
+Ao contribuir, mantenha a organização existente e os namespaces PSR-4 correspondentes:
 
-- Controllers → regras de fluxo;
-- Models → acesso a dados;
-- Services → regras de negócio;
-- Repositories → consultas complexas;
-- Views → apresentação;
-- Middlewares → controle de requisições.
+- Controllers Web: `app/Http/Controllers/Web/` (`App\Http\Controllers\Web`);
+- Controllers de API: `app/Http/Controllers/Api/` (`App\Http\Controllers\Api`);
+- Middlewares, requests e recursos da API: `app/Http/Middlewares/`, `app/Http/Requests/` e `app/Http/Resources/`;
+- Models, repositories e services: `app/Models/`, `app/Repositories/` e `app/Services/`;
+- Helpers da aplicação: `app/Support/Helpers/`;
+- Views HTML: `resources/views/`; a chamada `home.index` corresponde a `resources/views/home/index.php`;
+- Classes do framework: organize por responsabilidade em `framework/Core/`, `framework/Http/`, `framework/Database/`, `framework/Auth/`, `framework/Support/` e `framework/Interfaces/`;
+- Stubs dos geradores: `cli/Stubs/`, dentro da subpasta da categoria correspondente.
+
+Mantenha regras de fluxo nos controllers, acesso a dados nos models/repositories, regras de negócio nos services e apresentação nas views. Não crie arquivos ou diretórios vazios apenas para espelhar uma estrutura de referência: adicione componentes quando fizerem parte de uma funcionalidade implementada.
+
+---
 
 ## Testes
 

@@ -189,9 +189,9 @@ class Kernel
                 'make:seed {Nome}'       => 'Cria um Seeder com exemplo funcional',
                 'make:view {nome}'       => 'Cria as views index/show/create/edit',
                 'make:layout {nome}'     => 'Cria um layout compatível com sections e HTML solto',
-                'make:api-controller {Nome}' => 'Cria um Controller REST em app/Api/Controllers',
-                'make:api-resource {Nome}'   => 'Cria uma transformação Model → JSON em app/Api/Resources',
-                'make:api-request {Nome}'    => 'Cria um FormRequest de API em app/Api/Requests',
+                'make:api-controller {Nome}' => 'Cria um Controller REST em app/Http/Controllers/Api',
+                'make:api-resource {Nome}'   => 'Cria uma transformação Model → JSON em app/Http/Resources',
+                'make:api-request {Nome}'    => 'Cria um FormRequest de API em app/Http/Requests/Api',
             ],
             'Banco de dados' => [
                 'migrate'                  => 'Executa todas as migrations pendentes',

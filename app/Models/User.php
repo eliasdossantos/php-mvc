@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Framework\Model;
+use Framework\Database\Model;
 
 /**
  * User Model
@@ -27,7 +27,7 @@ class User extends Model
 
     /**
      * Autentica email + password.
-     * Chamado por Framework\Auth::attempt().
+     * Chamado por Framework\Auth\Auth::attempt().
      */
     public function authenticate(string $email, string $password): object|false
     {

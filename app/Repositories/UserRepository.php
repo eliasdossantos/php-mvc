@@ -2,7 +2,7 @@
 
 namespace App\Repositories;
 
-use Framework\Repository;
+use Framework\Database\Repository;
 use App\Models\User;
 
 /**

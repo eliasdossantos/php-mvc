@@ -1,0 +1,56 @@
+<?php
+
+namespace App\Http\Middlewares;
+
+use Framework\Http\Request;
+
+/**
+ * SecurityHeadersMiddleware — Headers de segurança HTTP reforçados
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Complementa os headers básicos já definidos em Application::setSecurityHeaders().
+ * Adiciona Content-Security-Policy, Permissions-Policy e HSTS.
+ *
+ * Aplicado globalmente pelo próprio Framework\Core\Application (no construtor), para
+ * toda requisição — inclusive páginas públicas e de autenticação. Não é
+ * necessário (nem recomendado) adicioná-lo manualmente em grupos de rota.
+ */
+class SecurityHeadersMiddleware
+{
+    public function handle(Request $request): void
+    {
+        if (headers_sent()) return;
+
+        // ── Content-Security-Policy ───────────────────────────────────────────
+        // Scripts inline permitidos somente com nonce por resposta. Styles inline
+        // ainda são mantidos por compatibilidade com os templates atuais.
+        $nonce = defined('CSP_NONCE') ? CSP_NONCE : base64_encode(random_bytes(16));
+        if (!defined('CSP_NONCE')) define('CSP_NONCE', $nonce);
+        $csp = implode('; ', [
+            "default-src 'self'",
+            "script-src 'self' 'nonce-{$nonce}'",
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+            "font-src 'self' https://fonts.gstatic.com",
+            "img-src 'self' data: blob:",
+            "connect-src 'self'",
+            "frame-ancestors 'none'",               // substitui X-Frame-Options
+            "base-uri 'self'",
+            "form-action 'self'",
+            "upgrade-insecure-requests",
+        ]);
+        header("Content-Security-Policy: {$csp}");
+
+        // ── HSTS — apenas em produção com HTTPS ───────────────────────────────
+        if (
+            defined('APP_ENV') && APP_ENV === 'production' &&
+            (!empty($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off')
+        ) {
+            header('Strict-Transport-Security: max-age=31536000; includeSubDomains');
+        }
+
+        // ── Permissions-Policy ────────────────────────────────────────────────
+        header('Permissions-Policy: camera=(), microphone=(), geolocation=(), payment=()');
+
+        // ── Remove header que expõe tecnologia ────────────────────────────────
+        header_remove('X-Powered-By');
+    }
+}

@@ -1,0 +1,395 @@
+<?php
+
+namespace App\Http\Requests;
+
+use Framework\Http\Request;
+use Framework\Support\Session;
+use Framework\Support\Validator;
+
+/**
+ * FormRequest — Classe Base de Requisições
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Inspirada no FormRequest do Laravel, adaptada para PHP puro.
+ *
+ * Centraliza em um único lugar:
+ *   - Captura de dados da requisição ($_POST, $_FILES, JSON body)
+ *   - Sanitização dos campos antes de validar
+ *   - Validação por regras declarativas
+ *   - Mensagens de erro customizadas por campo
+ *   - Autorização da requisição
+ *   - Retorno dos dados já validados e limpos
+ *
+ * Fluxo interno:
+ *   new LoginRequest()
+ *     → captura dados
+ *     → verifica authorize()
+ *     → sanitiza via sanitize()
+ *     → valida contra rules() com messages() customizadas
+ *     → expõe fails() / errors() / validated()
+ *
+ * Uso no Controller:
+ *   $request = new LoginRequest();
+ *   if ($request->fails()) {
+ *       Session::flash('error', $request->firstError());
+ *       $this->back();
+ *   }
+ *   $data = $request->validated(); // array limpo e validado
+ *
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+abstract class FormRequest
+{
+    /** Dados brutos capturados da requisição */
+    protected array $input = [];
+
+    /** Dados após sanitização */
+    protected array $sanitized = [];
+
+    /** Erros de validação: ['campo' => ['mensagem', ...]] */
+    protected array $errors = [];
+
+    /** Dados que passaram em todas as regras */
+    protected array $validatedData = [];
+
+    /** Se a validação já foi executada */
+    private bool $resolved = false;
+
+    /** Parâmetros vindos da URI da rota atual (ex: ['id' => '42']) */
+    protected array $routeParams = [];
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Métodos para implementar nas subclasses
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Define se a requisição está autorizada.
+     * Retorne false para bloquear com HTTP 403.
+     *
+     * Exemplos de uso:
+     *   return Auth::check();                    // apenas logados
+     *   return Auth::is('admin');                // apenas admins
+     *   return true;                             // sempre permitido
+     */
+    abstract public function authorize(): bool;
+
+    /**
+     * Regras de validação no formato do Framework\Support\Validator.
+     *
+     * Exemplo:
+     *   return [
+     *       'name'  => 'required|min:2|max:100',
+     *       'email' => 'required|email|unique:users,email',
+     *   ];
+     * Convenção de placeholders de rota em rules():
+     *   Use {nomeDoParam} igual ao nome declarado na rota (ex: /unidade/{id})
+     *   para referenciar o valor da URI diretamente na regra, sem precisar
+     *   declarar variável manual:
+     *
+     *     'nome' => 'required|unique:unidades,nome,{id}'
+     *
+     *   Placeholders não resolvidos lançam RuntimeException — é intencional,
+     *   pra pegar o erro no dev em vez de deixar passar em produção.
+     */
+    abstract public function rules(): array;
+
+    /**
+     * Mensagens customizadas por campo e regra.
+     * Formato: 'campo.regra' => 'mensagem'
+     *
+     * Exemplo:
+     *   return [
+     *       'email.required' => 'Informe seu e-mail.',
+     *       'email.email'    => 'O e-mail informado não é válido.',
+     *       'name.min'       => 'O nome deve ter pelo menos 2 caracteres.',
+     *   ];
+     *
+     * Retorne [] para usar as mensagens padrão do Validator.
+     */
+    public function messages(): array
+    {
+        return [];
+    }
+
+    /**
+     * Sanitiza os dados antes da validação.
+     * Sobrescreva para aplicar transformações específicas.
+     *
+     * Exemplo:
+     *   return array_merge($this->input, [
+     *       'email' => strtolower(trim($this->input['email'] ?? '')),
+     *       'name'  => ucwords(trim($this->input['name'] ?? '')),
+     *   ]);
+     *
+     * O comportamento padrão aplica trim + strip_tags + htmlspecialchars
+     * em todos os campos de texto.
+     */
+    public function sanitize(): array
+    {
+        return Request::sanitizeValue($this->input);
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Constructor — captura e resolve na instanciação
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public function __construct(array $routeParams = [])
+    {
+        $this->routeParams = $routeParams;
+        $this->input = $this->captureInput();
+        $this->resolve();
+    }
+
+    /** Atalho para acessar um parâmetro da rota (ex: id da entidade sendo editada) */
+    protected function routeParam(string $name, mixed $default = null): mixed
+    {
+        return $this->routeParams[$name] ?? $default;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // API pública
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /** Retorna true se a validação falhou */
+    public function fails(): bool
+    {
+        return !empty($this->errors);
+    }
+
+    /** Retorna true se a validação passou */
+    public function passes(): bool
+    {
+        return empty($this->errors);
+    }
+
+    /**
+     * Retorna todos os erros de validação.
+     * Formato: ['campo' => ['mensagem1', 'mensagem2'], ...]
+     */
+    public function errors(): array
+    {
+        return $this->errors;
+    }
+
+    /**
+     * Retorna o primeiro erro de um campo específico,
+     * ou o primeiro erro global se nenhum campo for informado.
+     */
+    public function firstError(?string $field = null): ?string
+    {
+        if ($field !== null) {
+            return $this->errors[$field][0] ?? null;
+        }
+        $first = reset($this->errors);
+        return $first ? $first[0] : null;
+    }
+
+    /**
+     * Retorna apenas os dados que passaram em todas as validações,
+     * já sanitizados. Use este array no Service/Model — nunca $_POST diretamente.
+     */
+    public function validated(): array
+    {
+        return $this->validatedData;
+    }
+
+    /**
+     * Retorna o valor de um campo validado (atalho para validated()['campo']).
+     */
+    public function get(string $field, mixed $default = null): mixed
+    {
+        return $this->validatedData[$field] ?? $default;
+    }
+
+    /**
+     * Retorna o valor de um campo do input bruto (antes de validar),
+     * útil para repopular formulários após erro.
+     */
+    public function old(string $field, mixed $default = ''): mixed
+    {
+        return $this->sanitized[$field] ?? $this->input[$field] ?? $default;
+    }
+
+    /**
+     * Retorna todos os dados da entrada sanitizada (não necessariamente válidos).
+     * Útil para repopular formulários.
+     */
+    public function all(): array
+    {
+        return $this->sanitized;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Internos
+    // ─────────────────────────────────────────────────────────────────────────
+
+    /**
+     * Orquestra o fluxo completo:
+     * authorize → sanitize → validate → aplicar mensagens customizadas
+     */
+    private function resolve(): void
+    {
+        if ($this->resolved) return;
+        $this->resolved = true;
+
+        // 1. Verifica autorização
+        if (!$this->authorize()) {
+            http_response_code(403);
+            $isJson = str_contains($_SERVER['CONTENT_TYPE'] ?? '', 'application/json')
+                || str_contains($_SERVER['HTTP_ACCEPT'] ?? '', 'application/json');
+
+            if ($isJson) {
+                header('Content-Type: application/json');
+                echo json_encode(['success' => false, 'message' => 'Ação não autorizada.']);
+            } else {
+                Session::flash('error', 'Você não tem permissão para realizar esta ação.');
+                $back = safeRedirectTarget($_SERVER['HTTP_REFERER'] ?? '', defined('APP_URL') ? APP_URL : '/');
+                header("Location: {$back}");
+            }
+            exit;
+        }
+
+        // 2. Sanitiza
+        $this->sanitized = $this->sanitize();
+
+        // 3. Valida
+        $validator = new Validator($this->sanitized);
+        $validator->validate($this->resolveRouteParamsInRules($this->rules()));
+
+        // 4. Aplica mensagens customizadas sobrescrevendo as geradas
+        if ($validator->fails()) {
+            $this->errors = $this->applyCustomMessages(
+                $validator->errors(),
+                $this->messages()
+            );
+            return;
+        }
+
+        // 5. Dados validados = sanitizados filtrados pelas chaves das rules
+        $this->validatedData = array_intersect_key(
+            $this->sanitized,
+            $this->rules()
+        );
+    }
+
+    /**
+     * Substitui placeholders {param} nas regras pelos valores correspondentes
+     * capturados da URI da rota atual — ex: {id} → routeParams['id'].
+     *
+     * Convenção do projeto: toda regra que usa {algumNome} espera que a rota
+     * atual declare esse mesmo parâmetro (ex: /unidade/{id} → {id} na rule).
+     *
+     * Se sobrar algum {placeholder} não resolvido, é sinal de bug — ou o Router
+     * não repassou routeParams ao FormRequest, ou a rule referencia um parâmetro
+     * que a rota não tem. Preferimos quebrar aqui, com mensagem clara, a deixar
+     * passar silenciosamente (o que faria, por ex., a checagem de "unique"
+     * simplesmente não ignorar ninguém, sem avisar).
+     */
+    private function resolveRouteParamsInRules(array $rules): array
+    {
+        foreach ($rules as $field => $ruleString) {
+            foreach ($this->routeParams as $key => $value) {
+                $ruleString = str_replace('{' . $key . '}', (string)($value ?? ''), $ruleString);
+            }
+
+            if (preg_match('/\{([a-zA-Z_]+)\}/', $ruleString, $m)) {
+                throw new \RuntimeException(
+                    'FormRequest [' . static::class . "]: placeholder de rota \"{{$m[1]}}\" "
+                        . "não foi resolvido no campo \"{$field}\" (regra: \"{$ruleString}\"). "
+                        . "Verifique se o Router está passando \$params ao instanciar o FormRequest, "
+                        . "e se a rota atual realmente declara {{$m[1]}}."
+                );
+            }
+
+            $rules[$field] = $ruleString;
+        }
+
+        return $rules;
+    }
+
+    /**
+     * Captura dados da requisição em ordem de prioridade:
+     * JSON body (APIs) → $_POST → campos individuais de $_FILES
+     */
+    private function captureInput(): array
+    {
+        $contentType = $_SERVER['CONTENT_TYPE'] ?? '';
+
+        // JSON body (para APIs REST)
+        if (str_contains($contentType, 'application/json')) {
+            $raw = file_get_contents('php://input');
+            return json_decode($raw, true) ?? [];
+        }
+
+        // Form data padrão + nomes dos arquivos
+        $data = $_POST;
+        foreach ($_FILES as $key => $file) {
+            // Adiciona o nome original do arquivo para validações de extensão
+            if (!isset($data[$key])) {
+                $data[$key] = $file['name'] ?? '';
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * Sobrescreve mensagens geradas pelo Validator com as mensagens customizadas
+     * definidas em messages(). Formato da chave: 'campo.regra'
+     *
+     * Exemplo: ['email.required' => 'Informe seu e-mail.']
+     */
+    private function applyCustomMessages(array $errors, array $custom): array
+    {
+        if (empty($custom)) return $errors;
+
+        foreach ($errors as $field => $messages) {
+            foreach ($messages as $i => $message) {
+                // Tenta identificar qual regra gerou esta mensagem
+                // buscando no mapa 'campo.regra' => 'mensagem customizada'
+                foreach ($custom as $key => $customMsg) {
+                    [$customField, $customRule] = array_pad(explode('.', $key, 2), 2, '');
+                    if ($customField === $field && $this->messageMatchesRule($message, $customRule)) {
+                        $errors[$field][$i] = $customMsg;
+                    }
+                }
+            }
+        }
+
+        return $errors;
+    }
+
+    /**
+     * Verifica se uma mensagem de erro corresponde a uma regra específica,
+     * comparando palavras-chave da mensagem com o nome da regra.
+     */
+    private function messageMatchesRule(string $message, string $rule): bool
+    {
+        $ruleBase = explode(':', $rule)[0]; // 'min:3' → 'min'
+
+        $keywords = [
+            'required'     => ['obrigatório', 'obrigatorio'],
+            'email'        => ['e-mail', 'email'],
+            'min'          => ['mínimo', 'minimo', 'pelo menos'],
+            'max'          => ['máximo', 'maximo'],
+            'confirmed'    => ['confirmação', 'confirmacao', 'coincidir'],
+            'numeric'      => ['numérico', 'numerico'],
+            'integer'      => ['inteiro'],
+            'url'          => ['url'],
+            'unique'       => ['em uso', 'já está'],
+            'exists'       => ['não foi encontrado', 'nao foi encontrado'],
+            'alpha'        => ['letras'],
+            'in'           => ['não é permitido', 'nao e permitido'],
+            'same'         => ['igual'],
+            'different'    => ['diferente'],
+        ];
+
+        if (!isset($keywords[$ruleBase])) return false;
+
+        $msgLower = mb_strtolower($message, 'UTF-8');
+        foreach ($keywords[$ruleBase] as $kw) {
+            if (str_contains($msgLower, $kw)) return true;
+        }
+
+        return false;
+    }
+}

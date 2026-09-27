@@ -36,8 +36,8 @@
             "Cli\\": "cli/"
         },
         "files": [
-            "app/Helpers/functions.php",
-            "app/Helpers/ViewHelper.php"
+            "app/Support/Helpers/functions.php",
+            "app/Support/Helpers/ViewHelper.php"
         ]
     },
     "autoload-dev": {

@@ -1,0 +1,25 @@
+<?php
+
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+use Framework\Database\Blueprint;
+
+/**
+ * Migration — {{ Description }}
+ */
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('{{ tableNameLower }}', function (Blueprint $table) {
+            $table->id();
+            // TODO: defina as colunas de {{ tableNameLower }} aqui
+            $table->string('nome', 100);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('{{ tableNameLower }}');
+    }
+};
