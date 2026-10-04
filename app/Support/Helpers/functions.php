@@ -107,7 +107,8 @@ function safeRedirectTarget(string $candidate, string $fallback = '/'): string
     $appParts = parse_url(defined('APP_URL') ? APP_URL : '');
     if (($parts['scheme'] ?? '') === ($appParts['scheme'] ?? '')
         && strtolower($parts['host'] ?? '') === strtolower($appParts['host'] ?? '')
-        && (int)($parts['port'] ?? 0) === (int)($appParts['port'] ?? 0)) {
+        && (int)($parts['port'] ?? 0) === (int)($appParts['port'] ?? 0)
+    ) {
         return ($parts['path'] ?? '/') . (isset($parts['query']) ? '?' . $parts['query'] : '');
     }
 
@@ -127,7 +128,7 @@ function redirect(string $path): never
     $nonce = cspNonce();
     $nonceAttr = $nonce !== '' ? ' nonce="' . htmlspecialchars($nonce, ENT_QUOTES, 'UTF-8') . '"' : '';
     echo '<script' . $nonceAttr . '>window.location.href=' . json_encode($url) . ';</script>'
-       . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
+        . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
     exit;
 }
 
@@ -293,18 +294,57 @@ function dateTimeBR(?string $date): string
     return $timestamp === false ? '—' : date('d/m/Y H:i', $timestamp);
 }
 
-function diffForHumans(?string $date): string
+/**
+ * Descreve uma data de forma relativa ao momento atual, em português.
+ *
+ * Exemplos:
+ *   agora mesmo
+ *   1 minuto atrás   | 15 minutos atrás
+ *   1 hora atrás     | 5 horas atrás
+ *   1 dia atrás      | 3 dias atrás
+ *   1 semana atrás   | 3 semanas atrás
+ *   1 mês atrás      | 5 meses atrás
+ *   1 ano atrás      | 3 anos atrás
+ *   em 2 horas       | em 4 dias | em 1 ano   (datas futuras)
+ *
+ * Retorna string vazia se a data for nula, vazia ou inválida.
+ */
+function tempoRelativo(string|\DateTimeInterface|null $data): string
 {
-    if (!$date) return '';
-    $timestamp = strtotime($date);
-    if ($timestamp === false) return '';
+    if ($data === null || $data === '') {
+        return '';
+    }
 
-    $diff = time() - $timestamp;
-    if ($diff < 60)     return 'agora mesmo';
-    if ($diff < 3600)   return (int)($diff / 60) . ' min atrás';
-    if ($diff < 86400)  return (int)($diff / 3600) . 'h atrás';
-    if ($diff < 604800) return (int)($diff / 86400) . ' dias atrás';
-    return dateBR($date);
+    $timestamp = $data instanceof \DateTimeInterface
+        ? $data->getTimestamp()
+        : strtotime($data);
+
+    if ($timestamp === false) {
+        return '';
+    }
+
+    $diferenca = time() - $timestamp;
+    $segundos  = abs($diferenca);
+    $futuro    = $diferenca < 0;
+
+    // Até 1 minuto (passado ou futuro): trata como "agora"
+    if ($segundos < 60) {
+        return 'agora mesmo';
+    }
+
+    $pluralizar = static fn(int $n, string $singular, string $plural): string
+    => $n . ' ' . ($n === 1 ? $singular : $plural);
+
+    $texto = match (true) {
+        $segundos < 3600     => $pluralizar(intdiv($segundos, 60), 'minuto', 'minutos'),
+        $segundos < 86400    => $pluralizar(intdiv($segundos, 3600), 'hora', 'horas'),
+        $segundos < 604800   => $pluralizar(intdiv($segundos, 86400), 'dia', 'dias'),
+        $segundos < 2629800  => $pluralizar(intdiv($segundos, 604800), 'semana', 'semanas'),
+        $segundos < 31557600 => $pluralizar(intdiv($segundos, 2629800), 'mês', 'meses'),
+        default              => $pluralizar(intdiv($segundos, 31557600), 'ano', 'anos'),
+    };
+
+    return $futuro ? "em {$texto}" : "{$texto} atrás";
 }
 
 // ── Números ───────────────────────────────────────────────────────────────────

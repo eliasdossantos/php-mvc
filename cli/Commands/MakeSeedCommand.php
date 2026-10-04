@@ -6,14 +6,11 @@ use Cli\Command;
 use Cli\Output;
 
 /**
- * make:seed — Gera um Seeder com estrutura funcional
+ * make:seed — Gera um Seeder de dados em database/seeds.
  *
  * Uso:
  *   php mvc make:seed ProductSeeder
- *   php mvc make:seed Product        ← sufixo Seeder adicionado automaticamente
- *
- * Cria:
- *   database/seeds/ProductSeeder.php
+ *   php mvc make:seed Product        o sufixo Seeder é adicionado automaticamente
  */
 class MakeSeedCommand extends Command
 {
@@ -29,7 +26,6 @@ class MakeSeedCommand extends Command
 
         [$className] = $this->parseNameAndNamespace($input);
 
-        // Garante sufixo Seeder
         if (!str_ends_with($className, 'Seeder')) {
             $className .= 'Seeder';
         }
@@ -40,16 +36,21 @@ class MakeSeedCommand extends Command
 
         Output::info("Gerando seeder <comment>{$className}</comment>…");
 
-        $this->generateFile('seed', $destPath, [
+        $created = $this->generateFile('seed', $destPath, [
             '{{ ClassName }}' => $className,
             '{{ ModelName }}' => $modelName,
             '{{ tableName }}' => $tableName,
         ]);
 
+        if (!$created) {
+            return false;
+        }
+
         Output::success("Seeder criado: <info>database/seeds/{$className}.php</info>");
         Output::newline();
-        Output::line("Para executar:");
-        Output::dim("  php database/seeds/{$className}.php");
+        Output::line('Adicione a classe ao array retornado por database/seeds/DatabaseSeeder.php para controlar a ordem.');
+        Output::line("  php mvc seed:run {$className}   (somente este Seeder)");
+        Output::line('  php mvc seed                    (executa o Seeder principal)');
 
         return true;
     }

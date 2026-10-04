@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#f5f7f6" name="theme-color"/><meta content="Tutorial progressivo para criar, configurar, proteger, testar e manter endpoints HTTP/JSON no MVC, baseado no código existente." name="description"/><title>API HTTP: guia completo · PHP MVC Framework</title><link href="../../assets/images/ea-monogram.svg" rel="icon" type="image/svg+xml"/><link href="../../assets/css/styles.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#main">Pular para o conteúdo</a>
+<header class="topbar"><button aria-expanded="false" aria-label="Abrir menu" class="mobile-toggle" data-nav-toggle="" aria-controls="sidebar-nav" type="button">☰</button><a aria-label="EA — Elias Antonio — documentação do PHP MVC Framework" class="brand" href="../../index.html"><span aria-hidden="true" class="brand-mark">EA</span><span class="brand-title">PHP MVC<span class="brand-sub">DOCUMENTAÇÃO</span></span></a><div class="header-search"><label class="search-wrap"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg><input aria-label="Buscar documentação" data-search="" placeholder="Buscar páginas, classes, métodos…" type="search"/><kbd>Ctrl K</kbd></label><div aria-label="Resultados da busca" class="search-results" data-results="" role="listbox"></div></div><div class="header-right"><span class="version">v2.0.0</span><button aria-label="Alternar tema" class="icon-btn" data-theme-toggle="" title="Alternar tema" type="button">◐</button></div></header>
+<div class="mobile-scrim" aria-hidden="true"></div><nav aria-label="Navegação da documentação" class="sidebar" id="sidebar-nav" aria-hidden="false"><div class="sidebar-identity"><span aria-hidden="true" class="brand-mark">EA</span><span class="sidebar-identity-copy"><strong>PHP MVC</strong><small>DOCUMENTAÇÃO</small></span></div><div class="nav-group"><a class="nav-link" href="../../index.html">Visão geral</a></div><div class="nav-group"><p class="nav-title">COMEÇANDO</p><a class="nav-link" href="../../start/introduction/index.html">Introdução</a><a class="nav-link" href="../../start/installation/index.html">Instalação</a><a class="nav-link" href="../../start/configuration/index.html">Configuração</a><a class="nav-link" href="../../start/structure/index.html">Estrutura do projeto</a><a class="nav-link" href="../../start/lifecycle/index.html">Ciclo da requisição</a></div><div class="nav-group"><p class="nav-title">FUNDAMENTOS HTTP</p><a class="nav-link" href="../../http/routing/index.html">Roteamento</a><a class="nav-link" href="../../http/controllers/index.html">Controllers</a><a class="nav-link" href="../../http/requests/index.html">Requests e FormRequest</a><a class="nav-link" href="../../http/views/index.html">Views e layouts</a><a class="nav-link" href="../../http/responses/index.html">Respostas HTTP e JSON</a></div><div class="nav-group"><p class="nav-title">DADOS</p><a class="nav-link" href="../../data/models/index.html">Models</a><a class="nav-link" href="../../data/database/index.html">Database e PDO</a><a class="nav-link" href="../../data/query-builder/index.html">Query builder</a><a class="nav-link" href="../../data/migrations/index.html">Migrations e Schema</a><a class="nav-link" href="../../data/seeders/index.html">Seeders</a></div><div class="nav-group"><p class="nav-title">SEGURANÇA</p><a class="nav-link" href="../../validation/index.html">Validação</a><a class="nav-link" href="../../security/authentication/index.html">Autenticação</a><a class="nav-link" href="../../security/user-ptbr/index.html">Usuário (PT-BR)</a><a class="nav-link" href="../../security/sessions-csrf/index.html">Sessões e CSRF</a><a class="nav-link" href="../../security/middleware/index.html">Middleware e proteção</a></div><div class="nav-group"><p class="nav-title">ARQUITETURA E INTEGRAÇÕES</p><a class="nav-link" href="../../architecture/services/index.html">Services</a><a class="nav-link" href="../../architecture/repositories/index.html">Repositories</a><a aria-current="page" class="nav-link active" href="index.html">API HTTP e endpoints próprios</a><a class="nav-link" href="../client/index.html">ApiClient e ApiRequest</a><a class="nav-link" href="../cep-payments/index.html">Integrações de CEP e pagamentos</a></div><div class="nav-group"><p class="nav-title">SUPORTE</p><a class="nav-link" href="../../support/helpers/index.html">Helpers</a><a class="nav-link" href="../../support/uploads/index.html">Uploads</a><a class="nav-link" href="../../support/logging-mail/index.html">Logs e e-mail</a></div><div class="nav-group"><p class="nav-title">FERRAMENTAS</p><a class="nav-link" href="../../cli/index.html">CLI e geradores</a></div><div class="nav-group"><p class="nav-title">REFERÊNCIA</p><a class="nav-link" href="../../reference/api/index.html">Referência de classes e funções</a></div><div class="sidebar-foot">PHP MVC Framework · v2.0.0<br/><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></div></nav>
+<main class="main" id="main"><article class="content"><nav aria-label="Trilha de navegação" class="breadcrumbs"><a href="../../index.html">Documentação</a><span aria-hidden="true">›</span><span>Integrações</span><span aria-hidden="true">›</span><span aria-current="page">API HTTP e endpoints próprios</span></nav><h1 class="page-title">API HTTP: guia completo</h1><p class="page-desc">Do primeiro endpoint à autenticação Bearer, validação, Resources, persistência, erros e testes.</p><div class="prose"><p>Este guia parte do que está realmente implementado no projeto. Ele separa os endpoints já ativos dos exemplos que você criará ao acompanhar o tutorial; nenhum exemplo novo passa a existir até os arquivos e rotas serem adicionados.</p>
+<div class="callout note"><strong>API de entrada ≠ cliente de saída.</strong> Esta página ensina a receber chamadas HTTP em <code>/api/v1</code>. Para o PHP consumir um serviço externo, use <a href="../client/index.html">ApiClient e ApiRequest</a>; são fluxos diferentes.</div>
+<nav aria-label="Nesta página" class="callout note"><strong>Nesta página</strong><ol><li><a href="#conceito">Como a API funciona</a></li><li><a href="#arquivos">Arquivos e configuração</a></li><li><a href="#iniciante">Iniciante: primeiro endpoint</a></li><li><a href="#entrada">Parâmetros e validação</a></li><li><a href="#intermediario">Intermediário: login e leitura protegida</a></li><li><a href="#avancado">Avançado: extensão organizada de cadastro</a></li><li><a href="#respostas-erros">Respostas, status e erros</a></li><li><a href="#testes">Testar e manter</a></li><li><a href="#evitar">O que evitar</a></li><li><a href="#limites">O que não existe nesta implementação</a></li></ol></nav>
+<h2 id="conceito">1. O que é a API e como ela funciona</h2>
+<p>Uma API HTTP é um contrato entre cliente e servidor: o cliente envia método, caminho, cabeçalhos e, quando necessário, um corpo; o servidor valida a entrada e responde com status HTTP e representação dos dados. Na API própria deste MVC, a representação normal é JSON e a versão ativa está sob <code>/api/v1</code>.</p>
+<p>O caminho real de uma chamada é: <code>public/index.php</code> → <code>bootstrap/app.php</code> → <code>Framework\Core\Application::run()</code> → inclusão de <code>routes/web.php</code> e de cada <code>routes/api*.php</code> → <code>Router::dispatch()</code> → middlewares da rota/grupo → Controller → Request/FormRequest/Validator → Model/Repository/Service → Resource → <code>ApiResponse</code>. O bootstrap também carrega Composer, .env, sessão e cabeçalhos globais; a autenticação Bearer da API, porém, é verificada pelo middleware próprio e não depende do cookie de login Web.</p>
+<p>O arquivo <code>routes/api.php</code> registra hoje estas rotas ativas (os comentários de CRUD futuro não são endpoints):</p>
+<table><thead><tr><th>Método e caminho</th><th>Acesso</th><th>Comportamento atual</th></tr></thead><tbody>
+<tr><td><code>POST /api/v1/auth/login</code></td><td>Público; limite adicional de login</td><td>Valida e-mail/senha, emite token Bearer e devolve UserResource.</td></tr>
+<tr><td><code>POST /api/v1/auth/logout</code></td><td>Bearer válido</td><td>Revoga o token da requisição.</td></tr>
+<tr><td><code>GET /api/v1/auth/me</code></td><td>Bearer válido</td><td>Devolve o usuário corrente.</td></tr>
+<tr><td><code>GET /api/v1/users</code></td><td>Bearer válido</td><td>Lista paginada; <code>page</code> e <code>per_page</code> vêm da query string.</td></tr>
+<tr><td><code>GET /api/v1/users/{id}</code></td><td>Bearer válido</td><td>Devolve UserResource ou JSON 404.</td></tr>
+<tr><td><code>OPTIONS</code> para os caminhos declarados</td><td>CORS</td><td>Preflight recebe 204 no CorsMiddleware antes da action.</td></tr>
+</tbody></table>
+<h3>Métodos e parâmetros de rota</h3><p>O Router disponibiliza <code>GET</code>, <code>POST</code>, <code>PUT</code>, <code>PATCH</code>, <code>DELETE</code>, <code>OPTIONS</code> e <code>match()</code>. Placeholders como <code>/users/{id}</code> são passados por nome à action; parâmetros tipados escalares podem ser convertidos via Reflection. O override via <code>_method</code> só é aplicado quando a requisição original é POST e o valor é PUT/PATCH/DELETE; é uma conveniência para forms, não substituto necessário para clientes HTTP. <code>Router::resource()</code> gera sete actions convencionais, inclusive <code>create</code>/<code>edit</code>; ele não cria JSON Resources nem autenticação, então para API prefira registrar os verbos necessários explicitamente.</p>
+<p>Todas as rotas ficam no grupo <code>/api/v1</code> com <code>CorsMiddleware</code> e <code>RateLimitMiddleware:api</code>. As rotas privadas acrescentam <code>ApiAuthMiddleware</code>; login acrescenta o perfil <code>login</code>. A API não usa views para as respostas normais nem registra CsrfMiddleware no grupo; a segurança de escrita vem do Bearer e de autorização explícita. O bootstrap ainda inicia a sessão globalmente. É o mesmo Router, Request, Controllers, Models e banco do restante do projeto.</p>
+<h2 id="arquivos">2. Arquivos: onde cada peça fica</h2>
+<table><thead><tr><th>Caminho no projeto</th><th>Responsabilidade</th></tr></thead><tbody>
+<tr><td><code>public/index.php</code></td><td>Front controller; recebe a requisição e chama o bootstrap.</td></tr>
+<tr><td><code>bootstrap/app.php</code></td><td>Carrega Composer/.env, configura caminhos e instancia Application.</td></tr>
+<tr><td><code>routes/api.php</code></td><td>Registra prefixo, verbos, Controllers e middlewares. A Application também carrega <code>routes/api*.php</code>.</td></tr>
+<tr><td><code>config/api.php</code> + <code>.env</code></td><td>CORS e configuração de integrações; <code>CORS_ALLOWED_ORIGINS</code> alimenta as origens aceitas.</td></tr>
+<tr><td><code>app/Http/Controllers/Api/</code></td><td>Actions HTTP de API; <code>ApiController</code> é a base da aplicação, sobre Controller do Framework.</td></tr>
+<tr><td><code>app/Http/Requests/</code> e <code>app/Http/Requests/Api/</code></td><td>FormRequests compartilhados ou específicos da API. A classe base é <code>App\Http\Requests\FormRequest</code>.</td></tr>
+<tr><td><code>app/Http/Middlewares/</code></td><td>Bearer auth, CORS e rate limit pertencem à aplicação de exemplo.</td></tr>
+<tr><td><code>app/Http/Resources/</code></td><td>Transformação explícita Model → array JSON; por exemplo, <code>UserResource</code>.</td></tr>
+<tr><td><code>app/Models/</code>, <code>app/Repositories/</code>, <code>app/Services/</code></td><td>Modelo/persistência, consultas de domínio e regras de aplicação; use apenas as camadas necessárias.</td></tr>
+<tr><td><code>framework/Http/Request.php</code>, <code>Router.php</code>, <code>framework/Http/Api/ApiResponse.php</code></td><td>Infraestrutura real de entrada, despacho e envelope JSON.</td></tr>
+<tr><td><code>database/migrations/</code></td><td>Schema da aplicação; usuários e <code>api_tokens</code> já têm migrations no projeto.</td></tr>
+</tbody></table>
+<h3>Pré-requisitos e configuração</h3>
+<p>Parta da raiz do projeto. Instale dependências, copie e edite <code>.env</code>, configure MySQL e crie o banco vazio com as credenciais corretas antes de migrar (migrate cria tabelas; não cria o database MySQL). As rotas públicas de demonstração sem banco podem responder sem consulta, mas login e endpoints de usuários dependem das tabelas e das migrations.</p>
+<pre><code class="language-bash"># Na raiz do projeto; preencha antes .env com dados locais de MySQL
+composer install
+cp .env.example .env
+# Edite .env: APP_URL, APP_ENV, APP_DEBUG e DB_HOST/PORT/DATABASE/USERNAME/PASSWORD
+php mvc key:generate
+php mvc migrate
+# Opcional: somente em banco local descartável/de desenvolvimento
+php mvc seed:run UserSeeder
+php mvc serve</code></pre>
+<p><code>php mvc serve</code> inicia o servidor local na porta 8000. O document root de produção deve ser <code>public/</code>; o <code>.htaccess</code> usa mod_rewrite para encaminhar caminhos inexistentes ao front controller. O comando de servidor é para desenvolvimento, não para produção. A aplicação precisa de <code>vendor/autoload.php</code>; se não houver dependências instaladas, o bootstrap responde 500.</p>
+<p>Para permitir uma SPA em outra origem, configure por exemplo <code>CORS_ALLOWED_ORIGINS=https://app.example.com,https://admin.example.com</code>. O wildcard <code>*</code> só é aceito fora de <code>APP_ENV=production</code>; CORS só governa leitura pelo navegador e <strong>não</strong> autentica nem autoriza clientes. Em caminhos novos, adicione também uma rota <code>OPTIONS</code> explícita quando o navegador for fazer preflight (por exemplo, por usar <code>Authorization</code> ou <code>Content-Type: application/json</code>); o Router precisa casar o caminho OPTIONS para o CorsMiddleware poder encerrá-lo com 204.</p>
+<h2 id="iniciante">3. Iniciante — criar seu primeiro endpoint do zero</h2>
+<h3>Cenário e objetivo</h3><p>Você quer confirmar que a aplicação inicia e que uma rota API devolve JSON, sem banco, Model ou autenticação. O endpoint será público e não exporá dados privados. Ele será acrescentado ao <em>grupo existente</em> em <code>routes/api.php</code>, que já aplica CORS e rate limit.</p>
+<h3>Etapa 1 — crie o Controller</h3><p>Crie <code>app/Http/Controllers/Api/HealthApiController.php</code>. Herdar de <code>ApiController</code> dá acesso aos helpers de envelope e à Request herdada.</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Http\Controllers\Api;
+
+final class HealthApiController extends ApiController
+{
+    public function show(): void
+    {
+        $this-&gt;success(
+            ['api' =&gt; 'v1', 'status' =&gt; 'ok'],
+            'API disponível.'
+        );
+    }
+}</code></pre>
+<p>O método chama <code>success(data, message)</code>. Esse helper envia status 200, <code>Content-Type: application/json</code> e o envelope padronizado; é terminal e encerra a requisição.</p>
+<h3>Etapa 2 — registre a rota</h3><p>Em <code>routes/api.php</code>, importe a classe e acrescente a action dentro do closure já existente do grupo <code>/api/v1</code>; não crie um segundo prefixo acidentalmente.</p>
+<pre><code class="language-php">&lt;?php
+use App\Http\Controllers\Api\HealthApiController;
+
+// Dentro do group /api/v1 já existente em routes/api.php:
+$r-&gt;get('/health', [HealthApiController::class, 'show']);</code></pre>
+<p>O Router combina o prefixo do grupo com <code>/health</code>, portanto o caminho final é <code>/api/v1/health</code>. Se a action não existir ou o middleware estiver escrito errado, isso vira falha de servidor; confira a grafia e os namespaces.</p>
+<h3>Etapa 3 — execute e confira</h3><p>Em outro terminal, rode o servidor local. Depois da chamada, espere HTTP 200, Content-Type JSON e os campos de envelope a seguir:</p>
+<pre><code class="language-bash">curl -i http://localhost:8000/api/v1/health \
+  -H 'Accept: application/json'</code></pre>
+<pre><code class="language-json">{
+  "success": true,
+  "message": "API disponível.",
+  "data": {"api": "v1", "status": "ok"}
+}</code></pre>
+<p>Se receber 404, confirme se salvou o arquivo na pasta certa, se adicionou a rota ao grupo real e se acessou o método/caminho corretos. Se receber 500 por autoload, rode <code>composer install</code> e confira o log PHP.</p>
+<h2 id="entrada">4. Entradas HTTP e validação</h2>
+<p>A classe <code>Framework\Http\Request</code> encapsula dados globais, mas os métodos não juntam todas as fontes:</p>
+<table><thead><tr><th>Origem</th><th>Como ler</th><th>Detalhe que evita erro</th></tr></thead><tbody>
+<tr><td>Parâmetro de caminho <code>/users/{id}</code></td><td>Argumento tipado da action: <code>show(int $id)</code></td><td>Router mapeia por nome e faz cast escalar; cast para int não valida que a entrada original era um inteiro positivo.</td></tr>
+<tr><td>Query string <code>?page=2</code></td><td><code>$this-&gt;request-&gt;get('page', 1)</code></td><td><code>get()</code> lê <code>$_GET</code> e sanitiza texto; valide/faça cast e limite valores.</td></tr>
+<tr><td>Form-urlencoded / form POST</td><td><code>post()</code>, <code>all()</code>, <code>raw()</code> ou FormRequest</td><td><code>all()</code> lê somente <code>$_POST</code>, não a query nem JSON.</td></tr>
+<tr><td>JSON no body</td><td><code>$this-&gt;request-&gt;json()</code> ou um FormRequest com Content-Type JSON</td><td><code>input()</code>, <code>post()</code> e <code>all()</code> não leem o JSON. O JSON malformado vira array vazio em <code>Request::json()</code>; não espere exceção JSON automática.</td></tr>
+<tr><td>Headers</td><td><code>header('Accept')</code>, <code>header('Authorization')</code></td><td>Request monta o índice <code>HTTP_*</code> em <code>$_SERVER</code>; para detectar corpo JSON use <code>isJson()</code> (que lê <code>CONTENT_TYPE</code>), não dependa de <code>header('Content-Type')</code>.</td></tr>
+<tr><td>Arquivo enviado</td><td><code>file('foto')</code>/<code>hasFile('foto')</code> e Validator/Upload</td><td>FormRequest inclui o nome original no input, mas não valida o conteúdo binário do upload por si só.</td></tr>
+</tbody></table>
+<p>Use cabeçalhos coerentes: <code>Accept: application/json</code> informa o formato esperado ao cliente; <code>Content-Type: application/json</code> descreve o corpo JSON enviado. Os helpers ApiResponse sempre respondem JSON, independentemente de <code>Accept</code>. JSON de entrada deve ser objeto/campos, pois FormRequest converte o corpo em array associativo.</p>
+<h3>Cenário e objetivo</h3><p>Agora o endpoint recebe nome no corpo JSON. Queremos rejeitar campo ausente ou curto antes de montar a resposta. Crie <code>app/Http/Requests/Api/GreetingRequest.php</code> e <code>app/Http/Controllers/Api/GreetingApiController.php</code>; use o helper de validação da base API.</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Http\Requests\Api;
+
+use App\Http\Requests\FormRequest;
+
+final class GreetingRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        return true; // endpoint didático público; remova/ajuste em produção
+    }
+
+    public function rules(): array
+    {
+        return ['name' =&gt; 'required|min:2|max:80'];
+    }
+
+    public function messages(): array
+    {
+        return ['name.required' =&gt; 'Informe o nome.'];
+    }
+}</code></pre>
+<pre><code class="language-php">&lt;?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Requests\Api\GreetingRequest;
+
+final class GreetingApiController extends ApiController
+{
+    public function store(GreetingRequest $request): void
+    {
+        $data = $this-&gt;validated($request); // encerra em JSON 422 se inválido
+        $this-&gt;success(
+            ['greeting' =&gt; 'Olá, ' . $data['name'] . '!'],
+            'Saudação criada.'
+        );
+    }
+}</code></pre>
+<p>O Router reconhece argumento de action cuja classe estende <code>App\Http\Requests\FormRequest</code>, instancia-o e passa os parâmetros de rota ao construtor. A validação é calculada no construtor, mas <strong>não</strong> envia automaticamente 422 para API: chame <code>$this-&gt;validated($request)</code>. Esse helper devolve apenas dados que passaram nas regras ou encerra com envelope JSON 422. Consulte <a href="../../validation/index.html">regras de validação</a> e <a href="../../http/requests/index.html">Request/FormRequest</a>.</p>
+<p>Registre também o verbo e preflight dentro do grupo:</p>
+<pre><code class="language-php">&lt;?php
+use App\Http\Controllers\Api\GreetingApiController;
+use App\Http\Controllers\Api\PreflightController;
+
+// Dentro do group /api/v1 já existente; registre OPTIONS para o preflight do browser.
+$r-&gt;options('/greetings', [PreflightController::class, 'handle']);
+$r-&gt;post('/greetings', [GreetingApiController::class, 'store']);</code></pre>
+<p>Teste entrada válida e inválida. Com nome válido, espera-se 200; com nome ausente ou curto, espera-se 422, <code>success:false</code> e mapa de erros:</p>
+<pre><code class="language-bash">curl -i -X POST http://localhost:8000/api/v1/greetings \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Ana"}'</code></pre>
+<pre><code class="language-json">{
+  "success": true,
+  "message": "Saudação criada.",
+  "data": {"greeting": "Olá, Ana!"}
+}</code></pre>
+<pre><code class="language-json">{
+  "success": false,
+  "message": "Os dados enviados são inválidos.",
+  "errors": {"name": ["Informe o nome."]}
+}</code></pre>
+<p>Para um endpoint que precise ler query strings, use <code>Request::get()</code> e passe os valores pelo Validator ou aplique validação explícita; o FormRequest desta implementação captura JSON ou POST, não mescla automaticamente <code>$_GET</code>.</p>
+<h2 id="intermediario">5. Intermediário — autenticação Bearer e leitura paginada</h2>
+<h3>Cenário e objetivo</h3><p>O projeto já traz login API, tokens, consulta do usuário autenticado e listagem/leitura de usuários. Esse fluxo demonstra Request → FormRequest → Controller → Repository → Resource → ApiResponse. Não há escrita de usuário ativa antes de adicionar a extensão avançada abaixo.</p>
+<h3>Faça login e receba o token</h3><p><code>POST /api/v1/auth/login</code> aceita JSON, reutiliza <code>LoginRequest</code>, autentica via <code>User::authenticate()</code> e emite token com <code>ApiTokenRepository</code>. Em desenvolvimento, o seeder fornece contas de demonstração; leia o arquivo <code>database/seeds/UserSeeder.php</code> e <strong>nunca</strong> rode contas/senhas de demonstração em produção.</p>
+<pre><code class="language-bash">curl -i -X POST http://localhost:8000/api/v1/auth/login \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@example.com","password":"SENHA_LOCAL"}'</code></pre>
+<p>Resposta representativa (valores de ID/data variam); copie o campo <code>data.token</code> para o cliente com cuidado. O valor puro é exibido uma única vez:</p>
+<pre><code class="language-json">{
+  "success": true,
+  "message": "Login realizado com sucesso.",
+  "data": {
+    "token": "&lt;TOKEN-EXIBIDO-UMA-VEZ&gt;",
+    "token_type": "Bearer",
+    "user": {
+      "id": 1,
+      "name": "Administrador",
+      "email": "admin@example.com",
+      "role": "admin",
+      "active": true,
+      "created_at": "2026-09-28 10:00:00"
+    }
+  }
+}</code></pre>
+<p>O Model gera token aleatório de 64 caracteres hexadecimais e grava apenas SHA-256 na tabela <code>api_tokens</code>; a migration cria chave única para hash e relação com <code>users</code>. O middleware procura token válido, exige usuário ativo, preenche <code>ApiAuthContext</code> e atualiza <code>last_used_at</code>. Envie o token em <code>Authorization: Bearer …</code>, não em query string. Logout revoga o registro atual; não há endpoint de refresh/revogação de todos os dispositivos exposto nas rotas.</p>
+<div class="callout warning"><strong>Expiração real:</strong> o Model aceita <code>expires_at</code>, mas o endpoint de login chama <code>issue($userId, 'api-login')</code> sem data de expiração. Portanto, os tokens emitidos por esse fluxo não expiram pelo campo <code>expires_at</code>; permanecem válidos até serem revogados ou o usuário ser desativado. Não assuma que existe rotação ou refresh automático.</div>
+<h3>Consuma a lista autenticada</h3><p><code>UserApiController::index()</code> lê <code>page</code> e <code>per_page</code> pela query string; limita page ao mínimo 1 e per_page entre 1 e 100 (padrão 15). Ele chama <code>UserRepository::paginate()</code>, transforma cada objeto com <code>UserResource::collection()</code> e passa os metadados a <code>paginated()</code>.</p>
+<pre><code class="language-bash">TOKEN='&lt;cole o token recebido no login&gt;'
+curl -i 'http://localhost:8000/api/v1/users?page=1&amp;per_page=15' \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Accept: application/json'</code></pre>
+<pre><code class="language-json">{
+  "success": true,
+  "message": "Dados encontrados.",
+  "data": [
+    {
+      "id": 1,
+      "name": "Administrador",
+      "email": "admin@example.com",
+      "role": "admin",
+      "active": true,
+      "created_at": "2026-09-28 10:00:00"
+    }
+  ],
+  "meta": {
+    "current_page": 1,
+    "per_page": 15,
+    "total": 1,
+    "last_page": 1,
+    "from": 1,
+    "to": 1
+  }
+}</code></pre>
+<p>O formato acima ilustra uma página com um resultado. <code>UserResource</code> expõe explicitamente <code>id</code>, <code>name</code>, <code>email</code>, <code>role</code>, <code>active</code> e <code>created_at</code>; não inclui password nem remember_token. Com coleção vazia, o Model desta versão retorna <code>total=0</code>, <code>last_page=0</code>, <code>from=1</code>, <code>to=0</code>. O limite 100 é política deste Controller/gerador de API, não teto geral do Model.</p>
+<h3>Leia um registro e entenda o 404</h3><p><code>GET /api/v1/users/{id}</code> recebe <code>int $id</code>, consulta <code>UserRepository::findById()</code> e responde com Resource ou envelope JSON de erro 404. Já um caminho sem rota, por exemplo <code>/api/v1/nao-existe</code>, passa pelo handler genérico de 404 do Router, que atualmente imprime HTML. “API usa JSON” não significa que todo handler global negocia JSON.</p>
+<pre><code class="language-json">{
+  "success": false,
+  "message": "Usuário não encontrado."
+}</code></pre>
+<h2 id="avancado">6. Avançado — extensão organizada de cadastro</h2>
+<div class="callout warning"><strong>Exemplo de extensão, não endpoint já disponível.</strong> O código atual só expõe GET para usuários. Abaixo adicionamos um POST usando tabela e Model existentes. Os novos Request/Service e o wrapper de Repository são arquivos/métodos de aplicação que você cria; não são APIs mágicas do Framework. A migration <code>users</code>, <code>User::createWithHash()</code>, <code>UserRepository::findByEmail()</code>, <code>UserResource</code> e os helpers do Controller já existem.</div>
+<h3>Cenário e objetivo</h3><p>Um cliente autenticado precisa cadastrar um usuário comum. O body contém nome, e-mail e senha; não aceitamos <code>role</code> ou <code>active</code> vindos do cliente, para impedir autoelevação de privilégio. A senha precisa ser preservada durante sanitização e armazenada com hash pelo Model. O resultado usa 201 e Resource, nunca o objeto bruto do Model.</p>
+<h3>Passo A — crie e valide o FormRequest</h3><p>O gerador <code>php mvc make:api-request StoreUserApiRequest</code> cria um stub sob <code>app/Http/Requests/Api/</code>; revise-o e complete autorização/regras. A action recebe o objeto tipado; o middleware da rota executa antes e preenche ApiAuthContext.</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Http\Requests\Api;
+
+use App\Http\Requests\FormRequest;
+use Framework\Http\Request;
+use Framework\Http\Api\ApiAuthContext;
+
+final class StoreUserApiRequest extends FormRequest
+{
+    public function authorize(): bool
+    {
+        // A rota aplica ApiAuthMiddleware antes de construir este FormRequest.
+        return ApiAuthContext::check();
+    }
+
+    public function rules(): array
+    {
+        return [
+            'name' =&gt; 'required|min:2|max:150',
+            'email' =&gt; 'required|email|max:180',
+            'password' =&gt; 'required|min:8',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'email.email' =&gt; 'Informe um e-mail válido.',
+        ];
+    }
+
+    public function sanitize(): array
+    {
+        $clean = Request::sanitizeValue($this-&gt;input);
+        $clean['email'] = strtolower(trim((string) ($this-&gt;input['email'] ?? '')));
+        $clean['password'] = (string) ($this-&gt;input['password'] ?? '');
+        return $clean;
+    }
+}</code></pre>
+<h3>Passo B — exponha a escrita segura pelo Repository</h3><p><code>User::createWithHash()</code> já define hash bcrypt, role padrão <code>member</code> e active padrão <code>1</code>. O Repository atual não tem esse wrapper, então acrescente explicitamente o método a <code>app/Repositories/UserRepository.php</code>:</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Repositories;
+
+use Framework\Database\Repository;
+use App\Models\User;
+
+final class UserRepository extends Repository
+{
+    protected string $modelClass = User::class;
+
+    public function findByEmail(string $email): object|false
+    {
+        return $this-&gt;model()-&gt;findBy('email', $email);
+    }
+
+    public function getActive(): array
+    {
+        return $this-&gt;model()-&gt;where('active', 1)-&gt;orderBy('name')-&gt;get();
+    }
+
+    public function search(string $term, int $page = 1, int $perPage = 15): array
+    {
+        $like = '%' . $term . '%';
+        return $this-&gt;model()
+            -&gt;select('id', 'name', 'email', 'role', 'active', 'created_at')
+            -&gt;where('name', $like, 'LIKE')
+            -&gt;orWhere('email', $like, 'LIKE')
+            -&gt;orderBy('name')
+            -&gt;paginate($perPage, $page);
+    }
+
+    // Novo wrapper para o método createWithHash() já existente em User.
+    public function createWithHash(array $data): string|false
+    {
+        /** @var User $model */
+        $model = $this-&gt;model();
+        return $model-&gt;createWithHash($data);
+    }
+}</code></pre>
+<p>A regra do Request verifica formato e limites; o Service verifica duplicidade antes de gravar. A constraint UNIQUE existente em <code>users.email</code> é a proteção concorrente definitiva; o Service converte somente violação MySQL de entrada duplicada (SQLSTATE 23000/código 1062) em resultado de domínio, sem colocar detalhes SQL na resposta.</p>
+<h3>Passo C — crie o Service</h3><p>Crie <code>app/Services/Users/RegisterUserService.php</code>. Service recebe dados já validados e não conhece HTTP, status, headers nem JSON. A injeção é explícita: o projeto não declara um container de dependências automático.</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Services\Users;
+
+use App\Repositories\UserRepository;
+use Framework\Core\Service;
+use PDOException;
+
+final class RegisterUserService extends Service
+{
+    public function __construct(
+        private readonly UserRepository $users = new UserRepository()
+    ) {}
+
+    /** @return array{created:bool,reason?:string,id?:int} */
+    public function register(array $data): array
+    {
+        if ($this-&gt;users-&gt;findByEmail($data['email'])) {
+            return ['created' =&gt; false, 'reason' =&gt; 'email_exists'];
+        }
+
+        try {
+            // Método novo do UserRepository, que delega a User::createWithHash().
+            $id = $this-&gt;users-&gt;createWithHash($data);
+        } catch (PDOException $e) {
+            // A constraint UNIQUE do banco cobre a corrida entre validação e INSERT.
+            if ((string) $e-&gt;getCode() === '23000' &amp;&amp; (int) ($e-&gt;errorInfo[1] ?? 0) === 1062) {
+                return ['created' =&gt; false, 'reason' =&gt; 'email_exists'];
+            }
+            throw $e;
+        }
+
+        if ($id === false) {
+            return ['created' =&gt; false, 'reason' =&gt; 'persistence'];
+        }
+
+        return ['created' =&gt; true, 'id' =&gt; (int) $id];
+    }
+}</code></pre>
+<h3>Passo D — orquestre no Controller e devolva Resource</h3><p>Adicione imports/propriedades e inicialização no Controller, preservando <code>parent::__construct()</code>; implemente a action. O snippet indica a action completa e as dependências que ela espera:</p>
+<pre><code class="language-php">&lt;?php
+namespace App\Http\Controllers\Api;
+
+use App\Http\Requests\Api\StoreUserApiRequest;
+use App\Services\Users\RegisterUserService;
+use App\Http\Resources\UserResource;
+use App\Repositories\UserRepository;
+use Framework\Support\Logger;
+
+final class UserRegistrationApiController extends ApiController
+{
+    private UserRepository $users;
+    private RegisterUserService $registration;
+
+    public function __construct()
+    {
+        parent::__construct();
+        $this-&gt;users = new UserRepository();
+        $this-&gt;registration = new RegisterUserService($this-&gt;users);
+    }
+
+    public function store(StoreUserApiRequest $request): void
+    {
+        $data = $this-&gt;validated($request);
+        $result = $this-&gt;registration-&gt;register($data);
+
+        if (!$result['created'] &amp;&amp; ($result['reason'] ?? '') === 'email_exists') {
+            $this-&gt;error('Este e-mail já está cadastrado.', [], 409);
+        }
+        if (!$result['created']) {
+            $this-&gt;error('Não foi possível criar o usuário.', [], 500);
+        }
+
+        $user = $this-&gt;users-&gt;findById($result['id']);
+        if (!$user) {
+            Logger::error('API: usuário criado, mas não pôde ser recarregado.', ['id' =&gt; $result['id']]);
+            $this-&gt;error('Não foi possível concluir a operação.', [], 500);
+        }
+
+        $this-&gt;success(UserResource::make($user), 'Usuário criado.', 201);
+    }
+}</code></pre>
+<p>Com sucesso, a senha não aparece porque <code>UserResource</code> escolhe os campos de saída; o <code>id</code> recém-criado é relido pelo Repository para produzir o objeto usado pela Resource.</p>
+<h3>Passo E — registre POST e OPTIONS</h3><p>Em <code>routes/api.php</code>, dentro do mesmo grupo, adicione POST protegido e OPTIONS para o preflight. O login já é público; este exemplo de cadastro exige um token existente. Como <code>ApiAuthMiddleware</code> apenas autentica, ele não aplica política de papel/admin; se o recurso exigir autorização mais restrita, escreva e registre essa política explicitamente.</p>
+<pre><code class="language-php">&lt;?php
+use App\Http\Controllers\Api\UserRegistrationApiController;
+
+// Dentro do group /api/v1 em routes/api.php.
+// OPTIONS /users já está registrado na aplicação existente.
+$r-&gt;post('/users', [UserRegistrationApiController::class, 'store'], ['ApiAuthMiddleware']);</code></pre>
+<h3>Passo F — teste o contrato</h3><p>Envie os três campos permitidos, com um token obtido no login:</p>
+<pre><code class="language-bash">curl -i -X POST http://localhost:8000/api/v1/users \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Joana","email":"joana@example.com","password":"UmaSenha-Forte-123"}'</code></pre>
+<p>O resultado esperado é HTTP 201 e um Resource sem senha:</p>
+<pre><code class="language-json">{
+  "success": true,
+  "message": "Usuário criado.",
+  "data": {
+    "id": 42,
+    "name": "Joana",
+    "email": "joana@example.com",
+    "role": "member",
+    "active": true,
+    "created_at": "2026-09-28 10:15:00"
+  }
+}</code></pre>
+<p>Teste também: token ausente (401), token inválido/expirado (401), e-mail repetido (409 pelo Service), campo ausente ou e-mail inválido (422) e ID de consulta inexistente (404). Para qualquer erro inesperado, o comportamento genérico atual pode ser HTML 500; veja <a href="#respostas-erros">tratamento de falhas</a>. Não esconda a falha de banco com um 201.</p>
+<h3>Quando acrescentar Model/migration</h3><p>O exemplo reaproveita a tabela existente, portanto não cria Model nem migration. Para uma entidade nova, o fluxo é: <code>php mvc make:migration</code> e editar a migration PHP; <code>php mvc make:model</code> e conferir tabela/fillable; <code>php mvc make:repository</code> e declarar <code>$modelClass</code>; opcionalmente Service/FormRequest/Resource/Controller; registrar verbos explícitos em <code>routes/api.php</code>; rodar <code>php mvc migrate</code>. Gerador de Model não cria migration executável automaticamente e gerador de Controller não ativa rotas.</p>
+<h2 id="middleware">7. Middleware, CORS e controle de acesso</h2>
+<ul><li><strong>ApiAuthMiddleware:</strong> exige o prefixo <code>Bearer</code>, valida o hash do token, usuário e estado ativo; erros de autenticação são JSON 401. Não confundir com <code>AuthMiddleware</code> Web, baseado em sessão.</li><li><strong>ApiAuthContext:</strong> fornece <code>check()</code>, <code>user()</code>, <code>id()</code> e <code>token()</code> para a requisição atual. Em API, use esse contexto, não <code>Auth::check()</code> ou <code>Controller::user()</code>, que leem autenticação de sessão.</li><li><strong>CorsMiddleware:</strong> lê <code>config/api.php</code>; permite origens exatas configuradas e responde OPTIONS com 204. Origem não autorizada não recebe <code>Access-Control-Allow-Origin</code>. CORS não impede chamadas server-to-server e não substitui token/autorização.</li><li><strong>RateLimitMiddleware:</strong> perfil <code>api</code> permite 60 chamadas/minuto por IP; perfil <code>login</code> permite 5/15 min e é aplicado adicionalmente ao limite do grupo. O armazenamento é em arquivos em <code>storage/cache/ratelimit</code>; não é Redis nem limitador distribuído.</li></ul>
+<p>Detalhe importante: o código do rate limiter escolhe JSON pelo <code>Content-Type: application/json</code> (<code>Request::isJson()</code>) ou por X-Requested-With, não apenas por <code>Accept</code>. Assim, uma requisição GET que ultrapasse o limite e envie somente <code>Accept: application/json</code> pode receber o fluxo HTML de redirect atual. Verifique esse cenário no deployment se o contrato exigir que todo 429 de API seja JSON. O perfil de login lê e-mail de <code>$_POST</code> ao montar a chave; em login JSON esse campo não está em $_POST e o bucket acaba sendo por IP com e-mail vazio nesta implementação.</p>
+<h2 id="respostas-erros">8. Respostas, status HTTP e exceções</h2>
+<p><code>App\Http\Controllers\Api\ApiController</code> expõe <code>success(data,message,status,meta)</code>, <code>error(message,errors,status)</code>, <code>paginated(result,message)</code> e <code>validated(FormRequest)</code>. Eles delegam a <code>Framework\Http\Api\ApiResponse</code>, que seta Content-Type/status, serializa JSON e chama exit. Sucesso tem <code>success</code>, <code>message</code>, <code>data</code> e meta opcional; erro tem <code>success:false</code>, <code>message</code> e <code>errors</code> apenas quando não vazio.</p>
+<table><thead><tr><th>Status</th><th>Quando aparece neste código</th><th>Formato/observação</th></tr></thead><tbody>
+<tr><td>200</td><td>Sucesso padrão de ApiResponse; login, logout, me e leitura usam o default.</td><td>JSON envelope.</td></tr>
+<tr><td>201</td><td>Suportado por argumento de status de <code>success()</code>; usado na extensão avançada, não nas rotas ativas originais.</td><td>JSON envelope de sucesso.</td></tr>
+<tr><td>204</td><td>Preflight OPTIONS encerrado pelo CorsMiddleware.</td><td>Sem corpo.</td></tr>
+<tr><td>400</td><td>Status padrão de <code>error()</code> quando não se informa outro.</td><td>JSON quando chamada pelo helper API.</td></tr>
+<tr><td>401</td><td>Bearer ausente/inválido, credencial inválida ou expirada.</td><td>JSON da API. Usuário inativo também tende a 401 porque <code>User::authenticate()</code> o rejeita antes da branch 403 do controller de login.</td></tr>
+<tr><td>403</td><td>FormRequest com <code>authorize() === false</code>.</td><td>JSON se Accept ou Content-Type forem JSON; este caminho envia payload simples sem ApiResponse.</td></tr>
+<tr><td>404</td><td><code>UserApiController::show()</code> para ID sem registro.</td><td>JSON. Rota/path sem correspondência usa handler genérico Router e devolve HTML 404.</td></tr>
+<tr><td>405</td><td>URI existe, mas verbo não está registrado.</td><td>O Router envia <code>Allow</code> e JSON em caminho <code>/api/</code>; endpoint POST /users ainda não existe antes do exemplo avançado.</td></tr>
+<tr><td>409</td><td>Conflito da extensão de cadastro (e-mail duplicado).</td><td>JSON quando o Controller chama error com status 409.</td></tr>
+<tr><td>422</td><td>FormRequest inválido via <code>ApiController::validated()</code>.</td><td>JSON com mapa de mensagens por campo.</td></tr>
+<tr><td>429</td><td>Limite de requisições atingido.</td><td><code>Retry-After</code>; JSON/redirect depende dos checks de AJAX/Content-Type citados acima.</td></tr>
+<tr><td>500</td><td>Falha não tratada durante middleware/action ou serialização.</td><td>ApiResponse falha ao codificar → JSON 500. Throwable capturado pelo Router usa view/fallback HTML 500; não existe handler global que normalize toda exceção em JSON.</td></tr>
+<tr><td>419 / 503</td><td>Constam no mapa de mensagens de erro da Application.</td><td>Não são um contrato geral de endpoints API ativos; 419 é ligado a CSRF Web e a API não registra CsrfMiddleware.</td></tr>
+</tbody></table>
+<p>Para manter JSON também em falhas conhecidas, trate erros esperados na action/Service e chame <code>$this-&gt;error()</code> com status adequado; registre contexto técnico com Logger, mas não retorne SQL, stack trace, arquivo, token ou senha ao consumidor. Exceções desconhecidas não são automaticamente convertidas em envelope API: Router captura falha da rota e usa view/fallback de erro 500. O <code>abort()</code> do Controller base não é substituto de <code>ApiController::error()</code> para este contrato. Não há uma classe genérica <code>Framework\Http\Response</code>.</p>
+<h2 id="testes">9. Como testar, consumir e manter</h2>
+<h3>Teste do endpoint e token</h3><p>Use cURL com <code>-i</code> para conferir status e headers. Primeiro faça login, depois substitua <code>$TOKEN</code> pelo valor de <code>data.token</code>:</p>
+<pre><code class="language-bash">curl -i -X POST http://localhost:8000/api/v1/auth/login \
+  -H 'Accept: application/json' \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"admin@example.com","password":"SENHA_LOCAL"}'</code></pre>
+<pre><code class="language-bash">TOKEN='&lt;cole o token recebido no login&gt;'
+curl -i 'http://localhost:8000/api/v1/users?page=1&amp;per_page=15' \
+  -H "Authorization: Bearer $TOKEN" \
+  -H 'Accept: application/json'</code></pre>
+<p>Para verificar OPTIONS no browser, configure origem no <code>.env</code> e envie o preflight:</p>
+<pre><code class="language-bash">curl -i -X OPTIONS http://localhost:8000/api/v1/users \
+  -H 'Origin: https://app.example.com' \
+  -H 'Access-Control-Request-Method: POST' \
+  -H 'Access-Control-Request-Headers: authorization,content-type'</code></pre>
+<p>Confirme <code>204</code>, <code>Access-Control-Allow-Origin</code> somente para origem permitida e headers/métodos declarados. cURL não aplica política CORS; a restrição é executada por browsers.</p>
+<h3>Matriz mínima antes de publicar</h3><table><thead><tr><th>Caso</th><th>Esperado no código/contrato</th></tr></thead><tbody>
+<tr><td>Rota pública de health / JSON válido</td><td>200, Content-Type JSON e envelope estável.</td></tr>
+<tr><td>Login com senha inválida</td><td>401; não revelar se e-mail ou senha isoladamente estava errada.</td></tr>
+<tr><td>Login com campo ausente</td><td>422 e errors por campo.</td></tr>
+<tr><td>Sem Authorization em endpoint privado</td><td>401.</td></tr>
+<tr><td>Token revogado no logout</td><td>Próxima chamada protegida com esse token: 401.</td></tr>
+<tr><td>ID válido no formato, mas inexistente</td><td>404 JSON no <code>GET /users/{id}</code>.</td></tr>
+<tr><td>Verbo não registrado</td><td>405; verificar header Allow e corpo.</td></tr>
+<tr><td>Origem CORS aceita/rejeitada + OPTIONS</td><td>204 no preflight e cabeçalho ACAO só para origem aceita.</td></tr>
+<tr><td>Limite de chamadas</td><td>429 e Retry-After; conferir o formato JSON/HTML conforme os cabeçalhos usados.</td></tr>
+<tr><td>Erro inesperado de Controller</td><td>500; confirmar que não vaza detalhes e notar que fallback pode ser HTML.</td></tr>
+</tbody></table>
+<p>O projeto declara PHPUnit e configura <code>tests/Unit</code>/<code>tests/Feature</code> com o script <code>composer test</code>, mas não entrega uma suíte de testes HTTP API ou cliente de testes pronto nessas pastas. Adicione seus próprios testes com banco de teste isolado; não execute testes que apagam/migram um banco de produção. Os exemplos desta página podem ser testados manualmente via cURL no ambiente local.</p>
+<h3>Consumo de outra API a partir do MVC</h3><p>Isso é fluxo de saída, não uma rota recebida. Encapsule-o em Integration/Gateway/Service e use <code>Framework\Http\Api\ApiClient</code> (cURL, timeout por instância, Bearer/basic auth, ApiException); não escreva cURL direto no Controller. A referência de construtor, retorno, timeout e erros está em <a href="../client/index.html">ApiClient e ApiRequest</a>. Não misture o token do cliente que chama sua API com credenciais usadas pelo servidor para chamar provedores externos.</p>
+<h2 id="evitar">10. O que evitar — e como fazer corretamente</h2>
+<table><thead><tr><th>Evite</th><th>Problema</th><th>Faça assim</th></tr></thead><tbody>
+<tr><td>Tratar comentários de rota/gerador como endpoints ativos</td><td>Comentários não registram rota; stub pode conter método 501.</td><td>Confira <code>routes/api.php</code> e implemente Controller/middleware antes de anunciar o endpoint.</td></tr>
+<tr><td>Ler JSON por <code>input()</code>/<code>all()</code></td><td>Esses helpers não mesclam body JSON.</td><td>Use FormRequest com Content-Type JSON ou <code>json()</code>; depois valide.</td></tr>
+<tr><td>Usar sanitização como validação de domínio</td><td>Escape HTML não garante formato, faixa ou autorização e pode alterar senha.</td><td>Use Validator/FormRequest; personalize <code>sanitize()</code> para preservar senha como LoginRequest faz.</td></tr>
+<tr><td>Serializar Model diretamente ou confiar só em <code>$hidden</code></td><td>Uma nova coluna pode vazar; hidden não é filtro universal de json_encode.</td><td>Exponha lista explícita em ApiResource.</td></tr>
+<tr><td>Usar Auth Web para validar Bearer</td><td>Auth/AuthMiddleware trabalha com sessão/cookie e não verifica token API.</td><td>Registre <code>ApiAuthMiddleware</code> e use <code>ApiAuthContext</code>.</td></tr>
+<tr><td>Confundir CORS com controle de acesso</td><td>Curl, apps nativos e servidores não são bloqueados por CORS.</td><td>Use autenticação/autorização real em cada rota protegida.</td></tr>
+<tr><td>Usar <code>*</code> CORS em produção ou pôr token na URL</td><td>A origem amplia superfície; query pode vazar em logs/histórico.</td><td>Allowlist por origem e header Authorization; proteja armazenamento do cliente.</td></tr>
+<tr><td>Assumir expiração/refresh/revogação global de token</td><td>Login atual emite sem expires_at; não há endpoints de refresh/logout-all.</td><td>Revogue pelo fluxo disponível; implemente e teste expiração/rotação antes de depender dela.</td></tr>
+<tr><td>Assumir que ApiAuthMiddleware checa papel</td><td>Ele valida token e usuário ativo; não aplica escopos ou papel.</td><td>Defina regra de autorização específica antes de permitir operações sensíveis.</td></tr>
+<tr><td>Usar <code>Router::resource()</code> como REST JSON pronto</td><td>Gera também create/edit e não cria Resource, validação, auth ou implementação; pode registrar actions HTML inexistentes.</td><td>Registre explicitamente os verbos API e aplique middleware/política.</td></tr>
+<tr><td>Retornar 200 para toda operação</td><td>Clientes não distinguem criação, invalidação e falha.</td><td>Use 200/201/204/4xx adequados ao contrato; helpers API aceitam status explícito.</td></tr>
+<tr><td>Esperar que toda exceção vire JSON</td><td>Fallback Router/Application é HTML e não mapeia todo erro de domínio em envelope.</td><td>Trate falhas esperadas no Controller/Service, logue internamente e responda com ApiController helpers.</td></tr>
+<tr><td>Confiar apenas em regra <code>unique</code></td><td>Requisições concorrentes podem passar na validação ao mesmo tempo.</td><td>Mantenha UNIQUE no banco e traduza conflito conhecido sem expor SQL.</td></tr>
+<tr><td>Usar <code>AuthService</code> Web para emitir token API</td><td>Esse Service usa Auth de sessão; o fluxo Bearer existente é implementado em AuthApiController/ApiTokenRepository.</td><td>Separe contexto de sessão e token; reaproveite regras puras, não sessão como credencial de API.</td></tr>
+</tbody></table>
+<h2 id="limites">11. Recursos que não existem ou não são automáticos</h2>
+<ul><li>Não há OpenAPI/Swagger gerado nem catálogo que registre automaticamente rotas novas; esta página e a referência de classes são documentação manual.</li><li>Não há injeção automática de Controllers/Services/Repositories. Router instancia Controller sem argumentos; construtores inicializam dependências explicitamente. Só FormRequest tipado na assinatura de action tem construção especial.</li><li>Não há middleware pipeline com request/response encadeados; middleware é classe cujo <code>handle(Request $request, ?param)</code> roda antes da action e pode encerrar a saída.</li><li>Não há CRUD de escrita de usuários ativo; no generator API, store/update podem estar marcados 501 até serem implementados. <code>POST/PUT/PATCH/DELETE</code> só existem depois de registrados.</li><li>Não há JWT, OAuth2, refresh token, scopes/permissões por token ou policy engine no middleware API entregue; há token aleatório pessoal com hash SHA-256 e contexto de usuário.</li><li>Não há resposta JSON global para 404 de rota ou Throwable de ação; use helpers explícitos para contratos de API, e reveja os handlers HTML 404/500 se seu produto exigir JSON uniforme.</li><li><code>config/api.php</code> trata CORS e integrações de provedor; isso não configura automaticamente autenticação por token nem validação dos endpoints.</li></ul>
+<h2 id="checklist">Checklist de publicação</h2><ol><li>Confirme que cada rota está registrada, protegida e testada com verbo/caminho definitivos.</li><li>Use HTTPS, <code>APP_DEBUG=false</code> em produção e nunca publique .env, senhas, tokens ou stack traces.</li><li>Configure origens CORS exatas e teste preflight; CORS não substitui autorização.</li><li>Troque/remova as contas do UserSeeder; restrinja respostas via Resource e não aceite role/active sem política.</li><li>Decida política de expiração/revogação de tokens: o login ativo não configura <code>expires_at</code>.</li><li>Valide entrada, limite paginação, use constraints no banco e teste 401/403/404/405/409/422/429/500.</li><li>Leia as páginas de <a href="../../http/routing/index.html">roteamento</a>, <a href="../../http/requests/index.html">Request/FormRequest</a>, <a href="../../http/responses/index.html">respostas</a>, <a href="../../security/middleware/index.html">middleware</a>, <a href="../../architecture/repositories/index.html">Repository</a>, <a href="../../architecture/services/index.html">Service</a> e <a href="../../data/models/index.html">Model</a> ao ampliar o domínio.</li></ol>
+<section data-doc-addendum="api-advanced-operational-caveats"><h2 id="api-advanced-operational-caveats">Rate limiting: comportamento durante falha de armazenamento</h2><p>Os perfis <code>api</code>/<code>default</code> são fail-open: se o armazenamento em arquivo falhar e <code>hit()</code> retornar <code>null</code>, a requisição segue sem throttling. Perfis de login/register/forgot são fail-closed e podem bloquear quando não conseguem verificar o limite. Monitore permissões, espaço em disco, <code>storage/cache/ratelimit</code> e erros de I/O; o limite não é garantia durante falhas de armazenamento.</p><h2>409 por conflito UNIQUE não é garantido em corrida</h2><p>O exemplo de cadastro pode mapear para 409 uma duplicidade que foi detectada previamente pela consulta de domínio. Porém, se outra requisição inserir o mesmo valor entre a consulta e o INSERT, a violação UNIQUE no banco não é traduzida automaticamente para 409 pelo Service atual: ele não preserva necessariamente SQLSTATE/errorInfo de modo que a API possa distinguir a condição. Não capture indiscriminadamente <code>PDOException</code> no controller supondo que o framework a propaga; documente 409 concorrente apenas após uma alteração explícita que preserve e mapeie o erro do banco.</p></section></div><nav aria-label="Navegação entre páginas" class="page-nav"><a href="../../architecture/repositories/index.html"><small>← ANTERIOR</small>Repositories</a><a href="../client/index.html"><small>PRÓXIMA →</small>ApiClient e ApiRequest</a></nav><footer class="footer"><span>Documentação independente · conteúdo baseado no código da versão 2.0.0</span><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></footer></article></main>
+<script src="../../assets/js/search-index.js"></script><script data-root="../../assets" defer="" src="../../assets/js/app.js"></script></body></html>

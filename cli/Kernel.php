@@ -17,6 +17,7 @@ use Cli\Commands\MakeApiResourceCommand;
 use Cli\Commands\MakeApiRequestCommand;
 use Cli\Commands\MigrateCommand;
 use Cli\Commands\MigrateRollbackCommand;
+use Cli\Commands\SeedCommand;
 use Cli\Commands\SeedRunCommand;
 use Cli\Commands\ServeCommand;
 
@@ -122,6 +123,7 @@ class Kernel
             'make:api-controller' => MakeApiControllerCommand::class,
             'make:api-resource'   => MakeApiResourceCommand::class,
             'make:api-request'    => MakeApiRequestCommand::class,
+            'seed'             => SeedCommand::class,
             'seed:run'         => SeedRunCommand::class,
 
             // Utilitários
@@ -197,8 +199,10 @@ class Kernel
                 'migrate'                  => 'Executa todas as migrations pendentes',
                 'migrate --fresh'          => 'Recria o banco do zero (DROP + migrate)',
                 'migrate:rollback'         => 'Desfaz o último batch de migrations aplicado',
-                'migrate:rollback --step=N' => 'Desfaz os últimos N batches',
-                'seed:run {Nome}'          => 'Executa seeders PHP em database/seeds',
+                'migrate:rollback --step=N' => 'Desfaz o batch de migrations informado',
+                'seed'                     => 'Executa a sequência definida em DatabaseSeeder.php',
+                'seed:run'                 => 'Executa todos os Seeders de dados em database/seeds',
+                'seed:run {Nome}'          => 'Executa somente o Seeder informado',
             ],
             'Configuração' => [
                 'key:generate'  => 'Gera chave de aplicação segura no .env',

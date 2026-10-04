@@ -5,7 +5,10 @@ namespace Framework\Database;
 /**
  * Column — Representa uma coluna dentro de um Blueprint
  * ─────────────────────────────────────────────────────────────────────────────
- * Suporta modificadores fluentes: nullable(), default(), constrained() (FK).
+ * Suporta modificadores fluentes:
+ * nullable(), default(), rawExtra(), constrained(), onDelete(),
+ * onUpdate() e before().
+ *
  * Usada internamente pelo Blueprint; você não instancia isso diretamente.
  */
 class Column
@@ -23,6 +26,8 @@ class Column
     private string $referencedColumn = 'id';
     private string $onDeleteAction = 'RESTRICT';
     private string $onUpdateAction = 'RESTRICT';
+    private ?string $beforeColumn = null;
+    private ?string $afterColumn = null;
 
     public function __construct(string $name, string $type)
     {
@@ -104,7 +109,46 @@ class Column
     {
         $constraint = "fk_{$table}_{$this->name}";
         return "CONSTRAINT {$constraint} FOREIGN KEY ({$this->name}) "
-             . "REFERENCES {$this->referencedTable}({$this->referencedColumn}) "
-             . "ON DELETE {$this->onDeleteAction} ON UPDATE {$this->onUpdateAction}";
+            . "REFERENCES {$this->referencedTable}({$this->referencedColumn}) "
+            . "ON DELETE {$this->onDeleteAction} ON UPDATE {$this->onUpdateAction}";
+    }
+
+
+    /**
+     * Define a coluna para ser adicionada antes de outra coluna existente.
+     *
+     * Usado principalmente em migrations que alteram tabelas existentes
+     * através de Schema::table().
+     *
+     * Uso:
+     * $table->dateTime('coluna_nova')
+     *     ->nullable()
+     *     ->before('created_at');
+     */
+    public function before(string $column): static
+    {
+        $this->beforeColumn = $column;
+
+        return $this;
+    }
+
+    public function getBeforeColumn(): ?string
+    {
+        return $this->beforeColumn;
+    }
+
+    /**
+     * Define a posição da coluna após uma coluna existente.
+     */
+    public function after(string $column): static
+    {
+        $this->afterColumn = $column;
+
+        return $this;
+    }
+
+    public function getAfterColumn(): ?string
+    {
+        return $this->afterColumn;
     }
 }

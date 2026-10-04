@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#f5f7f6" name="theme-color"/><meta content="Crie Seeders class-based com Models, transações centralizadas e password_hash() nativo." name="description"/><title>Seeders · PHP MVC Framework</title><link href="../../assets/images/ea-monogram.svg" rel="icon" type="image/svg+xml"/><link href="../../assets/css/styles.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#main">Pular para o conteúdo</a>
+<header class="topbar"><button aria-expanded="false" aria-label="Abrir menu" class="mobile-toggle" data-nav-toggle="" aria-controls="sidebar-nav" type="button">☰</button><a class="brand" href="../../index.html" aria-label="EA — Elias Antonio — documentação do PHP MVC Framework"><span aria-hidden="true" class="brand-mark">EA</span><span class="brand-title">PHP MVC<span class="brand-sub">DOCUMENTAÇÃO</span></span></a><div class="header-search"><label class="search-wrap"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg><input aria-label="Buscar documentação" data-search="" placeholder="Buscar páginas, classes, métodos…" type="search"/><kbd>Ctrl K</kbd></label><div aria-label="Resultados da busca" class="search-results" data-results="" role="listbox"></div></div><div class="header-right"><span class="version">v2.0.0</span><button aria-label="Alternar tema" class="icon-btn" data-theme-toggle="" title="Alternar tema" type="button">◐</button></div></header>
+<div class="mobile-scrim" aria-hidden="true"></div><nav aria-label="Navegação da documentação" class="sidebar" id="sidebar-nav" aria-hidden="false"><div class="sidebar-identity"><span aria-hidden="true" class="brand-mark">EA</span><span class="sidebar-identity-copy"><strong>PHP MVC</strong><small>DOCUMENTAÇÃO</small></span></div><div class="nav-group"><a class="nav-link" href="../../index.html">Visão geral</a></div><div class="nav-group"><p class="nav-title">COMEÇANDO</p><a class="nav-link" href="../../start/introduction/index.html">Introdução</a><a class="nav-link" href="../../start/installation/index.html">Instalação</a><a class="nav-link" href="../../start/configuration/index.html">Configuração</a><a class="nav-link" href="../../start/structure/index.html">Estrutura do projeto</a><a class="nav-link" href="../../start/lifecycle/index.html">Ciclo da requisição</a></div><div class="nav-group"><p class="nav-title">FUNDAMENTOS HTTP</p><a class="nav-link" href="../../http/routing/index.html">Roteamento</a><a class="nav-link" href="../../http/controllers/index.html">Controllers</a><a class="nav-link" href="../../http/requests/index.html">Requests e FormRequest</a><a class="nav-link" href="../../http/views/index.html">Views e layouts</a><a class="nav-link" href="../../http/responses/index.html">Respostas HTTP e JSON</a></div><div class="nav-group"><p class="nav-title">DADOS</p><a class="nav-link" href="../models/index.html">Models</a><a class="nav-link" href="../database/index.html">Database e PDO</a><a class="nav-link" href="../query-builder/index.html">Query builder</a><a class="nav-link" href="../migrations/index.html">Migrations e Schema</a><a aria-current="page" class="nav-link active" href="index.html">Seeders</a></div><div class="nav-group"><p class="nav-title">SEGURANÇA</p><a class="nav-link" href="../../validation/index.html">Validação</a><a class="nav-link" href="../../security/authentication/index.html">Autenticação</a><a class="nav-link" href="../../security/user-ptbr/index.html">Usuário (PT-BR)</a><a class="nav-link" href="../../security/sessions-csrf/index.html">Sessões e CSRF</a><a class="nav-link" href="../../security/middleware/index.html">Middleware e proteção</a></div><div class="nav-group"><p class="nav-title">ARQUITETURA E INTEGRAÇÕES</p><a class="nav-link" href="../../architecture/services/index.html">Services</a><a class="nav-link" href="../../architecture/repositories/index.html">Repositories</a><a class="nav-link" href="../../integrations/api/index.html">API HTTP e endpoints próprios</a><a class="nav-link" href="../../integrations/client/index.html">ApiClient e ApiRequest</a><a class="nav-link" href="../../integrations/cep-payments/index.html">Integrações de CEP e pagamentos</a></div><div class="nav-group"><p class="nav-title">SUPORTE</p><a class="nav-link" href="../../support/helpers/index.html">Helpers</a><a class="nav-link" href="../../support/uploads/index.html">Uploads</a><a class="nav-link" href="../../support/logging-mail/index.html">Logs e e-mail</a></div><div class="nav-group"><p class="nav-title">FERRAMENTAS</p><a class="nav-link" href="../../cli/index.html">CLI e geradores</a></div><div class="nav-group"><p class="nav-title">REFERÊNCIA</p><a class="nav-link" href="../../reference/api/index.html">Referência de classes e funções</a></div><div class="sidebar-foot">PHP MVC Framework · v2.0.0<br/><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></div></nav>
+<main class="main" id="main"><article class="content"><nav aria-label="Trilha de navegação" class="breadcrumbs"><a href="../../index.html">Documentação</a><span aria-hidden="true">›</span><span>Dados</span><span aria-hidden="true">›</span><span aria-current="page">Seeders</span></nav><h1 class="page-title">Seeders</h1><p class="page-desc">Inicialize dados por classes Seeder, usando os Models e a conexão do framework sem SQL manual.</p><div class="prose"><p>Um <strong>Seeder</strong> é uma classe que inicializa dados previsíveis para desenvolvimento, testes ou configuração inicial. No PHP MVC, o Seeder novo estende <code>Framework\Database\Seeder</code> e implementa <code>run(): void</code>. O runner central carrega o ambiente, usa a conexão singleton de <code>Database</code> e envolve cada execução em uma transação; dentro de <code>run()</code>, você trabalha com Models.</p>
+<h2 id="arquivos">Arquivos e responsabilidades</h2>
+<ul>
+<li><code>database/seeds/DatabaseSeeder.php</code>: retorna a lista ordenada de classes de Seeder para o comando principal.</li>
+<li><code>database/seeds/*Seeder.php</code>: arquivo PHP de cada Seeder; a forma recomendada declara uma classe no namespace <code>Database\Seeders</code>.</li>
+<li><code>framework/Database/Seeder.php</code>: classe abstrata base com o contrato <code>run(): void</code>.</li>
+
+<li><code>cli/SeedRunner.php</code>: resolve os arquivos, executa <code>run()</code>, inicializa o bootstrap e controla a transação por Seeder.</li>
+<li><code>cli/Commands/SeedCommand.php</code> e <code>SeedRunCommand.php</code>: conectam o runner aos comandos <code>seed</code> e <code>seed:run</code>.</li>
+</ul>
+<p>O runner inclui os arquivos de <code>database/seeds/</code> diretamente; não foi necessário acrescentar um novo mapeamento PSR-4 ao Composer. Os Models da aplicação continuam sendo carregados pelo autoload já existente. Por isso, o Seeder não precisa conter <code>require</code>, construir PDO, carregar <code>.env</code> ou escrever SQL.</p>
+<h2 id="comandos">Comandos disponíveis</h2>
+<table><thead><tr><th>Comando</th><th>O que executa</th><th>Quando usar</th></tr></thead><tbody>
+<tr><td><code>php mvc make:seed ProductSeeder</code></td><td>Gera <code>database/seeds/ProductSeeder.php</code> como classe em <code>Database\Seeders</code>, estendendo a classe base.</td><td>Iniciar um Seeder novo. Confirme antes que o Model e sua tabela existem.</td></tr>
+<tr><td><code>php mvc seed</code></td><td>Executa as classes listadas em <code>DatabaseSeeder.php</code>, na ordem escrita.</td><td>Inicialização principal, previsível e recomendada.</td></tr>
+<tr><td><code>php mvc seed:run</code></td><td>Executa arquivos <code>*Seeder.php</code> em ordem natural pelo nome; ignora <code>DatabaseSeeder.php</code>.</td><td>Executar o conjunto encontrado no diretório.</td></tr>
+<tr><td><code>php mvc seed:run UserSeeder</code></td><td>Executa apenas <code>UserSeeder.php</code>; aceita também o sufixo <code>.php</code>.</td><td>Testar um Seeder isoladamente.</td></tr>
+<tr><td><code>php mvc seed:run DatabaseSeeder</code></td><td>Alias de execução do plano principal.</td><td>Compatibilidade com a forma nomeada do comando.</td></tr>
+</tbody></table>
+<p>O resumo dos comandos class-based informa quantos Seeders terminaram; ele não estima quantidade de linhas, pois <code>run(): void</code> não retorna contadores. As mensagens de progresso indicam o início e o sucesso de cada <code>run()</code>. Um plano principal vazio é válido e resulta em zero Seeders executados; se <code>seed:run</code> não encontrar arquivos, o CLI mostra aviso de ausência.</p>
+<p>Execute as migrations antes de semear: <code>php mvc migrate</code>. A conexão vem da configuração existente em <code>config/database.php</code> e do <code>.env</code> carregado pelo bootstrap do framework. O wrapper de banco atual usa PDO/MySQL; não há suporte a SQLite nele.</p>
+<h2 id="plano">O Seeder principal e a ordem explícita</h2>
+<p><strong>Cenário e objetivo.</strong> Alguns dados dependem de outros. O plano principal estabelece a ordem sem depender da ordenação incidental dos arquivos.</p>
+<pre><code class="language-php">&lt;?php
+
+namespace Database\Seeders;
+
+return [
+    RoleSeeder::class,
+    UserSeeder::class,
+    ProductSeeder::class,
+];</code></pre>
+<p><code>::class</code> produz uma string com o nome da classe; não cria uma instância. O runner valida todos os arquivos antes de iniciar o plano, depois executa cada <code>run()</code> na ordem do array. O arquivo fornecido pelo projeto retorna <code>[UserSeeder::class]</code>. Não inclua <code>DatabaseSeeder::class</code> na própria lista. Use o namespace convencional <code>Database\Seeders</code> para que a execução por diretório possa resolver os arquivos automaticamente; quando necessário, <code>runMain()</code> e <code>runOne()</code> também aceitam a classe-string totalmente qualificada de uma classe cujo arquivo esteja em <code>database/seeds/</code>.</p>
+<p><strong>Resultado esperado:</strong> o CLI mostra <code>[SEED] NomeSeeder</code> na ordem configurada e só avança depois de a transação daquele Seeder ser confirmada. Se um nome não resolver para arquivo ou uma execução lançar exceção, o comando para; os Seeders anteriores do plano, já confirmados, não são revertidos.</p>
+<h2 id="formato-dados">Estrutura de uma classe Seeder</h2>
+<p><strong>Cenário e objetivo.</strong> Criar ou localizar dados iniciais de usuários usando o Model existente, sem tratar de conexão ou INSERT no arquivo do Seeder.</p>
+<pre><code class="language-php">&lt;?php
+
+namespace Database\Seeders;
+
+use App\Models\User;
+use Framework\Database\Seeder;
+
+class UserSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $users = new User();
+
+        $users-&gt;firstOrCreate(
+            ['email' =&gt; 'admin@example.com'],
+            [
+                'name'     =&gt; 'Administrador',
+                'password' =&gt; password_hash('admin123', PASSWORD_DEFAULT),
+                'role'     =&gt; 'admin',
+                'active'   =&gt; 1,
+            ]
+        );
+    }
+}</code></pre>
+<p><strong>O que acontece:</strong> o runner instancia <code>UserSeeder</code> sem argumentos e chama <code>run()</code>. A classe usa o Model <code>User</code> e seu <code>firstOrCreate()</code> para procurar pelo e-mail; se não houver linha visível, cria uma usando os atributos fornecidos. O Model filtra os campos por <code>$fillable</code> e aplica os timestamps configurados nele. A classe fornecida pelo projeto segue esse padrão para duas contas de demonstração.</p>
+<p><strong>Retorno e falhas:</strong> <code>run()</code> retorna <code>void</code>. Não retorne um array de registros em um Seeder class-based. Exceções do Model ou do banco propagam para o runner e revertem a transação desse arquivo.</p>
+<h2 id="models">Usar Models dentro do Seeder</h2>
+<p>Os Models deste framework são <strong>baseados em instâncias</strong>, não em chamadas estáticas. Use <code>(new User())-&gt;where(...)</code> ou crie uma variável; chamadas como <code>User::where(...)</code> e <code>User::create(...)</code> não correspondem à API real. O Seeder não cria uma camada ORM adicional: ele reaproveita os métodos existentes em <code>Framework\Database\Model</code>.</p>
+<pre><code class="language-php">$users = new User();
+$existing = $users-&gt;where('email', 'admin@example.com')-&gt;first();
+
+if ($existing === false) {
+    $users-&gt;create([
+        'name'     =&gt; 'Administrador',
+        'email'    =&gt; 'admin@example.com',
+        'password' =&gt; password_hash('admin123', PASSWORD_DEFAULT),
+        'role'     =&gt; 'admin',
+        'active'   =&gt; 1,
+    ]);
+}</code></pre>
+<p><code>first()</code> retorna um objeto ou <code>false</code>; <code>firstOrFail()</code> retorna um objeto ou lança <code>RuntimeException</code>; <code>create()</code> retorna o ID inserido como string ou <code>false</code>. Prefira <code>firstOrCreate()</code> quando as colunas de busca e os valores de criação se encaixarem no seu caso. Nenhum desses métodos faz hash de senha automaticamente. Você pode gerar o hash com <code>password_hash($password, PASSWORD_DEFAULT)</code> antes de <code>create()</code>/<code>firstOrCreate()</code>, ou usar o método específico <code>$users-&gt;createWithHash(array $data): string|false</code>, que aplica bcrypt e define <code>role=member</code>/<code>active=1</code> quando omitidos. Use somente uma estratégia; passar um valor já hashado a <code>createWithHash()</code> faria hash duplo.</p>
+<h2 id="relacionamentos">Buscar registros relacionados</h2>
+<p>Há uma relação de chave estrangeira real entre <code>api_tokens.user_id</code> e <code>users.id</code>. O framework não oferece neste momento propriedades de relação como <code>$user-&gt;tokens</code> nem um método estático de relacionamento; consulte explicitamente o Model relacionado pela chave estrangeira. Isso continua sendo uma consulta por Model, não SQL manual:</p>
+<pre><code class="language-php">&lt;?php
+
+namespace Database\Seeders;
+
+use App\Models\ApiToken;
+use App\Models\User;
+use Framework\Database\Seeder;
+
+class AuditExistingTokensSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $user = (new User())
+            -&gt;where('email', 'admin@example.com')
+            -&gt;firstOrFail();
+
+        $tokens = (new ApiToken())
+            -&gt;where('user_id', (int) $user-&gt;id)
+            -&gt;get();
+    }
+}</code></pre>
+<p><code>$tokens</code> será uma lista de objetos e pode estar vazia. Quando a dependência é obrigatória, <code>firstOrFail()</code> deixa claro o problema: se o registro relacionado não existir, lança uma exceção e o Seeder atual é revertido. Coloque o Seeder que cria o registro antes do dependente no plano principal.</p>
+<p><strong>Limite importante do exemplo pedido:</strong> o projeto fornecido não contém <code>App\Models\Status</code>, tabela <code>statuses</code> ou coluna <code>users.status_id</code>; além disso, <code>status_id</code> não está no <code>$fillable</code> de <code>User</code>. Portanto, o exemplo <code>Status::where(...)</code> / <code>User::create(...'status_id'...)</code> não é executável neste framework como está. Se um aplicativo adicionar sua própria migration, Model e campo permitido, a chave estrangeira poderá ser buscada e atribuída explicitamente com instâncias de Model; isso não cria automaticamente uma API de relacionamentos que hoje não existe.</p>
+<h2 id="seguranca-password">Hash de senha com PHP nativo</h2>
+<p><strong>Função:</strong> <code>password_hash(string $password, string|int|null $algo, array $options = []): string</code> é uma função interna do PHP, não uma API do MVC. Em arquivos namespaced, como os Seeders em <code>Database\Seeders</code>, a chamada não precisa de import: PHP resolve a função interna quando não existe uma função homônima nesse namespace. Use <code>PASSWORD_DEFAULT</code> para adotar o algoritmo recomendado pelo PHP e permitir sua evolução.</p>
+<pre><code class="language-php">$hash = password_hash('password', PASSWORD_DEFAULT);
+$isValid = password_verify('password', $hash);</code></pre>
+<p><strong>Parâmetros:</strong> <code>$password</code> é a senha original; <code>$algo</code> define o algoritmo (use <code>PASSWORD_DEFAULT</code>); <code>$options</code> é opcional e só deve ser informado se houver uma necessidade técnica concreta. <strong>Retorno:</strong> uma string de hash que inclui os dados necessários para verificação. O salt é gerado pela função; não crie nem reutilize um salt manualmente. <code>password_verify()</code> devolve booleano e é a forma correta de comparar uma senha com o hash.</p>
+<p>Em um Seeder que usa <code>firstOrCreate()</code> ou <code>create()</code>, gere o hash no campo persistido, como nos exemplos acima. O Model não transforma automaticamente uma senha passada a esses métodos. O Model <code>User</code> também oferece <code>createWithHash()</code>, que recebe a senha em texto puro e gera o hash internamente; escolha um caminho ou o outro, nunca os combine, para evitar hash duplo.</p>
+<h2 id="exemplo-completo">Exemplo: criar um Seeder de produtos</h2>
+<p><strong>Cenário e objetivo.</strong> Popular uma tabela <code>products</code> já existente para validar um catálogo local. Este exemplo pressupõe que <code>App\Models\Product</code>, a migration/tabela e os campos permitidos em <code>$fillable</code> já foram criados pelo aplicativo; não são recursos incluídos no projeto base.</p>
+<ol>
+<li>Gere a estrutura com <code>php mvc make:seed ProductSeeder</code>; o comando cria um arquivo de classe e não sobrescreve um arquivo existente.</li>
+<li>Confirme o nome da tabela, as colunas e o <code>$fillable</code> do Model. Rode <code>php mvc migrate</code> antes de inserir dados.</li>
+<li>Implemente <code>run()</code> com o Model, depois teste somente esse arquivo.</li>
+<li>Quando fizer parte do fluxo normal do projeto, acrescente <code>ProductSeeder::class</code> ao plano principal.</li>
+</ol>
+<pre><code class="language-php">&lt;?php
+
+namespace Database\Seeders;
+
+use App\Models\Product;
+use Framework\Database\Seeder;
+
+class ProductSeeder extends Seeder
+{
+    public function run(): void
+    {
+        $products = new Product();
+        $products-&gt;firstOrCreate(
+            ['name' =&gt; 'Product Example'],
+            ['price' =&gt; 100.00]
+        );
+    }
+}</code></pre>
+<pre><code class="language-bash">php mvc make:seed ProductSeeder
+php mvc seed:run ProductSeeder
+# Depois de incluir ProductSeeder::class no DatabaseSeeder.php:
+php mvc seed</code></pre>
+<p><strong>Resultado esperado:</strong> o Model consulta por <code>name</code> e cria a linha somente quando não encontra uma correspondência visível. Se a tabela ou coluna não existir, o banco lança erro e a transação desse Seeder é revertida. Ajuste os atributos a um índice único apropriado se precisa de repetibilidade confiável.</p>
+<h2 id="duplicatas-transacoes">Repetição, duplicatas e transações</h2>
+<p>A transação do runner cobre todo o <code>run()</code> de cada classe. Se uma operação falhar, apenas a transação daquele arquivo é revertida. No plano principal, Seeders anteriores já confirmados permanecem. Uma classe não recebe um tratamento especial de erro 1062: use <code>firstOrCreate()</code> ou outra regra explícita de idempotência e mantenha constraints no banco. Se um registro está soft-deletado mas ainda viola uma chave <code>UNIQUE</code>, a busca do Model pode não vê-lo e a tentativa de inserção pode falhar; trate esse caso deliberadamente.</p>
+<p>Os arquivos legados que retornam arrays continuam aceitos por compatibilidade, mas não usam Models: o runner monta INSERT preparado, processa o campo <code>password</code> em texto e ignora somente erro MySQL 1062. Essa regra pertence ao caminho legado; não conte com ela para esconder erros em Seeders class-based.</p>
+<h2 id="compatibilidade-legada">Compatibilidade com Seeders antigos</h2>
+<p>Arquivos antigos que retornam uma lista de linhas ou o descriptor <code>['table' =&gt; ..., 'records' =&gt; ...]</code> continuam sendo executados. Arquivos procedurais sem retorno explícito também continuam incluídos, mas o runner não consegue envolver suas próprias operações em uma transação nem centralizar acesso ao Model. Em PHP, <code>require</code> devolve <code>1</code> quando não existe <code>return</code>; um <code>return null</code> explícito segue igualmente o caminho legado. Como não é possível distinguir esse sentinel de um <code>return 1</code>, não use inteiros como resultado. Migre gradualmente para classes que estendem <code>Seeder</code>; não misture um <code>return array</code> de dados com a expectativa de que <code>run()</code> também seja chamado.</p>
+<h2 id="erros-comuns">Erros comuns e como corrigir</h2>
+<ul>
+<li><strong>Classe/arquivo não encontrado:</strong> mantenha o arquivo em <code>database/seeds/</code>, use o nome-base com sufixo <code>Seeder</code> e confirme que o item de <code>DatabaseSeeder.php</code> resolve para esse arquivo.</li>
+<li><strong>Classe não estende Seeder:</strong> importe <code>Framework\Database\Seeder</code>, estenda-o e implemente <code>public function run(): void</code>.</li>
+<li><strong>Construtor exige parâmetros:</strong> o runner instancia a classe sem argumentos; deixe a conexão e dependências do framework no bootstrap/Model.</li>
+<li><strong>Model não encontrado ou coluna não permitida:</strong> verifique a classe, migration, nome da tabela e <code>$fillable</code>. <code>create()</code> retorna <code>false</code> se nenhum campo sobreviver ao filtro.</li>
+<li><strong>Registro relacionado não encontrado:</strong> execute primeiro o Seeder pai e use <code>firstOrFail()</code> apenas para dependências obrigatórias; caso seja opcional, trate o retorno de <code>first()</code> igual a <code>false</code>.</li>
+<li><strong>Senha não autentica:</strong> use <code>password_hash($senha, PASSWORD_DEFAULT)</code> antes de <code>create()</code>/<code>firstOrCreate()</code>, ou passe o texto puro a <code>createWithHash()</code>; nunca grave texto puro nem gere hash duplo.</li>
+<li><strong>Erro de conexão:</strong> rode as migrations e revise <code>.env</code> e <code>config/database.php</code>; não replique esse bootstrap dentro do Seeder.</li>
+</ul>
+<h2 id="evitar">O que evitar e limites reais</h2>
+<ul>
+<li>Não use <code>PDO</code>, <code>prepare()</code>, <code>execute()</code>, SQL manual, <code>require</code> ou carregamento de <code>.env</code> em Seeder novo; use Models e deixe o runner gerenciar o ambiente.</li>
+<li>Não use sintaxe estática <code>User::where()</code>/<code>User::create()</code>: os métodos de Model são de instância.</li>
+<li>Não presuma relação automática, accessor de foreign key, modelo <code>Status</code>, coluna <code>status_id</code>, observer ou cast: verifique recursos presentes no projeto.</li>
+<li>Não espere um helper <code>Hash()</code> do framework: Seeders novos usam <code>password_hash()</code> do PHP ou um método de Model já existente, como <code>User::createWithHash()</code>.</li>
+<li>Não grave tokens/credenciais reais em fixtures versionadas. A conta Admin deste projeto é de demonstração e usa credenciais previsíveis; altere/remova antes de qualquer ambiente exposto.</li>
+</ul>
+<p>Veja também <a href="../models/index.html">Models</a>, <a href="../database/index.html">Database e PDO</a>, <a href="../migrations/index.html">Migrations e Schema</a>, <a href="../../cli/index.html">CLI e geradores</a> e a <a href="../../reference/api/index.html#api-seeder-base">Referência da classe Seeder</a>.</p></div><nav aria-label="Navegação entre páginas" class="page-nav"><a href="../migrations/index.html"><small>← ANTERIOR</small>Migrations e Schema</a><a href="../../validation/index.html"><small>PRÓXIMA →</small>Validação</a></nav><footer class="footer"><span>Documentação independente · conteúdo baseado no código da versão 2.0.0</span><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></footer></article></main>
+<script src="../../assets/js/search-index.js"></script><script data-root="../../assets" defer="" src="../../assets/js/app.js"></script></body></html>

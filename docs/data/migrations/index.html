@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><meta content="#f5f7f6" name="theme-color"/><meta content="Migrations PHP, Schema, Blueprint, Column, tipos SQL, índices, foreign keys e relacionamentos MySQL." name="description"/><title>Migrations e Schema · PHP MVC Framework</title><link href="../../assets/images/ea-monogram.svg" rel="icon" type="image/svg+xml"/><link href="../../assets/css/styles.css" rel="stylesheet"/></head>
+<body><a class="skip-link" href="#main">Pular para o conteúdo</a>
+<header class="topbar"><button aria-expanded="false" aria-label="Abrir menu" class="mobile-toggle" data-nav-toggle="" aria-controls="sidebar-nav" type="button">☰</button><a class="brand" href="../../index.html" aria-label="EA — Elias Antonio — documentação do PHP MVC Framework"><span aria-hidden="true" class="brand-mark">EA</span><span class="brand-title">PHP MVC<span class="brand-sub">DOCUMENTAÇÃO</span></span></a><div class="header-search"><label class="search-wrap"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" viewbox="0 0 24 24"><circle cx="11" cy="11" r="7"></circle><path d="m20 20-4-4"></path></svg><input aria-label="Buscar documentação" data-search="" placeholder="Buscar páginas, classes, métodos…" type="search"/><kbd>Ctrl K</kbd></label><div aria-label="Resultados da busca" class="search-results" data-results="" role="listbox"></div></div><div class="header-right"><span class="version">v2.0.0</span><button aria-label="Alternar tema" class="icon-btn" data-theme-toggle="" title="Alternar tema" type="button">◐</button></div></header>
+<div class="mobile-scrim" aria-hidden="true"></div><nav aria-label="Navegação da documentação" class="sidebar" id="sidebar-nav" aria-hidden="false"><div class="sidebar-identity"><span aria-hidden="true" class="brand-mark">EA</span><span class="sidebar-identity-copy"><strong>PHP MVC</strong><small>DOCUMENTAÇÃO</small></span></div><div class="nav-group"><a class="nav-link" href="../../index.html">Visão geral</a></div><div class="nav-group"><p class="nav-title">COMEÇANDO</p><a class="nav-link" href="../../start/introduction/index.html">Introdução</a><a class="nav-link" href="../../start/installation/index.html">Instalação</a><a class="nav-link" href="../../start/configuration/index.html">Configuração</a><a class="nav-link" href="../../start/structure/index.html">Estrutura do projeto</a><a class="nav-link" href="../../start/lifecycle/index.html">Ciclo da requisição</a></div><div class="nav-group"><p class="nav-title">FUNDAMENTOS HTTP</p><a class="nav-link" href="../../http/routing/index.html">Roteamento</a><a class="nav-link" href="../../http/controllers/index.html">Controllers</a><a class="nav-link" href="../../http/requests/index.html">Requests e FormRequest</a><a class="nav-link" href="../../http/views/index.html">Views e layouts</a><a class="nav-link" href="../../http/responses/index.html">Respostas HTTP e JSON</a></div><div class="nav-group"><p class="nav-title">DADOS</p><a class="nav-link" href="../models/index.html">Models</a><a class="nav-link" href="../database/index.html">Database e PDO</a><a class="nav-link" href="../query-builder/index.html">Query builder</a><a aria-current="page" class="nav-link active" href="index.html">Migrations e Schema</a><a class="nav-link" href="../seeders/index.html">Seeders</a></div><div class="nav-group"><p class="nav-title">SEGURANÇA</p><a class="nav-link" href="../../validation/index.html">Validação</a><a class="nav-link" href="../../security/authentication/index.html">Autenticação</a><a class="nav-link" href="../../security/user-ptbr/index.html">Usuário (PT-BR)</a><a class="nav-link" href="../../security/sessions-csrf/index.html">Sessões e CSRF</a><a class="nav-link" href="../../security/middleware/index.html">Middleware e proteção</a></div><div class="nav-group"><p class="nav-title">ARQUITETURA E INTEGRAÇÕES</p><a class="nav-link" href="../../architecture/services/index.html">Services</a><a class="nav-link" href="../../architecture/repositories/index.html">Repositories</a><a class="nav-link" href="../../integrations/api/index.html">API HTTP e endpoints próprios</a><a class="nav-link" href="../../integrations/client/index.html">ApiClient e ApiRequest</a><a class="nav-link" href="../../integrations/cep-payments/index.html">Integrações de CEP e pagamentos</a></div><div class="nav-group"><p class="nav-title">SUPORTE</p><a class="nav-link" href="../../support/helpers/index.html">Helpers</a><a class="nav-link" href="../../support/uploads/index.html">Uploads</a><a class="nav-link" href="../../support/logging-mail/index.html">Logs e e-mail</a></div><div class="nav-group"><p class="nav-title">FERRAMENTAS</p><a class="nav-link" href="../../cli/index.html">CLI e geradores</a></div><div class="nav-group"><p class="nav-title">REFERÊNCIA</p><a class="nav-link" href="../../reference/api/index.html">Referência de classes e funções</a></div><div class="sidebar-foot">PHP MVC Framework · v2.0.0<br/><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></div></nav>
+<main class="main" id="main"><article class="content"><nav aria-label="Trilha de navegação" class="breadcrumbs"><a href="../../index.html">Documentação</a><span aria-hidden="true">›</span><span>Dados</span><span aria-hidden="true">›</span><span aria-current="page">Migrations e Schema</span></nav><h1 class="page-title">Migrations e Schema</h1><p class="page-desc">Criar e alterar schema com migrations PHP: Blueprint, Column, índices, chaves estrangeiras e relações entre tabelas.</p><div class="prose"><h2 id="arquivo">Formato do arquivo</h2><p>Arquivos <code>database/migrations/*.php</code> são ordenados pelo nome e retornam uma instância anônima de <code>Framework\Database\Migration</code>. Implemente <code>up()</code> e <code>down()</code>.</p><pre><code class="language-php">use Framework\Database\Migration;
+use Framework\Database\Schema;
+use Framework\Database\Blueprint;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('posts', function (Blueprint $table): void {
+            $table-&gt;id();
+            $table-&gt;string('title', 150);
+            $table-&gt;text('body')-&gt;nullable();
+            $table-&gt;timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('posts');
+    }
+};</code></pre>
+<h2 id="schema">Schema e Blueprint</h2><p>Use <code>Schema</code> e <code>Blueprint</code> para definir DDL em migrations. O <a href="#bp-overview">guia completo de Blueprint</a> abaixo cobre criação e alteração de tabelas, todos os tipos/modificadores, índices, FKs, relações 1:1/1:N/N:1/N:N, SQL gerado, execução e limitações da implementação.</p>
+<section id="blueprint-guide" aria-labelledby="bp-overview">
+<h2 id="bp-overview">Guia completo de Blueprint e definição de schema</h2>
+<p>Esta seção explica a API real de <code>Framework\Database\Blueprint</code>, <code>Column</code> e <code>Schema</code>, do primeiro arquivo de migration até relacionamentos e SQL gerado. O código entregue configura <strong>MySQL/InnoDB</strong>; não há suporte SQLite nesta conexão. Exemplos de tabelas como <code>posts</code> e <code>profiles</code> são modelos didáticos que você pode criar, não classes ou tabelas preexistentes.</p>
+<div class="callout note"><strong>Limite importante:</strong> Blueprint é um gerador pequeno de DDL. Ele cria definições de tabela, colunas, índices e chaves estrangeiras. Não é um ORM de relacionamentos, não descobre relações automaticamente e não valida todos os argumentos antes de produzir SQL.</div>
+<nav class="callout note" aria-label="Navegação interna do guia Blueprint"><strong>Neste guia</strong><ul>
+<li><a href="#bp-flow">Como o fluxo funciona</a></li><li><a href="#bp-first">Criar a primeira migration</a></li>
+<li><a href="#bp-alter">Alterar tabela existente</a></li><li><a href="#bp-types">Tipos de coluna</a></li>
+<li><a href="#bp-column">Modificadores de Column</a></li><li><a href="#bp-indexes">Índices e colunas removidas</a></li>
+<li><a href="#bp-foreign">Chaves estrangeiras</a></li><li><a href="#bp-sql">SQL efetivamente gerado</a></li><li><a href="#bp-relations">Relações entre tabelas</a></li>
+<li><a href="#bp-complete">Exemplo integrado</a></li><li><a href="#bp-test">Executar e testar</a></li>
+<li><a href="#bp-avoid">O que evitar e erros comuns</a></li><li><a href="#bp-reference">Referência da API e limites</a></li>
+</ul></nav>
+
+<h3 id="bp-flow">1. Como Blueprint funciona dentro do framework</h3>
+<p>Há dois fluxos distintos. No fluxo de <em>schema</em>, a migration chama <code>Schema</code>; a facade cria um <code>Blueprint</code>, o callback registra objetos <code>Column</code> e índices, e o framework monta SQL DDL e o entrega a <code>Database::execMigration()</code>. No uso cotidiano, Models consultam e alteram as tabelas já criadas.</p>
+<pre><code class="language-text">Migrations/arquivo.php → Migration::up()
+                       → Schema::create() ou Schema::table()
+                       → Blueprint + Column / índices / FKs
+                       → SQL DDL → Database::execMigration() → MySQL/InnoDB
+
+Aplicação em execução: Model ou Database → SQL de leitura/escrita → tabelas</code></pre>
+<p>Blueprint não executa queries de domínio nem insere registros. Use <a href="../models/index.html">Models</a> ou <a href="../database/index.html">Database/PDO</a> para dados; use este builder para a estrutura do banco. O <a href="../../cli/index.html">Migrator da CLI</a> carrega apenas arquivos <code>.php</code> em <code>database/migrations/</code>, ordenados pelo nome.</p>
+
+<h3 id="bp-first">2. Criar uma tabela do zero: exemplo iniciante</h3>
+<p><strong>Cenário e objetivo.</strong> Você está começando uma pequena aplicação de catálogo e precisa guardar produtos com nome, preço e datas de auditoria. Vamos criar uma migration reversível, entender cada arquivo e verificar o resultado. O nome e as colunas abaixo são exemplos; os métodos usados existem em <code>Blueprint.php</code>.</p>
+<ol>
+<li>Configure as variáveis do banco em <code>.env</code> (por exemplo <code>DB_HOST</code>, <code>DB_PORT</code>, <code>DB_DATABASE</code>, <code>DB_USERNAME</code> e <code>DB_PASSWORD</code>). A conexão ativa está em <code>config/database.php</code>; no código atual é MySQL.</li>
+<li>Na raiz do projeto, gere o esqueleto: <code>php mvc make:migration CreateProductsTable</code>. O comando cria um arquivo com prefixo de data/hora em <code>database/migrations/</code>. O stub inicial usa <code>Schema::create()</code>; revise e complete o conteúdo antes de executar.</li>
+<li>Edite o arquivo gerado para que tenha esta forma:</li>
+</ol>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('products', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name', 150);
+            $table->decimal('price', 10, 2);
+            $table->boolean('active')->default(1);
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('products');
+    }
+};</code></pre>
+<p><strong>O que foi feito.</strong> O arquivo retorna uma instância anônima de <code>Migration</code>, com <code>up()</code> para aplicar e <code>down()</code> para desfazer. <code>Schema::create()</code> recebe o nome literal da tabela e um callback com <code>Blueprint</code>. <code>id()</code> cria um <code>INT UNSIGNED AUTO_INCREMENT PRIMARY KEY</code>; <code>string()</code>, <code>decimal()</code> e <code>boolean()</code> registram colunas; <code>timestamps()</code> cria <code>created_at</code> e <code>updated_at</code>.</p>
+<p><strong>Resultado esperado.</strong> Ao chamar <code>php mvc migrate</code>, o Migrator carrega o arquivo, chama <code>up()</code> e registra a migration e seu batch na tabela <code>migrations</code>. Para esta tabela, Blueprint produz um <code>CREATE TABLE IF NOT EXISTS</code> InnoDB com charset <code>utf8mb4</code> e collation <code>utf8mb4_unicode_ci</code>. O SQL exato depende das colunas declaradas; mais adiante há uma saída real de exemplo.</p>
+<div class="callout warning">O comando <code>migrate</code> conecta e executa DDL de verdade. Faça o primeiro teste em um banco local/de desenvolvimento com backup adequado. <code>CREATE TABLE IF NOT EXISTS</code> não atualiza uma tabela que já existe: se a tabela estiver presente, o comando não converte a estrutura antiga para a nova.</div>
+
+<h3 id="bp-alter">3. Alterar uma tabela existente</h3>
+<p><strong>Cenário e objetivo.</strong> A tabela <code>products</code> já existe e agora precisa de um SKU opcional. Para alteração usa-se <code>Schema::table()</code>; o callback ainda recebe um Blueprint, mas o framework gera uma sequência de <code>ALTER TABLE</code>, não um <code>CREATE TABLE</code>.</p>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::table('products', function (Blueprint $table): void {
+            $table->string('sku', 64)->nullable();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('products', function (Blueprint $table): void {
+            $table->dropColumn('sku');
+        });
+    }
+};</code></pre>
+<p><strong>Como funciona.</strong> <code>Schema::table()</code> compila as operações e executa cada statement em sequência, imediatamente. No exemplo, <code>up()</code> adiciona <code>sku VARCHAR(64) NULL</code>; o rollback remove a coluna. A migration só é registrada pelo Migrator depois que <code>up()</code> termina. Em MySQL, DDL pode fazer commit implícito, então uma falha no meio pode deixar parte das alterações aplicada.</p>
+<p><code>dropColumn(string|array $columns)</code> aceita um nome ou uma lista e gera um <code>ALTER TABLE ... DROP COLUMN</code> por coluna. Para desfazer uma remoção, <code>down()</code> pode recriar a coluna com tipo e nulabilidade equivalentes, mas <strong>não recupera os valores apagados</strong>. Faça backup antes de migrations destrutivas.</p>
+<div class="callout note"><strong>O que o builder não oferece:</strong> não há métodos implementados para alterar tipo/nulabilidade de coluna existente, renomear coluna, remover índice, remover foreign key ou renomear tabela. Não use exemplos de outros frameworks como <code>change()</code>, <code>renameColumn()</code> ou <code>dropForeign()</code>; essas APIs não existem neste Blueprint.</div>
+
+<h3 id="bp-types">4. Catálogo completo de tipos de coluna</h3>
+<p>Todos os métodos abaixo pertencem a <code>Blueprint</code>. Salvo os métodos de conveniência indicados depois, cada método de coluna retorna <code>Framework\Database\Column</code>, permitindo encadear os modificadores descritos na próxima seção. Os tamanhos/valores são colocados no SQL; Blueprint não verifica se cabem nos limites do tipo nem se precisão e escala são coerentes.</p>
+<h4>Números</h4>
+<table><thead><tr><th>Método e assinatura</th><th>SQL gerado</th><th>Quando usar / observações</th></tr></thead><tbody>
+<tr><td><code>tinyInteger(string $name): Column</code></td><td><code>TINYINT</code></td><td>Inteiro pequeno com sinal.</td></tr>
+<tr><td><code>unsignedTinyInteger(string $name): Column</code></td><td><code>TINYINT UNSIGNED</code></td><td>Faixa não negativa de TINYINT no MySQL.</td></tr>
+<tr><td><code>smallInteger(string $name): Column</code></td><td><code>SMALLINT</code></td><td>Inteiro pequeno/médio com sinal.</td></tr>
+<tr><td><code>unsignedSmallInteger(string $name): Column</code></td><td><code>SMALLINT UNSIGNED</code></td><td>Contagens não negativas que cabem no tipo.</td></tr>
+<tr><td><code>mediumInteger(string $name): Column</code></td><td><code>MEDIUMINT</code></td><td>Inteiro MySQL de faixa intermediária.</td></tr>
+<tr><td><code>unsignedMediumInteger(string $name): Column</code></td><td><code>MEDIUMINT UNSIGNED</code></td><td>Versão sem sinal do MEDIUMINT.</td></tr>
+<tr><td><code>integer(string $name): Column</code></td><td><code>INT</code></td><td>Inteiro de uso geral com sinal.</td></tr>
+<tr><td><code>unsignedInteger(string $name): Column</code></td><td><code>INT UNSIGNED</code></td><td>Inteiro não negativo; <code>id()</code> e <code>foreignId()</code> usam esta largura.</td></tr>
+<tr><td><code>bigInteger(string $name): Column</code></td><td><code>BIGINT</code></td><td>Inteiro de faixa maior com sinal.</td></tr>
+<tr><td><code>unsignedBigInteger(string $name): Column</code></td><td><code>BIGINT UNSIGNED</code></td><td>Inteiro grande não negativo. Não é o tipo produzido por <code>foreignId()</code>.</td></tr>
+<tr><td><code>decimal(string $name, int $precision = 10, int $scale = 2): Column</code></td><td><code>DECIMAL(p,s)</code></td><td>Precisão fixa, apropriada para valores financeiros com escala conhecida; defina p/s conscientemente.</td></tr>
+<tr><td><code>float(string $name, int $precision = 8, int $scale = 2): Column</code></td><td><code>FLOAT(p,s)</code></td><td>Medidas aproximadas; evite para dinheiro. O formato de precisão/escala depende da versão/configuração MySQL.</td></tr>
+<tr><td><code>double(string $name, int $precision = 8, int $scale = 2): Column</code></td><td><code>DOUBLE(p,s)</code></td><td>Ponto flutuante aproximado de precisão maior que FLOAT; também não é decimal exato.</td></tr>
+</tbody></table>
+<h4>Texto</h4>
+<table><thead><tr><th>Método e assinatura</th><th>SQL gerado</th><th>Quando usar / observações</th></tr></thead><tbody>
+<tr><td><code>char(string $name, int $length = 1): Column</code></td><td><code>CHAR(n)</code></td><td>Texto de tamanho fixo, como uma sigla curta.</td></tr>
+<tr><td><code>string(string $name, int $length = 255): Column</code></td><td><code>VARCHAR(n)</code></td><td>Texto curto/variável, como nome, título ou e-mail.</td></tr>
+<tr><td><code>text(string $name): Column</code></td><td><code>TEXT</code></td><td>Texto longo; capacidade é regida pelo tipo MySQL e charset.</td></tr>
+<tr><td><code>mediumText(string $name): Column</code></td><td><code>MEDIUMTEXT</code></td><td>Conteúdo mais extenso, conforme limites do MySQL.</td></tr>
+<tr><td><code>longText(string $name): Column</code></td><td><code>LONGTEXT</code></td><td>Conteúdo muito grande; não escolha sem necessidade.</td></tr>
+</tbody></table>
+<h4>Data e hora</h4>
+<table><thead><tr><th>Método e assinatura</th><th>SQL gerado</th><th>Quando usar / observações</th></tr></thead><tbody>
+<tr><td><code>date(string $name): Column</code></td><td><code>DATE</code></td><td>Data sem hora.</td></tr>
+<tr><td><code>time(string $name): Column</code></td><td><code>TIME</code></td><td>Horário/duração conforme semântica do MySQL.</td></tr>
+<tr><td><code>year(string $name): Column</code></td><td><code>YEAR</code></td><td>Tipo YEAR específico do MySQL.</td></tr>
+<tr><td><code>dateTime(string $name): Column</code></td><td><code>DATETIME</code></td><td>Data/hora; não adiciona fuso horário.</td></tr>
+<tr><td><code>timestamp(string $name): Column</code></td><td><code>TIMESTAMP</code></td><td>Timestamp do MySQL, sujeito às regras e faixa da versão do servidor.</td></tr>
+</tbody></table>
+<h4>Booleanos e tipos especiais</h4>
+<table><thead><tr><th>Método e assinatura</th><th>SQL gerado</th><th>Quando usar / observações</th></tr></thead><tbody>
+<tr><td><code>boolean(string $name): Column</code></td><td><code>TINYINT(1)</code></td><td>Convenção booleana MySQL; o builder não cria CHECK constraint nem converte/valida automaticamente o valor.</td></tr>
+<tr><td><code>json(string $name): Column</code></td><td><code>JSON</code></td><td>Requer versão do MySQL com suporte ao tipo JSON.</td></tr>
+<tr><td><code>enum(string $name, array $values): Column</code></td><td><code>ENUM('a','b',...)</code></td><td>Lista fechada codificada no schema. Os itens são interpolados sem escaping; use apenas valores literais controlados.</td></tr>
+<tr><td><code>uuid(string $name): Column</code></td><td><code>CHAR(36)</code></td><td>Armazena uma string UUID; não gera UUID, não a torna chave primária e não adiciona índice/unique.</td></tr>
+<tr><td><code>id(string $name = 'id'): Column</code></td><td><code>INT UNSIGNED AUTO_INCREMENT PRIMARY KEY</code></td><td>Convenção de chave primária auto-incrementável; não é BIGINT nem UUID.</td></tr>
+<tr><td><code>foreignId(string $name): Column</code></td><td><code>INT UNSIGNED</code> + constraint se aplicado como FK</td><td>Cria coluna unsigned e a marca para compilação de FK; encadeie <code>constrained()</code> antes de executar a migration.</td></tr>
+</tbody></table>
+<p><strong>Convenções adicionais:</strong> <code>timestamps(): void</code> cria <code>created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP</code> e <code>updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP</code>. Não retorna Column e não pode ser encadeado. <code>softDeletes(): Column</code> cria <code>deleted_at DATETIME NULL</code> e retorna essa Column. A coluna só participa da exclusão lógica do Model se o Model correspondente usar <code>$softDelete = true</code>; criar a coluna, por si só, não ativa esse comportamento. O Model base tem <code>$timestamps = true</code> por padrão; verifique também as colunas na tabela.</p>
+
+<h3 id="bp-column">5. Column: nulabilidade, padrões e modificadores encadeáveis</h3>
+<p>Uma coluna normal retorna <code>Column</code>. Estes métodos alteram a definição guardada e retornam a própria instância (<code>static</code>), exceto os métodos internos de compilação. O SQL final é montado na ordem fixa: tipo, <code>NULL</code>/<code>NOT NULL</code>, <code>DEFAULT</code>, depois texto de <code>rawExtra</code>, independentemente da ordem em que os modificadores foram chamados.</p>
+<table><thead><tr><th>Método</th><th>Assinatura / retorno</th><th>Comportamento e uso</th></tr></thead><tbody>
+<tr><td><code>nullable()</code></td><td><code>nullable(bool $value = true): static</code></td><td>Sem chamada, coluna é <code>NOT NULL</code>. <code>nullable()</code> gera <code>NULL</code>; <code>nullable(false)</code> volta para <code>NOT NULL</code>. Não define valor padrão.</td></tr>
+<tr><td><code>default()</code></td><td><code>default(mixed $value, bool $raw = false): static</code></td><td>Define o default. Com <code>raw=false</code> (padrão), strings são cercadas por aspas simples, mas não escapadas; números são anexados ao SQL. <code>raw=true</code> insere o texto como expressão SQL, usado internamente para <code>CURRENT_TIMESTAMP</code>. Use apenas valores estáticos e confiáveis.</td></tr>
+<tr><td><code>rawExtra()</code></td><td><code>rawExtra(string $sql): static</code></td><td>Anexa SQL literal ao fim da definição, por exemplo <code>ON UPDATE CURRENT_TIMESTAMP</code>. Não escapa nem valida. Uma chamada substitui o texto extra anterior.</td></tr>
+<tr><td><code>constrained()</code></td><td><code>constrained(?string $table = null, string $column = 'id'): static</code></td><td>Guarda a tabela/coluna referenciada. Sem tabela, tenta inferir removendo o sufixo <code>_id</code> do nome e adicionando <code>s</code>; a regra é simplista, portanto prefira indicar explicitamente a tabela e, se preciso, a coluna.</td></tr>
+<tr><td><code>onDelete()</code></td><td><code>onDelete(string $action): static</code></td><td>Configura a ação de FK no DELETE do registro pai; converte a string para maiúsculas. Padrão interno: <code>RESTRICT</code>.</td></tr>
+<tr><td><code>onUpdate()</code></td><td><code>onUpdate(string $action): static</code></td><td>Configura a ação de FK no UPDATE da chave referenciada; converte a string para maiúsculas. Padrão interno: <code>RESTRICT</code>.</td></tr>
+</tbody></table>
+<p>Exemplo: <code>$table-&gt;string('nickname', 80)-&gt;nullable()-&gt;default('guest');</code> gera uma coluna <code>VARCHAR(80) NULL DEFAULT 'guest'</code>. Um default e a nulabilidade são conceitos distintos: permitir <code>NULL</code> não cria um default, e definir um default não torna a coluna nullable.</p>
+<div class="callout warning"><strong>SQL cru e escaping:</strong> identificadores (tabela, coluna e índice) e expressões DDL são interpolados sem quoting/validação geral. Strings comuns passadas a <code>default()</code> são colocadas entre aspas sem escape; <code>enum()</code>, <code>rawExtra()</code> e <code>default(..., raw: true)</code> também entram no SQL literalmente. Use somente nomes e valores constantes escritos no código da migration. Nunca passe input HTTP, conteúdo de banco ou dados externos a esses métodos.</div>
+
+<h3 id="bp-indexes">6. Índices, unique e remoção de coluna</h3>
+<p><code>index(string|array $columns, ?string $name = null): void</code> cria índice comum. <code>unique(string|array $columns, ?string $name = null): void</code> cria índice/constraint único. Com uma string, é um índice de uma coluna; com array, a ordem define um índice composto. Se não informar o nome, os nomes são <code>idx_{tabela}_{colunas}</code> e <code>uniq_{tabela}_{colunas}</code>. Os dois métodos retornam <code>void</code>: não encadeie modificadores após eles.
+</p>
+<pre><code class="language-php">$table->string('email', 180);
+$table->unique('email', 'uniq_customers_email');
+
+$table->index(['status', 'created_at'], 'idx_orders_status_created');</code></pre>
+<p><code>unique()</code> impede duplicidade conforme a regra do banco; <code>index()</code> não garante unicidade. Um índice composto em <code>(status, created_at)</code> não equivale automaticamente a índices independentes para qualquer ordem de busca. O builder não inspeciona dados existentes: adicionar unique a uma coluna com duplicatas pode fazer a migration falhar. Identificadores e nomes fornecidos são interpolados sem escape.</p>
+<p><code>dropColumn(string|array $columns): void</code> registra colunas a remover; é aplicado por <code>Schema::table()</code> via um <code>ALTER TABLE ... DROP COLUMN</code> para cada nome. <code>toCreateSql()</code> não usa essa lista, então chamar <code>dropColumn()</code> dentro de <code>Schema::create()</code> não remove nada.</p>
+
+<h3 id="bp-foreign">7. Chaves estrangeiras: exatamente como configurar</h3>
+<p><code>foreignId($name)</code> produz <code>INT UNSIGNED</code> e marca a coluna como foreign ID. O FK é compilado para essa marca, e <code>constrained()</code> informa o destino. Exemplo recomendado com a tabela explícita:</p>
+<pre><code class="language-php">$table->foreignId('user_id')
+      ->constrained('users')
+      ->onDelete('cascade');</code></pre>
+<p>O SQL gerado contém <code>CONSTRAINT fk_{tabela}_{coluna} FOREIGN KEY (...) REFERENCES users(id) ON DELETE CASCADE ON UPDATE RESTRICT</code>. O nome da constraint é criado automaticamente; não há parâmetro para personalizá-lo. Sem chamadas a <code>onDelete()</code>/<code>onUpdate()</code>, ambas as ações ficam em <code>RESTRICT</code>. A implementação converte o texto recebido para maiúsculas, mas <strong>não valida nem limita</strong> as ações: use apenas ações aceitas pelo MySQL/InnoDB e deixe o banco rejeitar opções inválidas.
+</p>
+<p><strong>Obrigatório na prática:</strong> chame <code>constrained()</code> para cada coluna criada por <code>foreignId()</code>. A implementação emite a constraint sempre que encontra esse tipo, mesmo que uma tabela referenciada não tenha sido configurada; nesse caso pode produzir SQL inválido. Informe explicitamente a tabela, pois a inferência automática apenas remove <code>_id</code> e acrescenta <code>s</code> (<code>user_id → users</code>, mas nomes irregulares não são singularizados corretamente).</p>
+<p>Tipos/chaves precisam ser compatíveis e o alvo deve existir quando o DDL for executado. Como <code>id()</code> é <code>INT UNSIGNED</code>, <code>foreignId()</code> combina com essa convenção. Apesar de haver <code>unsignedBigInteger()</code>, não há método separado para marcar um BIGINT como foreign ID; chamar <code>constrained()</code> sobre outra Column não basta para gerar a FK. Chaves estrangeiras compostas também não têm método próprio. Coloque migrations das tabelas-pai antes das tabelas-filhas (a execução é ordenada pelo nome do arquivo).</p>
+<p><code>onDelete('cascade')</code> apaga fisicamente os filhos quando o registro pai é apagado. <code>SET NULL</code> exige que a coluna FK seja nullable; caso contrário a ação não consegue gravar o resultado. Uma exclusão lógica do Model apenas atualiza <code>deleted_at</code>, portanto não aciona <code>ON DELETE CASCADE</code>. A tabela real <code>api_tokens</code> do projeto usa <code>foreignId('user_id')->constrained('users')->onDelete('CASCADE')</code> como exemplo implementado.</p>
+
+<h3 id="bp-sql">SQL efetivamente gerado por Blueprint</h3>
+<p>Para deixar o resultado concreto, este <code>CREATE TABLE</code> foi conferido executando em PHP os mesmos métodos de Blueprint (ID, FK para users, string, decimal, timestamps, soft delete, unique e índice composto). Os identificadores e valores são inseridos diretamente como código; a saída mostra também que o builder não envolve os nomes em backticks.</p>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS posts (
+    id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    user_id INT UNSIGNED NOT NULL,
+    title VARCHAR(150) NOT NULL,
+    price DECIMAL(10,2) NOT NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    deleted_at DATETIME NULL,
+    UNIQUE KEY uniq_posts_title (title),
+    INDEX idx_posts_user_title (user_id, title),
+    CONSTRAINT fk_posts_user_id FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE ON UPDATE RESTRICT
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;</code></pre>
+<p><code>toAlterSql()</code> também retorna statements em vez de uma única alteração; <code>Schema::table()</code> chama <code>execMigration()</code> para cada item, na ordem abaixo. A lista foi gerada com as operações indicadas:</p>
+<pre><code class="language-sql">ALTER TABLE posts ADD COLUMN published_at DATETIME NULL;
+ALTER TABLE posts ADD COLUMN team_id INT UNSIGNED NOT NULL;
+ALTER TABLE posts ADD CONSTRAINT fk_posts_team_id FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE posts DROP COLUMN old_code;
+ALTER TABLE posts DROP COLUMN old_note;
+ALTER TABLE posts ADD INDEX idx_posts_published_at (published_at);</code></pre>
+<p>Essa ordenação importa: colunas novas são adicionadas primeiro, uma FK de <code>foreignId()</code> vem logo após sua coluna, depois as colunas registradas para remoção e, por fim, índices. Cada statement é executado separadamente; uma falha pode deixar as operações anteriores aplicadas.</p>
+<h3 id="bp-relations">8. Modelagem das relações comuns</h3>
+<p>As relações abaixo são <strong>constraints no banco</strong>, não métodos de associação no Model. O código do Model confirma que não há <code>hasOne()</code>, <code>hasMany()</code>, <code>belongsTo()</code> ou <code>belongsToMany()</code>. Models podem fazer joins/queries explícitas; para relações automáticas ou carregamento eager, essa implementação não fornece essa API.</p>
+<h4>1:1 — usuário e perfil</h4>
+<p><strong>Cenário e objetivo.</strong> Cada perfil pertence a um usuário e, no máximo, um perfil pode apontar para o mesmo usuário. A FK sozinha permitiria vários perfis; a restrição <code>unique</code> em <code>user_id</code> é o que limita a um.</p>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('profiles', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('display_name', 120)->nullable();
+            $table->unique('user_id', 'uniq_profiles_user');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('profiles');
+    }
+};</code></pre>
+<p>O resultado garante que um perfil tenha um usuário existente e que um usuário tenha <em>no máximo</em> um perfil. Não obriga cada usuário a ter perfil. Para tabela existente, mova esse callback para <code>up()</code> de uma migration; não cole-o diretamente fora da migration.</p>
+<h4>1:N e N:1 — usuário e publicações</h4>
+<p><strong>Cenário e objetivo.</strong> Um usuário pode criar várias publicações; cada publicação pertence a um usuário. A FK fica no lado “muitos”, em <code>posts.user_id</code>. Do ponto de vista do post, a mesma estrutura é N:1 (muitos posts para um user), sem uma segunda constraint.</p>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('posts', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->string('title', 150);
+            $table->text('body')->nullable();
+            $table->timestamps();
+            $table->index('user_id', 'idx_posts_user');
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('posts');
+    }
+};</code></pre>
+<p>Ao terminar <code>up()</code>, cada linha de <code>posts</code> exige um <code>user_id</code> existente. Não existe lista automática <code>$user->posts</code>; faça a consulta de forma explícita, por exemplo com o wrapper Database:</p>
+<pre><code class="language-php">$posts = \Framework\Database\Database::getInstance()
+    ->query('SELECT posts.id, posts.title, users.name AS author_name
+             FROM posts
+             INNER JOIN users ON users.id = posts.user_id
+             WHERE posts.user_id = :user_id')
+    ->bind(':user_id', $userId)
+    ->fetchAll();</code></pre>
+<p>O valor variável é vinculado como parâmetro; não concatene <code>$userId</code> na SQL. Para a API fluente do Model e seus joins explícitos, consulte <a href="../query-builder/index.html">Query Builder</a> e <a href="../database/index.html">Database/PDO</a>.</p>
+<h4>N:N — usuários e papéis por tabela pivô</h4>
+<p><strong>Cenário e objetivo.</strong> Um usuário pode ter vários papéis e cada papel pode pertencer a vários usuários. O framework não cria pivô nem métodos N:N automaticamente: declare uma tabela intermediária com duas FKs. A chave unique composta evita repetir o mesmo par.</p>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('roles', function (Blueprint $table): void {
+            $table->id();
+            $table->string('name', 60);
+            $table->unique('name', 'uniq_roles_name');
+        });
+
+        Schema::create('role_user', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
+            $table->foreignId('role_id')->constrained('roles')->onDelete('cascade');
+            $table->unique(['user_id', 'role_id'], 'uniq_role_user_pair');
+            $table->timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('role_user');
+        Schema::dropIfExists('roles');
+    }
+};</code></pre>
+<p>Crie as tabelas-pai antes da pivô. No <code>down()</code>, remova primeiro <code>role_user</code>, depois <code>roles</code>; a tabela <code>users</code> pertence a outra migration e não deve ser apagada por esta. Se o par precisar ter atributos adicionais (por exemplo <code>assigned_at</code>), coloque-os na pivô.</p>
+
+<h3 id="bp-complete">9. Exemplo integrado: catálogo, pedidos e itens</h3>
+<p><strong>Cenário e objetivo.</strong> Um pequeno sistema de vendas terá produtos, pedidos feitos por usuários já existentes e itens associados a cada pedido. Isso cobre 1:N (<code>users → orders</code> e <code>orders → order_items</code>) e, conceitualmente, N:N entre pedidos e produtos, representada pela tabela <code>order_items</code>. Uma única migration mostra ordem de criação e reversão.</p>
+<pre><code class="language-php">&lt;?php
+
+use Framework\Database\Blueprint;
+use Framework\Database\Migration;
+use Framework\Database\Schema;
+
+return new class extends Migration {
+    public function up(): void
+    {
+        // A tabela products não depende de outra tabela deste exemplo.
+        Schema::create('products', function (Blueprint $table): void {
+            $table->id();
+            $table->string('sku', 64);
+            $table->string('name', 150);
+            $table->decimal('price', 10, 2);
+            $table->boolean('active')->default(1);
+            $table->timestamps();
+            $table->unique('sku', 'uniq_products_sku');
+        });
+
+        // users é criada pela migration existente do projeto.
+        Schema::create('orders', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('user_id')->constrained('users')->onDelete('restrict');
+            $table->string('status', 30)->default('pending');
+            $table->timestamps();
+            $table->index('user_id', 'idx_orders_user');
+        });
+
+        // Tabela de associação: cada linha liga um pedido a um produto.
+        Schema::create('order_items', function (Blueprint $table): void {
+            $table->id();
+            $table->foreignId('order_id')->constrained('orders')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('restrict');
+            $table->unsignedInteger('quantity')->default(1);
+            $table->decimal('unit_price', 10, 2);
+            $table->unique(['order_id', 'product_id'], 'uniq_order_product');
+        });
+    }
+
+    public function down(): void
+    {
+        // Desfaz primeiro as dependências e só então a tabela-pai do exemplo.
+        Schema::dropIfExists('order_items');
+        Schema::dropIfExists('orders');
+        Schema::dropIfExists('products');
+    }
+};</code></pre>
+<p><strong>Como ler o resultado.</strong> Um usuário pode ter vários pedidos por <code>orders.user_id</code>. Cada pedido pode ter várias linhas em <code>order_items</code>; cada linha aponta para um produto. O unique composto permite apenas uma linha por par pedido/produto. Se seu domínio permite linhas separadas para o mesmo produto (variações, lote, preço ou desconto), altere a chave unique para incluir a variação ou retire a unique conforme as regras do domínio. <code>unit_price</code> preserva o preço usado naquele pedido; consultar apenas o preço atual de <code>products</code> não substituiria esse dado histórico.</p>
+<p><strong>Resultado esperado.</strong> Se todas as operações forem aceitas pelo MySQL, serão criadas três tabelas InnoDB com as colunas, defaults, índices e constraints declaradas. A migration assume que <code>users</code> já existe. O rollback remove as tabelas na ordem inversa das dependências. Nenhum Model <code>Order</code>, <code>Product</code> ou relação ORM é criado automaticamente; esses arquivos e consultas são responsabilidade da aplicação.</p>
+
+<h3 id="bp-test">10. Executar, verificar e testar uma migration</h3>
+<ol>
+<li>Gere/edite o arquivo em <code>database/migrations/</code>; confira namespace/imports, <code>up()</code>, <code>down()</code>, nomes de tabela e dependências.</li>
+<li>Confirme que o banco de desenvolvimento está configurado em <code>.env</code> e acessível.</li>
+<li>Execute <code>php mvc migrate</code>. O Migrator processa arquivos <code>.php</code> em ordem alfabética do prefixo timestamp, pula nomes já registrados e registra o batch somente depois de <code>up()</code> completar.</li>
+<li>Verifique a estrutura no cliente MySQL, por exemplo <code>SHOW CREATE TABLE order_items;</code>, e confira índices/FKs no schema do banco. Esse comando é SQL para o cliente do banco, não um subcomando MVC.</li>
+<li>Para validar o rollback em ambiente descartável, use <code>php mvc migrate:rollback</code> e depois reaplique com <code>php mvc migrate</code>. <code>--step=N</code> identifica exatamente o batch N, e não uma quantidade de batches ou arquivos. Faça isso apenas quando o impacto nos dados for aceitável.</li>
+</ol>
+<p>O framework não fornece nesta classe um validador estático/preview de DDL, dry-run do Blueprint ou método de teste de migration isolada. Pode inspecionar a string internamente com <code>Blueprint::toCreateSql()</code> / <code>toAlterSql()</code>, mas esses métodos são auxiliares públicos voltados ao Schema e não substituem execução em MySQL compatível. Erros de PDO são lançados; identifique a primeira instrução que falhou e confirme o schema real antes de repetir.</p>
+<div class="callout danger"><strong>MySQL não garante rollback transacional de DDL.</strong> Se uma migration criar uma tabela e falhar na próxima operação, o que já foi executado pode continuar no banco, enquanto o nome da migration ainda não foi gravado na tabela <code>migrations</code>. Corrija o estado parcial com cuidado antes de executar novamente. <code>migrate --fresh</code> apaga e recria o banco inteiro; não use como atalho em dados que precisam ser preservados.</div>
+
+<h3 id="bp-avoid">11. O que evitar: erros comuns e correção</h3>
+<table><thead><tr><th>Evite</th><th>Por que falha / risco</th><th>Faça assim</th></tr></thead><tbody>
+<tr><td><code>foreignId('user_id')</code> sem <code>constrained()</code></td><td>O compilador ainda tenta montar FK, mas a tabela de destino não foi definida; pode gerar SQL inválido.</td><td>Use <code>foreignId('user_id')->constrained('users')</code> explicitamente.</td></tr>
+<tr><td><code>integer('user_id')->constrained('users')</code></td><td><code>constrained()</code> existe em Column, mas o compilador só emite FK para coluna marcada por <code>foreignId()</code>.</td><td>Use <code>foreignId()</code> (INT UNSIGNED) e mantenha o tipo compatível com a chave referenciada.</td></tr>
+<tr><td>Confiar sempre na inferência de tabela de <code>constrained()</code></td><td>A regra remove <code>_id</code> e acrescenta <code>s</code>; é uma pluralização simples, não trata nomes irregulares.</td><td>Escreva <code>constrained('users')</code> ou <code>constrained('categories')</code>.</td></tr>
+<tr><td><code>$table->string('email')->unique()</code></td><td><code>Column</code> não possui método <code>unique()</code>.</td><td>Declare a coluna e depois use <code>$table->unique('email')</code> no Blueprint.</td></tr>
+<tr><td><code>$table->index('x')->nullable()</code> ou <code>$table->timestamps()->nullable()</code></td><td><code>index()</code> e <code>timestamps()</code> retornam <code>void</code>.</td><td>Configure a coluna antes; declare o índice à parte. <code>timestamps()</code> é chamada isolada.</td></tr>
+<tr><td>Usar <code>Schema::create()</code> esperando alterar tabela existente</td><td>Gera <code>CREATE TABLE IF NOT EXISTS</code>; não altera uma tabela que já existe.</td><td>Crie uma nova migration e use <code>Schema::table()</code>.</td></tr>
+<tr><td>Concatenar entrada do usuário em nome/default/enum/raw SQL</td><td>Blueprint interpolará identificadores, valores ou trechos crus no DDL; não há prepared bindings nem escaping geral.</td><td>Use apenas identificadores e valores constantes no código de migration. Para dados de runtime, use <code>Database::query()->bind()</code>.</td></tr>
+<tr><td>Usar <code>float()</code>/<code>double()</code> para dinheiro</td><td>Ponto flutuante é aproximado.</td><td>Use <code>decimal('price', 10, 2)</code> e defina a escala de negócio.</td></tr>
+<tr><td>Usar <code>SET NULL</code> em FK NOT NULL</td><td>O banco não consegue aplicar a ação referencial se a coluna não aceita NULL.</td><td>Encadeie <code>nullable()</code> na coluna FK e valide que a regra do domínio permite ausência.</td></tr>
+<tr><td>Excluir migration já aplicada sem plano</td><td>O banco guarda seu nome/batch; apagar arquivo pode deixar o histórico inconsistente e impede executar o <code>down()</code> da cópia local.</td><td>Adicione nova migration corretiva e mantenha os arquivos versionados.</td></tr>
+<tr><td>Esperar <code>hasMany()</code>, auto-pivot, cascade em soft delete ou alteração de coluna</td><td>Essas facilidades não são implementadas por este Blueprint/Model.</td><td>Declare FKs/índices manualmente, faça queries/join explicitamente e planeje as migrations compatíveis com as operações disponíveis.</td></tr>
+</tbody></table>
+
+<h3 id="bp-reference">12. Referência técnica resumida e limites reais</h3>
+<h4>Schema</h4>
+<table><thead><tr><th>Assinatura</th><th>O que faz</th><th>Retorno / limite</th></tr></thead><tbody>
+<tr><td><code>Schema::create(string $table, callable $callback): void</code></td><td>Cria Blueprint, chama callback e executa <code>toCreateSql()</code>.</td><td>Executa já; SQL contém <code>CREATE TABLE IF NOT EXISTS</code>. Identificador é interpolado.</td></tr>
+<tr><td><code>Schema::table(string $table, callable $callback): void</code></td><td>Cria Blueprint de alteração e executa cada statement retornado por <code>toAlterSql()</code>.</td><td>Execução sequencial e imediata; não há transação criada por Schema.</td></tr>
+<tr><td><code>Schema::dropIfExists(string $table): void</code></td><td>Executa <code>DROP TABLE IF EXISTS</code>.</td><td>Use para down idempotente de tabela, com atenção aos dados.</td></tr>
+<tr><td><code>Schema::drop(string $table): void</code></td><td>Executa <code>DROP TABLE</code>.</td><td>Falha se a tabela não existir; identificador interpolado.</td></tr>
+</tbody></table>
+<h4>Métodos auxiliares públicos de Blueprint</h4>
+<table><thead><tr><th>Método</th><th>Retorno</th><th>Uso / observação</th></tr></thead><tbody>
+<tr><td><code>__construct(string $table, bool $isAlter = false)</code></td><td>—</td><td>Normalmente criado por Schema. O parâmetro <code>$isAlter</code> não é armazenado nem consultado no código atual; o tipo de operação é determinado por <code>toCreateSql()</code> ou <code>toAlterSql()</code>. Não dependa desse booleano para escolher comportamento.</td></tr>
+<tr><td><code>toCreateSql(): string</code></td><td>String SQL</td><td>Compilador chamado por <code>Schema::create()</code>. É público, mas comentado no código como interno do Schema. Não executa por si só.</td></tr>
+<tr><td><code>toAlterSql(): array</code> (docblock: <code>string[]</code>)</td><td>Lista de SQLs</td><td>Compilador chamado por <code>Schema::table()</code>. Gera ADD COLUMN/FK, DROP COLUMN e ADD INDEX em ordem de categoria; não executa por si só.</td></tr>
+</tbody></table>
+<h4>Métodos públicos de Column usados internamente</h4>
+<table><thead><tr><th>Método</th><th>Retorno</th><th>Observação</th></tr></thead><tbody>
+<tr><td><code>__construct(string $name, string $type)</code></td><td>—</td><td>Chamado pelo Blueprint; a própria classe orienta não instanciar diretamente.</td></tr>
+<tr><td><code>toSql(): string</code></td><td>Definição SQL da coluna</td><td>Auxiliar interno, não executa e não escapa identificadores/valores.</td></tr>
+<tr><td><code>toForeignKeySql(string $table): string</code></td><td>Definição SQL da constraint</td><td>Auxiliar interno chamado quando o Blueprint encontra a marca de foreignId.</td></tr>
+</tbody></table>
+<p>Para a API de Models e a ausência de relações ORM, consulte <a href="../models/index.html">Models</a>; para transações e statements parametrizados, <a href="../database/index.html">Database e PDO</a>; para queries/join, <a href="../query-builder/index.html">Query Builder</a>; para criar/executar migrations, <a href="../../cli/index.html">CLI</a>. O ponto de partida das implementações é <code>framework/Database/Schema.php</code>, <code>Blueprint.php</code>, <code>Column.php</code>, <code>Migration.php</code>, <code>Database.php</code> e <code>cli/Migrator.php</code>.</p>
+</section>
+
+<h2 id="executar">Executar e reverter</h2><pre><code class="language-bash">php mvc make:migration create_posts_table
+php mvc migrate
+php mvc migrate:rollback
+php mvc migrate:rollback --step=2</code></pre><p>O Migrator mantém a tabela <code>migrations</code>, registra nome e batch, ignora migrations já executadas e desfaz batches pela ordem inversa usando <code>down()</code>.</p><div class="callout danger"><strong><code>--fresh</code> destrói o banco configurado.</strong> Ele executa DROP DATABASE e cria novamente; o comando pede confirmação e tem proteção de ambiente, mas use somente sabendo que todos os dados daquele banco serão perdidos. DDL MySQL pode fazer commit implícito: falhas parciais podem exigir reparo manual.</div><div data-content-depth-pass="2"><h2>Progressão · criar e alterar schema</h2><p>Uma migration é uma unidade versionada de DDL. Arquivos PHP retornam um objeto Migration anônimo; o Migrator ordena pelo nome do arquivo e registra o batch. O exemplo abaixo segue a estrutura real de users, sem depender de APIs externas ao Schema/Blueprint.</p><pre><code class="language-php">return new class extends Migration {
+    public function up(): void
+    {
+        Schema::create('posts', function (Blueprint $table): void {
+            $table-&gt;id();
+            $table-&gt;string('title', 150);
+            $table-&gt;text('body')-&gt;nullable();
+            $table-&gt;timestamps();
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::dropIfExists('posts');
+    }
+};</code></pre><p>`Schema::create()` recebe nome e callback; cada método de coluna devolve Column para encadear nullable/default/constrained/onDelete/onUpdate. Para uma alteração, use `Schema::table()` e faça o `down()` remover ou restaurar o que `up()` mudou. O rollback executa migrations do batch em ordem inversa.</p><h2>Executar e escolher o nível de reversão</h2><table><thead><tr><th>Comando</th><th>Ação</th><th>Risco/uso</th></tr></thead><tbody><tr><td>php mvc migrate</td><td>Aplica migrations pendentes</td><td>Fluxo normal após criar/ajustar a migration.</td></tr><tr><td>php mvc migrate:rollback</td><td>Desfaz o último batch</td><td>Executa down(); confirme impacto nos dados.</td></tr><tr><td>php mvc migrate:rollback --step=2</td><td>Desfaz exatamente as migrations do batch 2</td><td>A opção seleciona exatamente batch = 2; não é uma quantidade de batches.</td></tr><tr><td>php mvc migrate --fresh</td><td>Drop/recria o banco e reaplica migrations</td><td>Destrói dados; confirmação não substitui backup.</td></tr></tbody></table><div class="callout note">MySQL pode fazer commit implícito de DDL. Se uma migration falhar no meio, confira schema e tabela migrations antes de tentar de novo; um `down()` deve ser pensado para reverter o que `up()` realmente criou.</div><p>Veja também a relação com <a href="../models/index.html">Models</a> e <a href="../../cli/index.html">comandos CLI</a>.</p></div><section data-final-audit="migration-sql-contracts">
+<h2 id="foreign-id">Chaves estrangeiras e SQL gerado</h2>
+<p><code>foreignId($name)</code> cria coluna e a marca para geração de FK; encadeie <code>constrained($table)</code> para informar a tabela referenciada antes de executar a migration. Sem <code>constrained()</code>, o gerador chega a SQL com tabela referenciada ausente, portanto não use foreignId isoladamente.</p>
+<pre><code class="language-php">$table-&gt;foreignId('user_id')
+      -&gt;constrained('users')
+      -&gt;onDelete('cascade');</code></pre>
+<p>Schema executa DDL imediatamente no MySQL. Os nomes de tabela/coluna e expressões raw são interpolados no SQL gerado; mantenha-os como literais do código. <code>default($value, raw: true)</code> e <code>rawExtra()</code> aceitam SQL literal e não devem receber input externo. Os valores de enum também são interpolados sem escaping automático.</p>
+<p>A referência inclui <a href="../database/index.html">Database/PDO</a> e a classe Migration base. O Migrator executa migrations PHP em ordem de nome; migrations SQL não são carregadas pelo comando atual.</p>
+</section><section data-doc-addendum="fresh-migration-warning"><h2 id="fresh-migration-warning"><code>migrate --fresh</code> recria o database inteiro</h2><p><code>php mvc migrate --fresh</code> não limpa apenas as tabelas de migrations: o Migrator executa DROP e CREATE do database configurado. O comando pede que você digite o nome do database para confirmar; <code>--yes</code> suprime essa pergunta. Em produção, também é necessário <code>--force</code>. Faça e verifique um backup antes de qualquer execução; <code>--force</code> apenas autoriza o comando e não protege os dados.</p><pre><code class="language-bash"># Interativo; leia a confirmação e digite o nome do database
+php mvc migrate --fresh
+
+# Não interativo (continua destrutivo)
+php mvc migrate --fresh --yes</code></pre></section><section data-batch-rollback-contract="exact">
+<h2 id="rollback-batch-exato">Rollback seleciona um número de batch exato</h2>
+<p><strong>Sem <code>--step</code>:</strong> o Migrator consulta o maior número de batch registrado e desfaz todas as migrations desse batch. <strong>Com <code>--step=N</code>:</strong> seleciona exclusivamente as linhas cujo campo <code>batch</code> é igual a <code>N</code>. A opção não significa “desfazer N batches” nem “desfazer os N mais recentes”.</p>
+<pre><code class="language-bash">php mvc migrate:rollback          # desfaz o maior batch existente
+php mvc migrate:rollback --step=2 # desfaz somente batch = 2</code></pre>
+<p><strong>Exemplo.</strong> Se os batches registrados forem <code>1</code>, <code>2</code> e <code>5</code>, sem opção o CLI desfaz <code>5</code>; com <code>--step=2</code>, desfaz só <code>2</code> e mantém <code>1</code> e <code>5</code>. Se o número pedido não existir, o CLI avisa que aquele batch não foi encontrado, termina com erro e <strong>não</strong> troca silenciosamente para o último batch.</p>
+<p>O argumento deve ser um inteiro positivo. <code>--step=0</code>, valores não numéricos ou <code>--step</code> sem <code>=N</code> são rejeitados antes de abrir o fluxo de rollback. Migrations do batch selecionado são processadas em ordem inversa de aplicação (<code>id DESC</code>) e cada <code>down()</code> remove sua linha de registro quando concluído.</p>
+<div class="callout warning">Rollback executa DDL e <code>down()</code> reais. Verifique o batch e o impacto nos dados antes de rodar, especialmente em ambiente compartilhado; MySQL pode fazer commit implícito em DDL.</div>
+</section></div><nav aria-label="Navegação entre páginas" class="page-nav"><a href="../query-builder/index.html"><small>← ANTERIOR</small>Query builder</a><a href="../seeders/index.html"><small>PRÓXIMA →</small>Seeders</a></nav><footer class="footer"><span>Documentação independente · conteúdo baseado no código da versão 2.0.0</span><a href="https://github.com/eliasdossantos" rel="noopener noreferrer" target="_blank">Créditos ao Elias</a></footer></article></main>
+<script src="../../assets/js/search-index.js"></script><script data-root="../../assets" defer="" src="../../assets/js/app.js"></script></body></html>

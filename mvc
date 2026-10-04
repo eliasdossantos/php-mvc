@@ -19,6 +19,9 @@
  * │    php mvc make:view product                                             │
  * │    php mvc migrate                                                       │
  * │    php mvc migrate --fresh                                               │
+ * │    php mvc migrate:rollback --step=2                                      │
+ * │    php mvc seed                                                          │
+ * │    php mvc seed:run UserSeeder                                           │
  * │    php mvc serve                                                         │
  * │    php mvc serve --port=8080                                             │
  * │    php mvc list                                                          │

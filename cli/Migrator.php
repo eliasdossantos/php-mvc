@@ -10,11 +10,10 @@ namespace Cli;
  * Não faz echo/exit diretamente: progresso é reportado por callback opcional,
  * e falhas são lançadas como exceção (capturadas pelo Cli\Kernel::run()).
  *
- * Implementação: migrations são classes PHP
- * classes PHP (Framework\Database\Migration) com up()/down(), no estilo Laravel. Cada
- * execução é registrada com um número de "batch", permitindo desfazer
- * (rollback()) o último lote aplicado — o que não era possível no formato
- * anterior baseado só em nome de arquivo já rodado ou não.
+ * Implementação: arquivos PHP retornam instâncias de
+ * Framework\Database\Migration com up()/down(). Cada execução é registrada
+ * em um batch. rollback() desfaz o batch exato informado ou, sem argumento,
+ * o batch mais recente; no CLI, --step=N seleciona o número exato do batch.
  *
  * Aviso: no MySQL, comandos DDL (CREATE/ALTER/DROP TABLE) fazem commit
  * implícito. Isso significa que, se uma migration com várias tabelas falhar
@@ -88,14 +87,20 @@ class Migrator
     }
 
     /**
-     * Desfaz o(s) último(s) batch(es) aplicados, chamando down() na ordem inversa.
+     * Desfaz todas as migrations de um batch na ordem inversa da aplicação.
+     * Quando $batch é null, seleciona o maior batch existente; quando informado,
+     * procura exatamente aquele número e nunca substitui um batch ausente pelo último.
      *
-     * @param int           $steps  Quantos batches desfazer (1 = só o último).
+     * @param int|null      $batch  Número exato do batch; null significa o mais recente.
      * @param callable|null $onLine function(string $message): void
-     * @return array{rolled_back:int}
+     * @return array{rolled_back:int,batch:int|null,found:bool}
      */
-    public function rollback(int $steps = 1, ?callable $onLine = null): array
+    public function rollback(?int $batch = null, ?callable $onLine = null): array
     {
+        if ($batch !== null && $batch < 1) {
+            throw new \InvalidArgumentException('O número do batch deve ser positivo.');
+        }
+
         $report = function (string $msg) use ($onLine) {
             if ($onLine !== null) {
                 $onLine($msg);
@@ -111,13 +116,23 @@ class Migrator
 
         $migrationsPath = ROOT_PATH . '/database/migrations';
         $files = $this->allMigrationFiles($migrationsPath);
-        $rows  = $this->lastBatches($pdo, $steps);
 
-        if (!$rows) {
-            $report('ℹ  Nada para desfazer.');
-            return ['rolled_back' => 0];
+        if ($batch === null) {
+            $batch = $this->latestBatch($pdo);
+            if ($batch === null) {
+                $report('ℹ  Nada para desfazer: nenhum batch registrado.');
+                return ['rolled_back' => 0, 'batch' => null, 'found' => false];
+            }
         }
 
+        $rows = $this->migrationsForBatch($pdo, $batch);
+
+        if (!$rows) {
+            $report("Nenhum batch de migrations encontrado para o batch {$batch}.");
+            return ['rolled_back' => 0, 'batch' => $batch, 'found' => false];
+        }
+
+        $report("  [BATCH] {$batch}");
         $rolledBack = 0;
 
         foreach ($rows as $row) {
@@ -139,13 +154,13 @@ class Migrator
             $rolledBack++;
         }
 
-        return ['rolled_back' => $rolledBack];
+        return ['rolled_back' => $rolledBack, 'batch' => $batch, 'found' => true];
     }
 
     // ── Bootstrap mínimo de ambiente ─────────────────────────────────────────
     // Necessário porque o entry point `mvc` só define ROOT_PATH e o autoload —
-    // não carrega dotenv nem config/app.php (mesmo motivo pelo qual os
-    // seeders também fazem sua própria preparação de ambiente).
+    // não carrega dotenv nem config/app.php. Migrator e SeedRunner centralizam
+    // essa preparação antes de usarem a conexão configurada no framework.
     //
     // Público (não mais private) porque MigrateCommand precisa chamá-lo
     // antes de run(), para ter acesso a APP_ENV/config do banco na hora de
@@ -285,23 +300,20 @@ class Migrator
         return (int) ($row['max_batch'] ?? 0) + 1;
     }
 
-    private function lastBatches(\PDO $pdo, int $steps): array
+    private function latestBatch(\PDO $pdo): ?int
     {
-        $stmt = $pdo->prepare("SELECT DISTINCT batch FROM `{$this->migrationsTable}` ORDER BY batch DESC LIMIT :steps");
-        $stmt->bindValue(':steps', $steps, \PDO::PARAM_INT);
-        $stmt->execute();
-        $batches = array_column($stmt->fetchAll(\PDO::FETCH_ASSOC), 'batch');
+        $value = $pdo->query("SELECT MAX(batch) FROM `{$this->migrationsTable}`")->fetchColumn();
+        return $value === false || $value === null ? null : (int) $value;
+    }
 
-        if (!$batches) {
-            return [];
-        }
-
-        // valores já vieram do banco como inteiros; forçar de novo por segurança antes de concatenar
-        $placeholders = implode(',', array_map('intval', $batches));
-
-        $stmt = $pdo->query(
-            "SELECT migration, batch FROM `{$this->migrationsTable}` WHERE batch IN ({$placeholders}) ORDER BY id DESC"
+    /** @return list<array{migration:string,batch:int|string}> */
+    private function migrationsForBatch(\PDO $pdo, int $batch): array
+    {
+        $stmt = $pdo->prepare(
+            "SELECT migration, batch FROM `{$this->migrationsTable}` WHERE batch = :batch ORDER BY id DESC"
         );
+        $stmt->bindValue(':batch', $batch, \PDO::PARAM_INT);
+        $stmt->execute();
         return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 

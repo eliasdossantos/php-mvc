@@ -334,8 +334,8 @@ class Blueprint
     {
         $this->dateTime('created_at')->default('CURRENT_TIMESTAMP', raw: true);
         $this->dateTime('updated_at')
-             ->default('CURRENT_TIMESTAMP', raw: true)
-             ->rawExtra('ON UPDATE CURRENT_TIMESTAMP');
+            ->default('CURRENT_TIMESTAMP', raw: true)
+            ->rawExtra('ON UPDATE CURRENT_TIMESTAMP');
     }
 
     /**
@@ -414,8 +414,8 @@ class Blueprint
         $lines = array_merge($lines, $this->indexes, $this->foreignKeys);
 
         return "CREATE TABLE IF NOT EXISTS {$this->table} (\n    "
-             . implode(",\n    ", $lines)
-             . "\n) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;";
+            . implode(",\n    ", $lines)
+            . "\n) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci;";
     }
 
     /** @return string[] lista de statements ALTER TABLE a executar em sequência */
@@ -424,7 +424,21 @@ class Blueprint
         $statements = [];
 
         foreach ($this->columns as $column) {
-            $statements[] = "ALTER TABLE {$this->table} ADD COLUMN {$column->toSql()};";
+            $position = '';
+
+            if ($column->getAfterColumn() !== null) {
+                $position = " AFTER {$column->getAfterColumn()}";
+            } elseif ($column->getBeforeColumn() !== null) {
+                // BEFORE não existe diretamente no MariaDB/MySQL.
+                // Mantido apenas para compatibilidade da API.
+                throw new \RuntimeException(
+                    'O modificador before() não é suportado diretamente pelo MariaDB/MySQL. '
+                        . 'Use after() informando a coluna anterior.'
+                );
+            }
+
+            $statements[] = "ALTER TABLE {$this->table} ADD COLUMN {$column->toSql()}{$position};";
+
             if ($column->isForeignId) {
                 $statements[] = "ALTER TABLE {$this->table} ADD {$column->toForeignKeySql($this->table)};";
             }

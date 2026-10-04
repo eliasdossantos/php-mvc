@@ -123,7 +123,7 @@ abstract class Model
     /** Busca registro por ID */
     public function find(int $id): object|false
     {
-        $where = $this->softDelete ? "AND deleted_at IS NULL" : '';
+        $where = $this->softDelete ? "AND {$this->table}.deleted_at IS NULL" : '';
         return $this->db
             ->query("SELECT * FROM {$this->table} WHERE {$this->primaryKey} = :id {$where} LIMIT 1")
             ->bind(':id', $id)
@@ -144,7 +144,7 @@ abstract class Model
     public function findBy(string $column, mixed $value): object|false
     {
         $column = $this->sanitizeIdentifier($column);
-        $where  = $this->softDelete ? "AND deleted_at IS NULL" : '';
+        $where = $this->softDelete ? "AND {$this->table}.deleted_at IS NULL" : '';
         return $this->db
             ->query("SELECT * FROM {$this->table} WHERE {$column} = :v {$where} LIMIT 1")
             ->bind(':v', $value)
@@ -324,6 +324,22 @@ abstract class Model
     public function leftJoin(string $table, string $first, string $operator, string $second): static
     {
         return $this->join($table, $first, $operator, $second, 'LEFT');
+    }
+
+    /**
+     * LEFT JOIN que ignora registros apagados (soft delete) da tabela
+     * associada. O filtro vai no ON, então a linha da tabela principal
+     * continua sendo retornada (com colunas NULL).
+     */
+    public function leftJoinSoft(string $table, string $first, string $operator, string $second): static
+    {
+        $table    = $this->sanitizeIdentifier($table);
+        $first    = $this->sanitizeIdentifier($first);
+        $second   = $this->sanitizeIdentifier($second);
+        $operator = $this->sanitizeOperator($operator);
+
+        $this->joins[] = "LEFT JOIN {$table} ON {$first} {$operator} {$second} AND {$table}.deleted_at IS NULL";
+        return $this;
     }
 
     /** Uso: $pedidos->groupBy('status'); */
@@ -744,7 +760,7 @@ abstract class Model
         $conditions = $this->buildWhereClause();
 
         $parts = [];
-        if ($this->softDelete) $parts[] = 'deleted_at IS NULL';
+        if ($this->softDelete) $parts[] = "{$this->table}.deleted_at IS NULL";
         if ($conditions !== '') $parts[] = "({$conditions})";
 
         return $parts ? ' WHERE ' . implode(' AND ', $parts) : '';

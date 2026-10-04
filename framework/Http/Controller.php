@@ -239,18 +239,24 @@ abstract class Controller
      */
     protected function redirect(string $url): never
     {
-        $url = safeRedirectTarget($url, $this->appUrl() ?: '/');
-        if (!str_starts_with($url, 'http')) $url = rtrim($this->appUrl(), '/') . '/' . ltrim($url, '/');
+        // URLs internas começam com /
+        if (!str_starts_with($url, 'http://') && !str_starts_with($url, 'https://')) {
+            $url = '/' . ltrim($url, '/');
+        }
 
         if (!headers_sent()) {
-            header("Location: {$url}");
+            header('Location: ' . $url);
             exit;
         }
 
         echo '<script>window.location.href=' . json_encode($url) . ';</script>'
-            . '<noscript><meta http-equiv="refresh" content="0;url=' . htmlspecialchars($url, ENT_QUOTES) . '"></noscript>';
+            . '<noscript><meta http-equiv="refresh" content="0;url='
+            . htmlspecialchars($url, ENT_QUOTES)
+            . '"></noscript>';
+
         exit;
     }
+
 
     /** Redireciona para a URL anterior (Referer) */
     protected function back(): never
@@ -326,19 +332,19 @@ abstract class Controller
         return Auth::check();
     }
 
-    protected function user(): ?object
+    protected function usuario(): ?object
     {
-        return Session::get('user');
+        return Session::get('usuario');
     }
 
-    protected function userId(): int
+    protected function usuarioId(): int
     {
-        return (int) Session::get('user_id', 0);
+        return (int) Session::get('usuario_id', 0);
     }
 
     protected function userRole(): string
     {
-        return Session::get('user')?->role ?? 'guest';
+        return Session::get('usuario')?->role ?? 'guest';
     }
 
     // ── Verificação de tipo de requisição ────────────────────────────────────

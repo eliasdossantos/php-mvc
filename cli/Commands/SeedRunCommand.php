@@ -4,56 +4,39 @@ namespace Cli\Commands;
 
 use Cli\Command;
 use Cli\Output;
+use Cli\SeedRunner;
 
-/**
- * seed:run — Executa seeders PHP em database/seeds
- *
- * Uso:
- *   php mvc seed:run           ← executa todos os seeders
- *   php mvc seed:run UserSeeder ← executa apenas o UserSeeder
- */
+/** Executa todos os Seeders de database/seeds ou somente o nome informado. */
 class SeedRunCommand extends Command
 {
     public function handle(): bool
     {
         $input = $this->arg(0);
-        $seedDir = ROOT_PATH . '/database/seeds';
+        $runner = new SeedRunner();
 
-        if (!is_dir($seedDir)) {
-            Output::error('Diretório database/seeds não encontrado.');
-            return false;
-        }
-
-        if ($input) {
-            [$className] = $this->parseNameAndNamespace($input);
-            if (!str_ends_with($className, 'Seeder')) {
-                $className .= 'Seeder';
-            }
-
-            $file = $seedDir . '/' . $className . '.php';
-            if (!file_exists($file)) {
-                Output::error("Seeder não encontrado: {$className}");
+        if ($input === null) {
+            Output::info('Executando Seeders de database/seeds…');
+            Output::newline();
+            $result = $runner->runAll(static function (string $line): void {
+                Output::line($line);
+            });
+            if ($result['seeders'] === 0) {
+                Output::warn('Nenhum Seeder encontrado (DatabaseSeeder.php é ignorado neste comando).');
                 return false;
             }
-
-            Output::info("Executando seeder <comment>{$className}</comment>…");
-            require $file;
-            return true;
+        } else {
+            Output::info("Executando Seeder <comment>{$input}</comment>…");
+            Output::newline();
+            $result = $runner->runOne($input, static function (string $line): void {
+                Output::line($line);
+            });
         }
 
-        $files = glob($seedDir . '/*Seeder.php');
-        if (!$files) {
-            Output::error('Nenhum seeder encontrado em database/seeds.');
-            return false;
-        }
-
-        natsort($files);
-
-        foreach ($files as $file) {
-            $name = basename($file, '.php');
-            Output::info("Executando seeder <comment>{$name}</comment>…");
-            require $file;
-        }
+        Output::newline();
+        Output::success(sprintf(
+            '%d Seeder(s) executado(s) com sucesso.',
+            $result['seeders']
+        ));
 
         return true;
     }
