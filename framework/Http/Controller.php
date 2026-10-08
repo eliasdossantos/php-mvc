@@ -6,7 +6,7 @@ use Framework\Auth\Auth;
 use Framework\Support\Session;
 use Framework\Support\Validator;
 use Framework\Support\View;
-
+use Framework\Support\Upload;
 
 /**
  * Controller Base
@@ -39,6 +39,9 @@ abstract class Controller
      * basta chamar parent::__construct().
      */
     protected Request $request;
+
+    /** Erros do último upload processado */
+    protected array $uploadErrors = [];
 
     public function __construct()
     {
@@ -468,6 +471,179 @@ abstract class Controller
         }
 
         return $request->validated();
+    }
+
+    // ── Uploads ───────────────────────────────────────────────────────────────
+
+    /**
+     * Processa um upload novo.
+     *
+     * @param int|string|null $entityId Informe para agrupar por dono
+     *                                  (ex: ID do usuário → user/{id}/).
+     *                                  Omita para uploads sem dono (ex: banner).
+     * @return string|null Nome do arquivo salvo, ou null se falhou
+     */
+    protected function saveUploadedFile(
+        array $file,
+        string $entity,
+        string $type = 'image',
+        int $maxMb = 5,
+        int|string|null $entityId = null
+    ): ?string {
+        $this->uploadErrors = [];
+
+        $upload = new Upload($file);
+
+        $type === 'document'
+            ? $upload->forDocuments($maxMb, $entity, $entityId)
+            : $upload->forImages($maxMb, $entity, $entityId);
+
+        if (!$upload->process()) {
+            $this->uploadErrors = $upload->getErrors();
+            return null;
+        }
+
+        return $upload->getFilename();
+    }
+
+    /**
+     * Substitui um arquivo existente. Se o novo upload falhar, o antigo
+     * NÃO é apagado.
+     *
+     * @param string|null $oldFilename Nome do arquivo antigo salvo no banco
+     * @return string|null Nome do novo arquivo, ou null se falhou
+     */
+    protected function replaceUploadedFile(
+        array $file,
+        string $entity,
+        ?string $oldFilename,
+        string $type = 'image',
+        int $maxMb = 5,
+        int|string|null $entityId = null
+    ): ?string {
+        $novoNome = $this->saveUploadedFile($file, $entity, $type, $maxMb, $entityId);
+
+        if ($novoNome === null) {
+            return null;
+        }
+
+        if ($oldFilename) {
+            $this->deleteUploadedFile($entity, $oldFilename, $entityId);
+        }
+
+        return $novoNome;
+    }
+
+    /** Remove um arquivo físico a partir de entity (+ entityId) + nome salvo no banco */
+    protected function deleteUploadedFile(string $entity, string $filename, int|string|null $entityId = null): void
+    {
+        $base = realpath(PUBLIC_PATH . '/uploads');
+        if ($base === false) {
+            return;
+        }
+
+        $relative = Upload::resolvePath($entity, $filename, $entityId);
+        $fullPath = realpath($base . '/' . $relative);
+
+        // realpath() retorna false se o arquivo não existe; o str_starts_with
+        // garante que o caminho resolvido continua dentro de public/uploads
+        // (bloqueia nomes como "../../config/.env")
+        if ($fullPath === false || !str_starts_with($fullPath, $base . DIRECTORY_SEPARATOR)) {
+            return;
+        }
+
+        if (is_file($fullPath)) {
+            @unlink($fullPath);
+        }
+    }
+
+
+    // ── Arquivos privados (storage/private) ───────────────────────────────────
+    // Documentos como CNH e CRLV. Ficam fora de public/ e só saem por rota PHP
+    // com checagem de permissão. Sempre têm dono (entityId), ex: o motoboy.
+
+    /**
+     * Salva um documento privado em storage/private/{entity}/{entityId}/.
+     *
+     * @return string|null Nome do arquivo salvo, ou null se falhou
+     */
+    protected function savePrivateFile(
+        array $file,
+        string $entity,
+        int|string $entityId,
+        int $maxMb = 5
+    ): ?string {
+        $this->uploadErrors = [];
+
+        $upload = new Upload($file);
+        $upload->forPrivateDocuments($maxMb, $entity, $entityId);
+
+        if (!$upload->process()) {
+            $this->uploadErrors = $upload->getErrors();
+            return null;
+        }
+
+        return $upload->getFilename();
+    }
+
+    /**
+     * Substitui um documento privado. Se o novo upload falhar, o antigo
+     * NÃO é apagado.
+     */
+    protected function replacePrivateFile(
+        array $file,
+        string $entity,
+        int|string $entityId,
+        ?string $oldFilename,
+        int $maxMb = 5
+    ): ?string {
+        $novoNome = $this->savePrivateFile($file, $entity, $entityId, $maxMb);
+
+        if ($novoNome === null) {
+            return null;
+        }
+
+        if ($oldFilename) {
+            $this->deletePrivateFile($entity, $oldFilename, $entityId);
+        }
+
+        return $novoNome;
+    }
+
+    /** Remove um documento privado a partir de entity + entityId + nome salvo no banco */
+    protected function deletePrivateFile(string $entity, string $filename, int|string $entityId): void
+    {
+        $fullPath = $this->resolvePrivateFile($entity, $filename, $entityId);
+
+        if ($fullPath !== null) {
+            @unlink($fullPath);
+        }
+    }
+
+    /**
+     * Devolve o caminho físico de um documento privado, ou null se o arquivo
+     * não existe ou o caminho tenta sair de storage/private (ex: "../../.env").
+     * Será usado também pelo controller que entrega o arquivo ao navegador.
+     */
+    protected function resolvePrivateFile(string $entity, string $filename, int|string $entityId): ?string
+    {
+        $base = realpath(STORAGE_PATH . '/private');
+        if ($base === false) {
+            return null;
+        }
+
+        $relative = Upload::resolvePath($entity, $filename, $entityId);
+        $fullPath = realpath($base . '/' . $relative);
+
+        if (
+            $fullPath === false
+            || !str_starts_with($fullPath, $base . DIRECTORY_SEPARATOR)
+            || !is_file($fullPath)
+        ) {
+            return null;
+        }
+
+        return $fullPath;
     }
 
     // ── Abort ─────────────────────────────────────────────────────────────────

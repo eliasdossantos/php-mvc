@@ -17,6 +17,17 @@ define('STORAGE_PATH', ROOT_PATH . '/storage');
 define('CONFIG_PATH',  ROOT_PATH . '/config');
 define('ROUTES_PATH',  ROOT_PATH . '/routes');
 
+
+// ── 1.1 Pasta pública de uploads ─────────────────────────────────────────────
+// Os arquivos enviados ficam em public/uploads/{entity}/ e são servidos
+// direto pelo servidor web em /uploads/...
+
+$uploadsDir = PUBLIC_PATH . '/uploads';
+
+if (!is_dir($uploadsDir)) {
+    @mkdir($uploadsDir, 0755, true);
+}
+
 // ── 2. Autoload Composer ──────────────────────────────────────────────────────
 
 $autoload = ROOT_PATH . '/vendor/autoload.php';

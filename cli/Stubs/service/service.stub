@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Services;
+namespace {{ Namespace }};
 
 use Framework\Core\Service;
 use Framework\Support\Logger;

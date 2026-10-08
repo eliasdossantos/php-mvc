@@ -5,7 +5,7 @@ namespace Framework\Support;
 /**
  * Upload — Sistema de Upload de Arquivos Reutilizável
  * ─────────────────────────────────────────────────────────────────────────────
- * Valida, processa e organiza arquivos dentro de storage/uploads.
+ * Valida, processa e organiza arquivos dentro de public/uploads.
  *
  * Estrutura gerada:
  *   Com dono (entity + entityId) — ex: avatar de usuário:
@@ -59,7 +59,7 @@ class Upload
     public function __construct(array $file)
     {
         $this->file      = $file;
-        $this->uploadDir = STORAGE_PATH . '/uploads';
+        $this->uploadDir = PUBLIC_PATH . '/uploads';
     }
 
     // ── Configuração fluente ──────────────────────────────────────────────────
@@ -147,6 +147,23 @@ class Upload
             ->setMaxSize($maxMb * 1024 * 1024);
     }
 
+    /**
+     * Documentos privados (CNH, CRLV, comprovantes): PDF, JPG e PNG.
+     * Gravados em storage/private/{entity}/{entityId}/ — fora de public/,
+     * só acessíveis por rota PHP com checagem de permissão.
+     * Mesmos parâmetros de forImages().
+     */
+    public function forPrivateDocuments(int $maxMb, string $entity, int|string|null $entityId = null): static
+    {
+        $this->setEntity($entity)->setEntityId($entityId);
+
+        return $this
+            ->setUploadDir(STORAGE_PATH . '/private')
+            ->setAllowedTypes(['application/pdf', 'image/jpeg', 'image/png'])
+            ->setAllowedExtensions(['pdf', 'jpg', 'jpeg', 'png'])
+            ->setMaxSize($maxMb * 1024 * 1024);
+    }
+
     // ── Processamento ─────────────────────────────────────────────────────────
 
     public function process(): bool
@@ -162,8 +179,14 @@ class Upload
 
         $targetDir = rtrim($this->uploadDir, '/') . '/' . $this->buildSubPath();
 
-        if (!is_dir($targetDir)) {
-            mkdir($targetDir, 0755, true);
+        if (!is_dir($targetDir) && !mkdir($targetDir, 0755, true) && !is_dir($targetDir)) {
+            $this->errors[] = 'Não foi possível criar a pasta de destino. Verifique as permissões de public/uploads.';
+            return false;
+        }
+
+        if (!is_writable($targetDir)) {
+            $this->errors[] = 'A pasta de destino não tem permissão de escrita.';
+            return false;
         }
 
         $ext      = strtolower(pathinfo($this->file['name'], PATHINFO_EXTENSION));
@@ -177,7 +200,7 @@ class Upload
             $this->errors[] = 'Falha ao mover o arquivo. Verifique as permissões do diretório.';
             return false;
         }
-
+        @chmod($destination, 0644);
         $this->filename = $filename;
         return true;
     }
