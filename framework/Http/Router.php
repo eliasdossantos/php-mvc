@@ -344,6 +344,15 @@ class Router
 
         $instance = new $fqcn();
 
+        // ── Preparação do controller ────────────────────────────────────────
+        // Controllers que estendem BaseController podem declarar um __construct()
+        // próprio (só com dependências) sem chamar parent::__construct().
+        // bootstrap() garante que a infraestrutura (Request) esteja pronta
+        // antes da action. É idempotente: não faz nada se o pai já rodou.
+        if (method_exists($instance, 'bootstrap')) {
+            $instance->bootstrap();
+        }
+
         if (!method_exists($instance, $methodName)) {
             throw new \RuntimeException("Método [{$methodName}] não existe em [{$fqcn}].", 500);
         }
@@ -356,7 +365,7 @@ class Router
             $name = $rParam->getName();
             $type = $rParam->getType();
 
-            // ── Injeção de FormRequest estilo Laravel ───────────────────────
+            // ── Injeção de FormRequest estilo ───────────────────────
             // Se o parâmetro é tipado com uma classe (não escalar) que estende
             // FormRequest, instancia automaticamente. O construtor do FormRequest
             // já captura o input, valida e (se authorize() falhar ou a validação

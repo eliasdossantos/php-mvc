@@ -24,12 +24,22 @@ use Framework\Support\Session;
  */
 class {{ ClassName }} extends BaseController
 {
+    /**
+    * Nome da entidade usada como subpasta em public/uploads.
+    * Exemplo: 'produtos' gera arquivos em public/uploads/produtos/.
+    */
+    private const UPLOAD_ENTITY = 'produtos';
+
+    /**
+    * Tamanho máximo permitido para o upload, em megabytes (MB).
+    * Exemplo: 5 permite arquivos de até 5 MB.
+    */
+    private const UPLOAD_MAX_MB = 5;
+
+    // private {{ ModelName }}Repository $repository;
+
     public function __construct()
     {
-        // parent::__construct() já instancia o Request automaticamente,
-        // disponível em $this->request — não é necessário criá-lo manualmente
-        parent::__construct();
-
         // Inicialize dependências aqui
         // $this->repository = new {{ ModelName }}Repository();
     }
@@ -69,6 +79,7 @@ class {{ ClassName }} extends BaseController
     {
         $this->view('{{ viewPath }}.create', [
             'title' => 'Novo {{ ModelName }}',
+            'uploadMaxMb' => self::UPLOAD_MAX_MB,
         ]);
     }
 
@@ -103,14 +114,15 @@ class {{ ClassName }} extends BaseController
         // Sem dono (arquivo avulso, ex: imagem de capa):
         //     uploads/{{ routePrefix }}/arquivo.jpg
         //
+        // $nomeArquivo = null;
         // if (!empty($_FILES['imagem']['name'])) {
         //     $nomeArquivo = $this->saveUploadedFile(
         //         $_FILES['imagem'],
-        //         '{{ routePrefix }}', // entity — categoria da pasta
-        //         'image',              // ou 'document'
-        //         5                     // maxMb
-        //         // , $this->userId()  // entityId opcional — agrupa em {{ routePrefix }}/{id}/
-        //         //                      quando o arquivo pertence a um dono (ex: usuário logado)
+        //         self::UPLOAD_ENTITY,     // entity — categoria da pasta
+        //         'image',                 // ou 'document'
+        //         self::UPLOAD_MAX_MB      // maxMb
+        //         // , $this->userId()     // entityId opcional — agrupa em {{ routePrefix }}/{id}/
+        //                                  // quando o arquivo pertence a um dono (ex: usuário logado)
         //     );
         //
         //     if ($nomeArquivo === null) {
@@ -138,6 +150,7 @@ class {{ ClassName }} extends BaseController
 
         $this->view('{{ viewPath }}.edit', [
             'title' => 'Editar {{ ModelName }}',
+            'uploadMaxMb' => self::UPLOAD_MAX_MB,
             // 'item'  => $item,
         ]);
     }
@@ -172,27 +185,30 @@ class {{ ClassName }} extends BaseController
         $data = $this->request->all();
 
         // ── Upload de arquivo (exemplo — descomente e ajuste o campo) ───────────
-        // Troca o arquivo antigo pelo novo (o antigo só é apagado se o novo
-        // upload for salvo com sucesso). $item precisa estar carregado acima.
+        // O arquivo antigo só é apagado se o novo for salvo com sucesso.
+        // Sem arquivo novo, NOME-DO-CAMPO(ex: imagem, avatar, anexo, foto etc...) não entra em $data e a atual é mantida.
         //
         // if (!empty($_FILES['imagem']['name'])) {
-        //     $nomeArquivo = $this->replaceUploadedFile(
+        //     $nomeAntigo = $this->nomeArquivoLocal($item->NOME-DO-CAMPO ?? null);
+        //
+        //     $nomeNovo = $this->replaceUploadedFile(
         //         $_FILES['imagem'],
-        //         '{{ routePrefix }}',        // entity
-        //         $item->imagem ?? null,       // nome antigo salvo no banco
-        //         'image',                     // ou 'document'
-        //         5                             // maxMb
-        //         // , $this->userId()          // entityId opcional
+        //         self::UPLOAD_ENTITY,     // entity — categoria da pasta
+        //         $nomeAntigo,
+        //         'image',                 // ou 'document'
+        //         self::UPLOAD_MAX_MB      // maxMb
+        //         // , $this->userId()     // entityId opcional — agrupa em {{ routePrefix }}/{id}/
+        //                                  // quando o arquivo pertence a um dono (ex: usuário logado)
         //     );
         //
-        //     if ($nomeArquivo === null) {
+        //     if ($nomeNovo === null) {
         //         Session::flash('error', $this->uploadErrors[0] ?? 'Falha no upload.');
         //         Session::flashInput($data);
         //         $this->back();
         //         return;
         //     }
         //
-        //     $data['imagem'] = $nomeArquivo;
+        //     $data['imagem'] = $nomeNovo;
         // }
 
         // $updated = $this->repository->update($id, $data);
@@ -230,5 +246,19 @@ class {{ ClassName }} extends BaseController
         // $this->repository->delete($id);
 
         $this->jsonSuccess('{{ ModelName }} removido com sucesso.');
+    }
+
+    /**
+     * Devolve o nome do arquivo apenas se ele for um upload local.
+     * Registros antigos com URL externa (ex.: Unsplash) retornam null,
+     * para nunca tentar apagar algo que não está em public/uploads.
+     */
+    private function nomeArquivoLocal(?string $imagem): ?string
+    {
+        if ($imagem === null || $imagem === '' || preg_match('#^https?://#i', $imagem)) {
+            return null;
+        }
+
+        return $imagem;
     }
 }

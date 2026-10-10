@@ -228,8 +228,9 @@ class Request
 
     /**
      * Sanitiza um valor (string, array recursivo, ou passa intacto se não for string).
-     * Público e estático para ser reutilizável por FormRequest e SecurityHelper,
-     * evitando três implementações independentes do mesmo algoritmo.
+     *
+     * A sanitização remove HTML e espaços desnecessários, mas NÃO faz
+     * escape HTML. O escape deve ser feito somente na saída, através de e().
      */
     public static function sanitizeValue(mixed $value): mixed
     {
@@ -238,7 +239,7 @@ class Request
         }
 
         if (is_string($value)) {
-            return htmlspecialchars(strip_tags(trim($value)), ENT_QUOTES | ENT_HTML5, 'UTF-8');
+            return strip_tags(trim($value));
         }
 
         return $value;
