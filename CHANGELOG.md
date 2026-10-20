@@ -4,6 +4,26 @@ Todas as alterações relevantes deste projeto serão documentadas neste arquivo
 
 O formato segue o padrão [**Keep a Changelog**](https://keepachangelog.com/pt-BR/1.0.0/) e este projeto adota o [**Versionamento Semântico**](https://semver.org/lang/pt-BR/).
 
+## [2.1.3] — 2026-10-20
+
+### Alterado
+
+- A documentação oficial passou a ser publicada online em [documentacao-snowy.vercel.app](https://documentacao-snowy.vercel.app/), e o README agora aponta para esse link.
+- Licença alterada de GPL-3.0 para uma licença própria de uso e estudo (source-available), com todos os direitos reservados. Os termos completos estão no arquivo `LICENSE`.
+- README atualizado: seção "Sobre o Projeto" reescrita, badge de licença atualizado, seção "Contribuições" ajustada aos novos termos e seção "Configuração de Proxy e CORS" reposicionada antes de "Contribuições".
+
+### Removido
+
+- Diretório `docs/` (`docs/index.html` e `docs/API.md`) removido do repositório.
+
+### Compatibilidade
+
+- Não há alteração de código, de schema ou de migrations nesta versão.
+- Cópias obtidas em versões anteriores sob a GPL-3.0 continuam regidas por essa licença. Os novos termos valem para as versões publicadas a partir desta.
+- Referências a `docs/index.html` ou `docs/API.md` devem ser substituídas pelo link da documentação online.
+
+---
+
 ## [2.0.0] — 2026-09-27
 
 ### Alterado

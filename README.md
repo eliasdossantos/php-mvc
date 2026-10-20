@@ -3,16 +3,17 @@
 > Boilerplate profissional em PHP puro com arquitetura MVC moderna, escalável e reutilizável.
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4?logo=php)](https://php.net)
-[![License](https://img.shields.io/badge/license-GPL--3.0-red)](LICENSE)
+[![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)](LICENSE)
 [![PSR-4](https://img.shields.io/badge/autoload-PSR--4-blue)](#)
+[![Documentação](https://img.shields.io/badge/Documentação-online-brightgreen)](https://documentacao-snowy.vercel.app/)
 
 ---
 
 ## Sobre o Projeto
 
-O **PHP MVC Boilerplate** é uma base reutilizável para desenvolvimento de aplicações web em PHP puro, construída com foco em organização, escalabilidade, segurança e boas práticas de desenvolvimento.
+O **PHP MVC Boilerplate** é um framework PHP 8.1+ leve, criado do zero para o desenvolvimento de painéis e sistemas web, com foco em organização, escalabilidade, segurança e boas práticas.
 
-Inspirado nos conceitos utilizados por frameworks modernos, o projeto fornece uma estrutura sólida baseada no padrão **Model-View-Controller (MVC)**, permitindo que o desenvolvedor foque nas regras de negócio sem precisar recriar a infraestrutura básica a cada novo sistema.
+Inspirado nos conceitos de frameworks modernos, o projeto fornece uma estrutura sólida baseada no padrão **Model-View-Controller (MVC)**, com arquitetura em camadas (Controller, Service, Repository e Model), roteador com grupos e middlewares, query builder sobre PDO com paginação e soft delete, migrations, validação, upload, sessão com flash, proteção por CSP e CLI. Assim, o desenvolvedor foca nas regras de negócio sem precisar recriar a infraestrutura básica a cada novo sistema.
 
 O objetivo é oferecer uma alternativa leve e flexível para quem deseja utilizar PHP puro sem abrir mão de recursos essenciais encontrados nos principais frameworks do mercado.
 
@@ -115,19 +116,15 @@ O projeto possui mecanismos nativos para mitigação das vulnerabilidades mais c
 
 ## Documentação
 
-A documentação completa está disponível em:
+A documentação oficial está disponível online:
 
-```text
-docs/index.html
-```
+👉 **[https://documentacao-snowy.vercel.app/](https://documentacao-snowy.vercel.app/)**
 
-`docs/index.html` é a fonte central da documentação, incluindo a referência completa da API v1. O antigo `docs/API.md` foi mantido temporariamente durante a migração e não deve ser usado como fonte independente.
-
-Abra o arquivo em seu navegador para acessar:
+Ela é a fonte central e atualizada de informações do projeto, incluindo:
 
 - Guias de instalação
 - Exemplos práticos
-- Referência da API
+- Referência completa da API v1
 - Estrutura do framework
 - Criação de módulos
 
@@ -405,9 +402,6 @@ php-mvc/
 ├── database/
 │   ├── migrations/
 │   └── seeds/
-├── docs/
-│   ├── API.md
-│   └── index.html
 ├── framework/
 │   ├── Auth/
 │   ├── Core/
@@ -483,6 +477,12 @@ composer test
 
 ---
 
+## Configuração de Proxy e CORS
+
+Em produção, preencha `CORS_ALLOWED_ORIGINS` com origens exatas e nunca use `*`. Se a aplicação estiver atrás de proxy reverso, informe os IPs desse proxy em `TRUSTED_PROXIES`; sem essa configuração, o rate limit usa somente `REMOTE_ADDR`.
+
+---
+
 ## Contribuições
 
 Contribuições são bem-vindas.
@@ -500,7 +500,7 @@ Leia também:
 CONTRIBUTING.md
 ```
 
-Ao contribuir, você concorda que sua contribuição será licenciada sob os termos da GPL-3.0.
+Ao contribuir, você concede ao autor o direito de usar, modificar e distribuir sua contribuição como parte do projeto, conforme descrito no arquivo [LICENSE](LICENSE).
 
 ---
 
@@ -526,34 +526,28 @@ CHANGELOG.md
 
 ## Licença
 
-Copyright (C) 2026 Elias dos Santos
+Copyright (C) 2026 Elias dos Santos. Todos os direitos reservados.
 
-Este projeto está licenciado sob os termos da **GNU General Public License v3.0 (GPL-3.0)**.
+O código-fonte deste projeto está disponível publicamente para **uso e estudo**. Este projeto **não** é open source: os termos completos estão no arquivo [LICENSE](LICENSE).
 
-Você tem liberdade para:
+Você pode:
 
-- Utilizar o software;
+- Utilizar o software em seus projetos, sem modificar o código-fonte do software em si;
 - Estudar o código-fonte;
-- Modificar o projeto;
-- Distribuir cópias;
-- Distribuir versões modificadas.
+- Aprender com a arquitetura e as soluções adotadas.
 
-Desde que:
+Você **não** pode, sem autorização prévia e por escrito do autor:
 
-- Preserve os avisos de copyright;
-- Mantenha a licença GPL-3.0;
-- Disponibilize o código-fonte correspondente ao distribuir versões modificadas.
+- Modificar o projeto ou criar obras derivadas;
+- Copiar ou redistribuir o código, total ou parcialmente, inclusive por meio de forks públicos;
+- Vender, sublicenciar ou oferecer o software como produto ou serviço;
+- Apresentar o projeto como de sua autoria;
+- Remover ou alterar os avisos de copyright.
+
+Para solicitar autorização, entre em contato com o autor pelo GitHub: [@eliasdossantos](https://github.com/eliasdossantos).
 
 Este software é fornecido **"COMO ESTÁ"**, sem qualquer garantia expressa ou implícita.
-
-Licença completa:
-
-https://www.gnu.org/licenses/gpl-3.0.html
 
 ---
 
 ⭐ Se este projeto foi útil para você, considere deixar uma estrela no GitHub.
-
-## Configuração de proxy e CORS
-
-Em produção, preencha `CORS_ALLOWED_ORIGINS` com origens exatas e nunca use `*`. Se a aplicação estiver atrás de proxy reverso, informe os IPs desse proxy em `TRUSTED_PROXIES`; sem essa configuração, o rate limit usa somente `REMOTE_ADDR`.

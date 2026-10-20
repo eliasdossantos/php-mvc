@@ -11,11 +11,11 @@
     ],
     "homepage": "https://github.com/eliasdossantos/php-mvc",
     "type": "project",
-    "license": "Unlicense",
+    "license": "proprietary",
     "authors": [
         {
-            "name": "eliasdossantos/php-mvc",
-            "homepage": "https://github.com/eliasdossantos/php-mvc"
+            "name": "Elias dos Santos",
+            "homepage": "https://github.com/eliasdossantos"
         }
     ],
     "require": {
