@@ -3,7 +3,7 @@
 > Boilerplate profissional em PHP puro com arquitetura MVC moderna, escalável e reutilizável.
 
 [![PHP](https://img.shields.io/badge/PHP-8.1%2B-777bb4?logo=php)](https://php.net)
-[![License](https://img.shields.io/badge/license-All%20Rights%20Reserved-red)](LICENSE)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![PSR-4](https://img.shields.io/badge/autoload-PSR--4-blue)](#)
 [![Documentação](https://img.shields.io/badge/Documentação-online-brightgreen)](https://documentacao-snowy.vercel.app/)
 
@@ -485,14 +485,15 @@ Em produção, preencha `CORS_ALLOWED_ORIGINS` com origens exatas e nunca use `*
 
 ## Contribuições
 
-Contribuições são bem-vindas.
+Contribuições são bem-vindas! O objetivo é construir um projeto cada vez melhor com a participação da comunidade.
 
 Caso deseje contribuir:
 
-1. Faça um Fork;
-2. Crie uma branch;
-3. Faça suas alterações;
-4. Envie um Pull Request.
+- Faça um Fork do repositório;
+- Crie uma branch para sua alteração;
+- Implemente suas melhorias;
+- Execute os testes;
+- Envie um Pull Request.
 
 Leia também:
 
@@ -500,7 +501,9 @@ Leia também:
 CONTRIBUTING.md
 ```
 
-Ao contribuir, você concede ao autor o direito de usar, modificar e distribuir sua contribuição como parte do projeto, conforme descrito no arquivo [LICENSE](LICENSE).
+Ao enviar uma contribuição, você concorda que ela será disponibilizada sob a licença MIT, nos termos aplicáveis ao projeto.
+
+O autor original mantém os direitos autorais sobre suas próprias contribuições e sobre o código original do projeto. contribuir, você concede ao autor o direito de usar, modificar e distribuir sua contribuição como parte do projeto, conforme descrito no arquivo [LICENSE](LICENSE).
 
 ---
 

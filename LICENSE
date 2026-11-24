@@ -1,75 +1,47 @@
-PHP MVC Boilerplate
-Copyright (C) 2026 Elias dos Santos. Todos os direitos reservados.
+Licença
 
-LICENÇA DE USO E ESTUDO (SOURCE-AVAILABLE)
+O PHP MVC Boilerplate é um projeto desenvolvido por Elias dos Santos e distribuído sob os termos da licença MIT (MIT License).
 
-O código-fonte deste projeto ("Software") está disponível publicamente para
-uso e estudo. Esta licença NÃO é uma licença de software livre ou de código
-aberto, e NÃO concede o direito de copiar, modificar ou distribuir o Software
-sem autorização.
+A licença MIT concede liberdade para utilizar, estudar, modificar, distribuir e comercializar o software, inclusive em projetos pessoais, comerciais e proprietários, respeitando as condições estabelecidas nesta licença.
 
-1. PERMISSÕES
+MIT License
 
-Fica concedida, gratuitamente, a qualquer pessoa que obtenha uma cópia do
-Software, permissão para:
+Copyright (c) 2026 Elias dos Santos
 
-  a) Utilizar o Software em seus próprios projetos, pessoais ou comerciais,
-     sem modificar o código-fonte do Software em si;
-  b) Estudar o código-fonte, a arquitetura e as soluções adotadas;
-  c) Fazer as cópias estritamente necessárias para executar e estudar o
-     Software em seu próprio ambiente.
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-2. RESTRIÇÕES
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-Sem autorização prévia e por escrito do autor, é proibido:
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-  a) Modificar o Software ou criar obras derivadas a partir dele;
-  b) Copiar, publicar ou redistribuir o Software, total ou parcialmente,
-     em qualquer meio, inclusive por meio de forks públicos, repositórios,
-     pacotes ou templates;
-  c) Vender, sublicenciar, alugar ou oferecer o Software, ou versões dele,
-     como produto ou serviço;
-  d) Apresentar o Software ou parte dele como de sua autoria;
-  e) Remover ou alterar os avisos de copyright e esta licença.
+O que é permitido?
+Utilizar o framework gratuitamente em projetos pessoais ou comerciais.
+Modificar, adaptar e personalizar qualquer parte do código-fonte.
+Criar sistemas, aplicações e projetos derivados.
+Utilizar o framework em projetos proprietários e de código fechado.
+Distribuir e redistribuir o código original ou modificado.
+Criar forks públicos ou privados.
+Comercializar aplicações, produtos e serviços desenvolvidos com o framework.
+Utilizar o código como base para outros projetos.
+Incorporar o framework em soluções comerciais sem precisar solicitar autorização ao autor.
+O que não é permitido?
+Remover os avisos de direitos autorais e o texto da licença das cópias ou partes substanciais do software.
+Utilizar o nome ou a identidade do autor para sugerir falsamente que ele endossa ou apoia determinado produto ou projeto.
+Atribuir a autoria do código original a outra pessoa.
+Direitos autorais
 
-3. AUTORIZAÇÃO
+Copyright (c) 2026 Elias dos Santos.
 
-Para solicitar autorização de cópia, modificação ou redistribuição, entre em
-contato com o autor pelo GitHub: https://github.com/eliasdossantos
+O autor original mantém os direitos autorais sobre o código de sua autoria.
 
-A autorização só é válida se concedida por escrito e pode ser limitada a
-finalidades, prazos ou condições específicas.
+A licença MIT concede permissões amplas de utilização, modificação e distribuição, mas não transfere a titularidade dos direitos autorais do projeto.
 
-4. CONTRIBUIÇÕES
+Garantia e responsabilidade
 
-Ao enviar uma contribuição (issue, pull request ou qualquer código) para este
-projeto, o contribuinte concede ao autor uma licença perpétua, mundial,
-gratuita e irrevogável para usar, modificar e distribuir essa contribuição
-como parte do Software, inclusive sob outras licenças.
+O software é fornecido "COMO ESTÁ", sem garantias expressas ou implícitas.
 
-5. COMPONENTES DE TERCEIROS
+O autor não se responsabiliza por danos, perdas ou problemas decorrentes da utilização, modificação ou distribuição do software, conforme os termos da licença MIT.
 
-Bibliotecas de terceiros utilizadas pelo projeto (por exemplo, PHPMailer)
-permanecem sujeitas às suas respectivas licenças, e esta licença não altera
-os direitos concedidos por elas.
+Para consultar os termos completos, acesse o arquivo LICENSE.
 
-6. VERSÕES ANTERIORES
-
-Cópias do Software obtidas anteriormente sob a GNU General Public License
-v3.0 continuam regidas por essa licença, no que se refere às versões em que
-ela foi aplicada. Esta licença se aplica às versões publicadas a partir da
-data de sua adoção.
-
-7. RESCISÃO
-
-Qualquer violação destes termos rescinde automaticamente os direitos
-concedidos por esta licença.
-
-8. ISENÇÃO DE GARANTIA
-
-O SOFTWARE É FORNECIDO "COMO ESTÁ", SEM GARANTIA DE QUALQUER TIPO, EXPRESSA
-OU IMPLÍCITA, INCLUINDO, MAS NÃO SE LIMITANDO A GARANTIAS DE
-COMERCIALIZAÇÃO, ADEQUAÇÃO A UMA FINALIDADE ESPECÍFICA E NÃO VIOLAÇÃO. EM
-NENHUMA HIPÓTESE O AUTOR SERÁ RESPONSÁVEL POR QUAISQUER DANOS, REIVINDICAÇÕES
-OU OUTRAS RESPONSABILIDADES DECORRENTES DO USO DO SOFTWARE OU DE OUTRAS
-NEGOCIAÇÕES COM ELE.
+⭐ Se este projeto foi útil para você, considere deixar uma estrela no GitHub.
